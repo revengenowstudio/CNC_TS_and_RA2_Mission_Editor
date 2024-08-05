@@ -130,7 +130,8 @@ void CHouses::UpdateDialog()
 
 	if (ini[MAPHOUSES].Size() <= 0) {
 		// MessageBox("No houses do exist, if you want to use houses, you should use ""Prepare houses"" before doing anything else.");
-	} else {
+	}
+	else {
 		m_HumanPlayer.AddString("None");
 		m_HumanPlayer.SetCurSel(0);
 		for (auto const& [seq, id] : ini[MAPHOUSES]) {
@@ -196,7 +197,7 @@ BOOL CHouses::OnInitDialog()
 #endif
 
 	return TRUE;  // return TRUE unless you set the focus to a control
-				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+	// EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
 }
 
 void CHouses::OnSelchangeHouses()
@@ -303,14 +304,15 @@ void CHouses::AddHouse(const CString& name)
 	}
 #endif
 
-	int c;
-
+	// this method is problematic,
+	// insert house in the middle will rouin all exisiting scrips/triggers relying on the sequence
+#if 0
 	//okay, get a free slot
 	int pos = -1;
 #ifdef RA2_MODE
 	int pos2 = -1;
 #endif
-	for (c = 0; c > -1; c++) {
+	for (auto c = 0; c > -1; c++) {
 		char k[50];
 		itoa(c, k, 10);
 		if (!ini[MAPHOUSES].Exists(k)) {
@@ -321,21 +323,31 @@ void CHouses::AddHouse(const CString& name)
 		}
 	}
 #ifdef RA2_MODE
-	for (c = 0; c > -1; c++) {
+	for (auto c = 0; c > -1; c++) {
 		char k[50];
 		itoa(c, k, 10);
 		if (!ini[HOUSES].Exists(k)) {
 			pos2 = c;
 		}
-		if (pos2 != -1) break;
+		if (pos2 != -1) {
+			break;
+		}
 	}
 #endif
+#endif
+	auto const globalHouseCount = rules[HOUSES].Size();
+	// if this name is defined in rules, then it should have existing position already
+	auto pos = rules[HOUSES].FindValue(name);
+	// if only map defined, its sequence always appends to the end of both exiting records
+	if (pos < 0) {
+		pos = std::max<int>(globalHouseCount + ini[HOUSES].Size() - 1, 0);
+	}
 
-	char k[50];
-	itoa(pos, k, 10);
+	CString countrySeqStr;
+	countrySeqStr.Format("%d", static_cast<int>(pos));
 
 	auto const realHouseID = TranslateHouse(name);
-	ini.SetString(MAPHOUSES, k, realHouseID);
+	ini.AddSection(MAPHOUSES).InsertOrAssign(countrySeqStr, realHouseID);
 
 	CString country;
 	country = name;
@@ -346,8 +358,10 @@ void CHouses::AddHouse(const CString& name)
 	}
 
 #ifdef RA2_MODE
-	_itoa(pos2, k, 10);
-	ini.SetString(HOUSES, k, country);
+	// map defined only
+	if (pos >= globalHouseCount) {
+		ini.AddSection(HOUSES).InsertOrAssign(countrySeqStr, country);
+	}
 #endif
 	ini.SetInteger(realHouseID, "IQ", 0);
 	ini.SetString(realHouseID, "Edge", "West");
@@ -367,7 +381,8 @@ void CHouses::AddHouse(const CString& name)
 		}
 #endif
 		ini.SetString(realHouseID, "Color", "DarkRed");
-	} else if (side.Find("GDI") >= 0) {
+	}
+	else if (side.Find("GDI") >= 0) {
 #if defined(RA2_MODE)
 		ini.SetString(realHouseID, "Color", "DarkBlue");
 #else
@@ -424,7 +439,8 @@ void CHouses::OnShowWindow(BOOL bShow, UINT nStatus)
 
 #endif
 		}
-	} else {
+	}
+	else {
 		// call all KillFocus !
 		OnKillfocusIq();
 		OnEditchangeActslike();

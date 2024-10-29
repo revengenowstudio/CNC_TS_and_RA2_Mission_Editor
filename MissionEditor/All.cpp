@@ -26,6 +26,7 @@
 #include "All.h"
 #include "mapdata.h"
 #include "variables.h"
+#include "functions.h"
 
 
 #ifdef _DEBUG
@@ -65,6 +66,33 @@ void CAll::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
+BOOL CAll::OnInitDialog()
+{
+	auto const ret = CDialog::OnInitDialog();
+
+	translateUI();
+
+	return ret;
+}
+
+void CAll::translateUI()
+{
+	TranslateWindowCaption(*this, "IniEditorCaption");
+
+	TranslateDlgItem(*this, IDC_INI_EDITOR_DESC, "IniEditorDesc");
+	TranslateDlgItem(*this, IDC_INI_EDITOR_SECTIONS, "IniEditorSections");
+	TranslateDlgItem(*this, IDC_INI_EDITOR_CONTENT, "IniEditorSectionContent");
+	TranslateDlgItem(*this, IDC_INI_EDITOR_KEYS, "IniEditorSectionKeys");
+	TranslateDlgItem(*this, IDC_INI_EDITOR_VAL, "IniEditorSectionValue");
+	
+	TranslateDlgItem(*this, IDC_ADDSECTION, "IniEditorAdd");
+	TranslateDlgItem(*this, IDC_DELETESECTION, "IniEditorDelete");
+	TranslateDlgItem(*this, IDC_INISECTION, "IniEditorInsert");
+
+	TranslateDlgItem(*this, IDC_ADDKEY, "IniEditorAddKey");
+	TranslateDlgItem(*this, IDC_DELETEKEY, "IniEditorDeleteKey");
+	
+}
 
 BEGIN_MESSAGE_MAP(CAll, CDialog)
 	//{{AFX_MSG_MAP(CAll)
@@ -181,17 +209,23 @@ void CAll::OnDeletesection()
 {
 	CIniFile& ini = Map->GetIniFile();
 
-	int cusection;
-	cusection = m_Sections.GetCurSel();
+	const int cusection = m_Sections.GetCurSel();
+
 	if (cusection == -1) {
-		MessageBox("You cannot delete a section without choosing one.");
+		auto const msg = TranslateStringACP("IniEditorItemUnselected");
+		auto const cap = TranslateStringACP("Error");
+		MessageBox(msg, cap);
 		return;
 	}
 
 	CString str;
 	m_Sections.GetLBText(cusection, str);
 
-	if (MessageBox(CString((CString)"Are you sure you want to delete " + str + "? You should be really careful, you may not be able to use the map afterwards."), "Delete section", MB_YESNO) == IDNO) {
+	auto const msgBefore = TranslateStringACP("IniEditorSelectionDeletePrefix");
+	auto const msgAfter = TranslateStringACP("IniEditorSelectionDeleteSUffix");
+	auto const cap = TranslateStringACP("IniEditorDeleteSelectionCap");
+
+	if (MessageBox(msgBefore + str + msgAfter, cap, MB_YESNO) == IDNO) {
 		return;
 	}
 
@@ -243,7 +277,10 @@ void CAll::OnAddkey()
 	CString sec;
 	m_Sections.GetLBText(cusection, sec);
 
-	CString key = InputBox("Please set the name and value for the current key here: (for example, setting a new key ""Strength"" with the value 200 can be written as ""Strength=200"". You don´t need to specify a value.)", "Create key");
+	auto const msg = TranslateStringACP("IniEditorAddKeyDesc");
+	auto const cap = TranslateStringACP("IniEditorAddKeyCap");
+	auto key = InputBox(msg, cap);
+
 	if (key.IsEmpty()) {
 		return;
 	}

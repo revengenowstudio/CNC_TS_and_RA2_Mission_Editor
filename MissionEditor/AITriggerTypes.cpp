@@ -89,8 +89,8 @@ void CAITriggerTypes::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_TEAMTYPE1, m_TeamType1);
 	DDX_Control(pDX, IDC_UNITTYPE, m_UnitType);
 	DDX_Control(pDX, IDC_TEAMTYPE2, m_TeamType2);
-	DDX_Control(pDX, IDC_FLAG2, m_Flag2);
-	DDX_Control(pDX, IDC_FLAG1, m_Flag1);
+	DDX_Control(pDX, IDC_FLAG2, m_conditionType);
+	DDX_Control(pDX, IDC_FLAG1, m_technoLevel);
 	DDX_Control(pDX, IDC_DATA, m_Data);
 	DDX_Control(pDX, IDC_OWNER, m_Owner);
 	DDX_Control(pDX, IDC_FLOAT3, m_Float3);
@@ -100,7 +100,7 @@ void CAITriggerTypes::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_FLAG4, m_Flag4);
 	DDX_Text(pDX, IDC_NAME, m_Name);
 	DDX_Check(pDX, IDC_ENABLED, m_Enabled);
-	DDX_Control(pDX, IDC_CONDITION, m_Condition);
+	DDX_Control(pDX, IDC_CONDITION, m_operator);
 	DDX_Text(pDX, IDC_NUMBER, m_Number);
 	DDV_MinMaxInt(pDX, m_Number, 0, 256);
 	DDX_Check(pDX, IDC_EASY, m_Easy);
@@ -116,10 +116,25 @@ BOOL CAITriggerTypes::OnInitDialog()
 {
 	auto const ret = CDialog::OnInitDialog();
 	translateUI();
+	initCondtionTypeComboBox();
 	initMultisideComboBox();
 	initConditionOpComboBox();
 
 	return ret;
+}
+
+void CAITriggerTypes::initCondtionTypeComboBox()
+{
+	// TODO: define values from ini
+	m_conditionType.InsertString(COND_TYPE_NONE, TranslateStringACP("-1 None"));
+	m_conditionType.InsertString(COND_TYPE_ENEMY_OWNS, TranslateStringACP("0 Enemy owns (CONDITION) N of type X"));
+	m_conditionType.InsertString(COND_TYPE_SELF_OWNS, TranslateStringACP("1 House owns (CONDITION) N of type X"));
+	m_conditionType.InsertString(COND_TYPE_ENEMY_YELLOW_POWR, TranslateStringACP("2 Enemy: Yellow power"));
+	m_conditionType.InsertString(COND_TYPE_ENEMY_RED_POWR, TranslateStringACP("3 Enemy: Red power"));
+	m_conditionType.InsertString(COND_TYPE_ENEMY_OWNS_SOME_MONEY, TranslateStringACP("4 Enemy owns (CONDITION) N money"));
+	m_conditionType.InsertString(COND_TYPE_IRON_CURTAIN_READY, TranslateStringACP("5 Iron curtain near ready"));
+	m_conditionType.InsertString(COND_TYPE_CHRONO_SPHERE_READY, TranslateStringACP("6 Chronosphere near ready"));
+	m_conditionType.InsertString(COND_TYPE_NEUTRAL_OWNS, TranslateStringACP("7 Neutral owns (CONDITION) N of type X"));
 }
 
 void CAITriggerTypes::initMultisideComboBox()
@@ -143,12 +158,12 @@ void CAITriggerTypes::initMultisideComboBox()
 
 void CAITriggerTypes::initConditionOpComboBox()
 {
-	m_Condition.InsertString(COND_LT, TranslateStringACP("less than"));
-	m_Condition.InsertString(COND_LE, TranslateStringACP("less than or equal to"));
-	m_Condition.InsertString(COND_EQ, TranslateStringACP("equal to"));
-	m_Condition.InsertString(COND_GE, TranslateStringACP("greater than or equal to"));
-	m_Condition.InsertString(COND_GT, TranslateStringACP("greater than"));
-	m_Condition.InsertString(COND_NE, TranslateStringACP("not equal to"));
+	m_operator.InsertString(COND_OP_LT, TranslateStringACP("less than"));
+	m_operator.InsertString(COND_OP_LE, TranslateStringACP("less than or equal to"));
+	m_operator.InsertString(COND_OP_EQ, TranslateStringACP("equal to"));
+	m_operator.InsertString(COND_OP_GE, TranslateStringACP("greater than or equal to"));
+	m_operator.InsertString(COND_OP_GT, TranslateStringACP("greater than"));
+	m_operator.InsertString(COND_OP_NE, TranslateStringACP("not equal to"));
 }
 
 void CAITriggerTypes::translateUI()
@@ -307,10 +322,10 @@ void CAITriggerTypes::OnSelchangeAitriggertype()
 	m_Name = aitt.name;
 	m_TeamType1.SetWindowText(aitt.teamtype1);
 	m_Owner.SetWindowText(TranslateHouse(aitt.owner, TRUE));
-	m_Flag1.SetWindowText(aitt.techlevel);
+	m_technoLevel.SetWindowText(aitt.techlevel);
 	//m_Flag2.SetWindowText(aitt.type);
 	int type = atoi(aitt.type) + 1;
-	m_Flag2.SetCurSel(type);
+	m_conditionType.SetCurSel(type);
 	m_UnitType.SetWindowText(aitt.unittype);
 	m_Data.SetWindowText(aitt.data);
 	m_Float1.SetWindowText(aitt.float1);
@@ -333,7 +348,7 @@ void CAITriggerTypes::OnSelchangeAitriggertype()
 
 	AITrigInfo info;
 	info = ConvertToAITrigInfoFromHex((char*)(LPCSTR)aitt.data);
-	m_Condition.SetCurSel(info.Condition);
+	m_operator.SetCurSel(info.Condition);
 	m_Number = info.Number;
 
 	ListObjects(m_UnitType);
@@ -386,7 +401,7 @@ void CAITriggerTypes::OnEditchangeTeamtype2()
 void CAITriggerTypes::OnEditchangeFlag1()
 {
 	CString value;
-	m_Flag1.GetWindowText(value);
+	m_technoLevel.GetWindowText(value);
 
 	SetAITriggerParam(value, 3);
 }
@@ -394,7 +409,7 @@ void CAITriggerTypes::OnEditchangeFlag1()
 void CAITriggerTypes::OnEditchangeFlag2()
 {
 	CString value;
-	m_Flag2.GetWindowText(value);
+	m_conditionType.GetWindowText(value);
 
 	TruncSpace(value);
 
@@ -714,7 +729,7 @@ void CAITriggerTypes::OnSelchangeCondition()
 	UpdateData(TRUE);
 
 	AITrigInfo info;
-	info.Condition = ConditionEnum(m_Condition.GetCurSel());
+	info.Condition = ConditionOpEnum(m_operator.GetCurSel());
 	info.Number = m_Number;
 
 	char buffer[65];
@@ -735,7 +750,7 @@ void CAITriggerTypes::OnChangeNumber()
 
 	AITrigInfo info;
 	memset(&info, 0, sizeof(AITrigInfo));
-	info.Condition = ConditionEnum(m_Condition.GetCurSel());
+	info.Condition = ConditionOpEnum(m_operator.GetCurSel());
 	info.Number = m_Number;
 
 	char buffer[65];

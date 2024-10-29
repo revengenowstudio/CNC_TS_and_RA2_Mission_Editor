@@ -50,6 +50,8 @@ public:
 	//{{AFX_VIRTUAL(CUserScriptsDlg)
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual void OnOK() override;
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_VIRTUAL
 
 // Implementierung
@@ -57,8 +59,7 @@ protected:
 
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CUserScriptsDlg)
-	virtual void OnOK();
-	virtual BOOL OnInitDialog();
+	void translateUI();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

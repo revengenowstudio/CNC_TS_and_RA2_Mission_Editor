@@ -178,10 +178,23 @@ BOOL CGlobalsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	translateUI();
+
 	UpdateDialog();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+}
+
+void CGlobalsDlg::translateUI()
+{
+	TranslateWindowCaption(*this, "LocalVariableCaption");
+	TranslateDlgItem(*this, IDC_LOCAL_VAR_CUR_TXT, "LocalVariableCurrent");
+	TranslateDlgItem(*this, IDC_DESC, "LocalVariableDesc");
+	TranslateDlgItem(*this, IDC_LOCAL_VAR_INIT_TXT, "LocalVariableInitValue");
+
+	m_Value.InsertString(0, TranslateStringACP("0 - Clear"));
+	m_Value.InsertString(1, TranslateStringACP("1 - Set"));
 }
 
 void CGlobalsDlg::OnSelchangeValue()

@@ -437,7 +437,7 @@ const CString* getLanguageString(const CString& key)
 	return language.GetSection("English-Strings").TryGetString(key);
 }
 
-CString escapeString(const CString& input)
+CString EscapeString(const CString& input)
 {
 	auto updated = input;
 	if (updated.Find("\\n")) {
@@ -492,7 +492,7 @@ void TranslateDlgItem(CWnd& cwnd, int controlID, const CString& label)
 {
 	auto const translated = getLanguageString(label);
 	if (translated) {
-		cwnd.SetDlgItemText(controlID, escapeString(*translated));
+		cwnd.SetDlgItemText(controlID, EscapeString(*translated));
 	}
 }
 
@@ -500,7 +500,7 @@ void TranslateWindowCaption(CWnd& cwnd, const CString& label)
 {
 	auto const translated = getLanguageString(label);
 	if (translated) {
-		cwnd.SetWindowText(escapeString(*translated));
+		cwnd.SetWindowText(EscapeString(*translated));
 	}
 }
 

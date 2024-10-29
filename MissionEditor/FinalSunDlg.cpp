@@ -3126,7 +3126,9 @@ void CFinalSunDlg::OnMaptoolsAutolevel()
 	}
 
 	Sound(SOUND_POSITIVE);
-	MessageBox("This tool will try to automatically raise the terrain using the cliffs.\nIt may take some seconds to execute, as there are masses of data to handle.\nAfter this, you should check your map if everything looks fine. If not, you should use the different height tools, especially flatten ground, to fix any errors. You can use Edit->Undo to undo anything that has been done by using this function.", "Auto Leveler");
+
+	auto const txt = TranslateStringACP("AutoLevelerDlgDesc");
+	MessageBox(EscapeString(txt), TranslateStringACP("Auto Leveler"));
 
 	m_view.m_isoview->AutoLevel();
 }

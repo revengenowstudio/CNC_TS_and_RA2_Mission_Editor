@@ -273,7 +273,9 @@ void CHouses::OnPreparehouses()
 
 	// import the rules.ini houses
 	if (ini[MAPHOUSES].Size() > 0) {
-		MessageBox("There are already houses in your map. You need to delete these first.");
+		auto const title = TranslateStringACP("HouseDuplicatedCreatingCaption");
+		auto const content = TranslateStringACP("HouseDuplicatedCreatingTip");
+		MessageBox(content, title);
 		return;
 	}
 
@@ -414,10 +416,11 @@ void CHouses::OnShowWindow(BOOL bShow, UINT nStatus)
 
 	if (bShow) {
 		if (!ini.TryGetSection(MAPHOUSES) && ini.Size() > 0) {
+			auto const caption = TranslateStringACP("HouseNoneExistenseCap");
 #ifndef RA2_MODE
 			MessageBox("No houses do exist, if you want to use houses, you should use ""Prepare houses"" before doing anything else. Note that in a multiplayer map independent computer players cannot be created by using the names GDI and Nod for the house. Just use something like GDI_AI.");
 #else
-			MessageBox("No houses do exist, if you want to use houses, you should use ""Prepare houses"" before doing anything else.");
+			MessageBox(TranslateStringACP("HouseNoneExistense"), caption);
 
 #endif
 		}

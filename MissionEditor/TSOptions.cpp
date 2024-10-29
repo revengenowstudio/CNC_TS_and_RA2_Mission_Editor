@@ -64,9 +64,8 @@ void CTSOptions::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CTSOptions, CDialog)
-	//{{AFX_MSG_MAP(CTSOptions)
 	ON_BN_CLICKED(IDC_CHOOSE, OnChoose)
-	//}}AFX_MSG_MAP
+	ON_CBN_SELCHANGE(IDC_LANGUAGE, &CTSOptions::OnCbnSelchangeLanguage)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -77,8 +76,8 @@ void CTSOptions::OnChoose()
 	const char* pFileName = "game.exe";
 	const char* pFileSearchPattern = "C&C EXE|game.exe|";
 #if defined(RA2_MODE)
-	pFileName = yuri_mode?  "ra2md.exe":"ra2.exe";
-	pFileSearchPattern = yuri_mode ? "Yuri's Revenge EXE|ra2md.exe|": "Red Alert 2 EXE|ra2.exe|";
+	pFileName = yuri_mode ? "ra2md.exe" : "ra2.exe";
+	pFileSearchPattern = yuri_mode ? "Yuri's Revenge EXE|ra2md.exe|" : "Red Alert 2 EXE|ra2.exe|";
 #else
 	pFileName = "Sun.exe";
 	pFileSearchPattern = "Tiberian Sun EXE|Sun.exe|";
@@ -95,9 +94,7 @@ void CTSOptions::OnChoose()
 void CTSOptions::OnOK()
 {
 	this->GetDlgItem(IDC_EDIT1)->GetWindowText(m_TSEXE);
-	int n = m_Language.GetItemData(m_Language.GetCurSel());
-
-	m_LanguageName = language["Languages"].Nth(n).second;
+	m_LanguageName = getLanguageSelected();
 
 	CDialog::OnOK();
 }
@@ -108,22 +105,62 @@ BOOL CTSOptions::OnInitDialog()
 
 	m_TSExe.SetWindowText((LPCTSTR)theApp.m_Options.TSExe);
 
-	if (theApp.m_Options.bSearchLikeTS) m_LikeTS = 0;
-	else m_LikeTS = 1;
+	m_LikeTS = !theApp.m_Options.bSearchLikeTS;
 
-	m_PreferLocalTheaterFiles = theApp.m_Options.bPreferLocalTheaterFiles ? TRUE : FALSE;
+	m_PreferLocalTheaterFiles = theApp.m_Options.bPreferLocalTheaterFiles;
 
-	UpdateData(FALSE);
 
+	int englishIdx = 0;
+	int selectedLanIdx = -1;
 	auto const& languageSec = language["Languages"];
 	for (auto i = 0; i < languageSec.Size(); i++) {
 		auto const& def = languageSec.Nth(i).second;
 		auto const& lang = language.GetString(def + "Header", "Name");
 		m_Language.SetItemData(m_Language.AddString(lang), i);
 		if (lang == "English") {
-			m_Language.SetCurSel(i);
+			englishIdx = i;
+		}
+		if (def == theApp.m_Options.LanguageName) {
+			selectedLanIdx = i;
 		}
 	}
+	if (selectedLanIdx < 0) {
+		selectedLanIdx = englishIdx;
+	}
+	m_Language.SetCurSel(selectedLanIdx);
+
+	updateUI();
+	UpdateData(FALSE);
+
 
 	return TRUE;
+}
+
+
+void CTSOptions::OnCbnSelchangeLanguage()
+{
+	theApp.m_Options.LanguageName = getLanguageSelected();
+	updateUI();
+}
+
+void CTSOptions::updateUI()
+{
+	TranslateWindowCaption(*this, "OptionsCaption");
+
+	TranslateDlgItem(*this, IDC_DESC, "OptionsDesc");
+	TranslateDlgItem(*this, IDC_CHOOSE, "OptionsBrowse");
+	TranslateDlgItem(*this, IDC_OPTIONS_LAN_TXT, "OptionsLanguage");
+	TranslateDlgItem(*this, IDC_OPTIONS_SUPPORT_TXT, "OptionsSupportSettings");
+	TranslateDlgItem(*this, IDC_RULESLIKETS, "OptionsSupportMissionsAndMods");
+	TranslateDlgItem(*this, IDC_ONLYORIGINAL, "OptionsSupportOriginalRA2Only");
+	TranslateDlgItem(*this, IDC_PREFER_LOCAL_THEATER_FILES, "OptionsPreferFA2TheaterSettings");
+}
+
+CString CTSOptions::getLanguageSelected()
+{
+	if (!language["Languages"].Size()) {
+		return "English";
+	}
+	int n = m_Language.GetItemData(m_Language.GetCurSel());
+	return language["Languages"].Nth(n).second;
 }

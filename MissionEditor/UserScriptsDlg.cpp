@@ -82,11 +82,12 @@ private:
 	CString filename;
 };
 
-CUserScript::CUserScript()
+CUserScript::CUserScript(): 
+	error(0), 
+	errortext{ 0 },
+	functioncount(0),
+	functiondata(nullptr)
 {
-	functioncount = 0;
-	functiondata = NULL;
-
 }
 
 CUserScript::~CUserScript()
@@ -908,12 +909,16 @@ void CUserScriptsDlg::OnOK()
 			// check bool
 			if (paramcount > 1) {
 				if (params[1].GetLength() > 0) {
-					if (!IsValSet(params[1])) goto nextline;
+					if (!IsValSet(params[1])) {
+						goto nextline;
+					}
 				}
 			}
 
-			int res = MessageBox(params[0], "Continue?", MB_YESNO);
-			if (res == IDNO) break;
+			int res = MessageBox(TranslateStringACP(params[0]), TranslateStringACP("Continue?"), MB_YESNO);
+			if (res == IDNO) {
+				break;
+			}
 		} else if (name == ID_MESSAGE) {
 			if (paramcount < 2) {
 				ReportScriptError(i);
@@ -2689,6 +2694,8 @@ BOOL CUserScriptsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	translateUI();
+
 	int k;
 	CFileFind ff;
 
@@ -2711,6 +2718,19 @@ BOOL CUserScriptsDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+}
+
+void CUserScriptsDlg::translateUI()
+{
+	TranslateWindowCaption(*this, "UserScriptsDlgCaption");
+
+	TranslateDlgItem(*this, IDC_USR_SCRIPTS_DESC, "UserScriptsDlgDesc");
+	TranslateDlgItem(*this, IDC_USR_SCRIPTS_AVA, "UserScriptsDlgAvailable");
+	
+	TranslateDlgItem(*this, IDC_USR_SCRIPTS_REPORT, "UserScriptsDlgReport");
+	
+	TranslateDlgItem(*this, IDOK, "UserScriptsDlgOK");
+	TranslateDlgItem(*this, IDCANCEL, "UserScriptsDlgCancel");
 }
 
 void CUserScriptsDlg::ReportScriptError(int line)

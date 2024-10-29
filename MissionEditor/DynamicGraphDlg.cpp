@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "finalsun.h"
 #include "DynamicGraphDlg.h"
+#include "functions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,6 +43,19 @@ CDynamicGraphDlg::CDynamicGraphDlg(CWnd* pParent /*=NULL*/)
 	Create(CDynamicGraphDlg::IDD, pParent);
 }
 
+
+BOOL CDynamicGraphDlg::OnInitDialog()
+{
+	auto const ret = CDialog::OnInitDialog();
+	TranslateUI();
+	return ret;
+}
+
+void CDynamicGraphDlg::TranslateUI()
+{
+	TranslateWindowCaption(*this, "LoadingDialogCaption");
+	TranslateDlgItem(*this, IDC_LOADING_GRAPH_TXT, "LoadingDialogDesc");
+}
 
 void CDynamicGraphDlg::DoDataExchange(CDataExchange* pDX)
 {

@@ -51,6 +51,13 @@ CTags::~CTags()
 {
 }
 
+BOOL CTags::OnInitDialog()
+{
+	auto const ret = CDialog::OnInitDialog();
+	translateUI();
+	return ret;
+}
+
 void CTags::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -115,6 +122,23 @@ void CTags::UpdateDialog()
 		}
 	}
 
+}
+
+void CTags::translateUI()
+{
+	TranslateWindowCaption(*this, "TagsCaption");
+	TranslateDlgItem(*this, IDC_DESC, "TagsDesc");
+	TranslateDlgItem(*this, IDC_TAGS_CUR_TXT, "TagsCurrent");
+	TranslateDlgItem(*this, IDC_ADD, "TagsAdd");
+	TranslateDlgItem(*this, IDC_DELETE, "TagsDelete");
+	TranslateDlgItem(*this, IDC_TAGS_NAME, "TagsName");
+	TranslateDlgItem(*this, IDC_TAGS_REPEAT, "TagsRepeat");
+	TranslateDlgItem(*this, IDC_TAGS_TRIGGER, "TagsTrigger");
+	TranslateDlgItem(*this, IDC_TAGS_DESC_2, "TagsExpaination");
+
+	m_Repeat.InsertString(0, TranslateStringACP("0 - Make the trigger work only once"));
+	m_Repeat.InsertString(1, TranslateStringACP("1 - All entities attached"));
+	m_Repeat.InsertString(2, TranslateStringACP("2 - Make the trigger repeating"));
 }
 
 void CTags::OnSelchangeTag()

@@ -125,6 +125,7 @@ char* strcpy_safe(char* strDestination, const char* strSource);
 /****************************************
  language support functions [12/18/1999]
 ****************************************/
+CString EscapeString(const CString& input);
 
 // retrieve the string name in the correct language (name is an ID).
 // the returned string is in the active codepage (UTF-8 on Windows 10 1909+)

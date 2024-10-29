@@ -48,14 +48,14 @@ public:
 	//{{AFX_VIRTUAL(CAITriggerAddDlg)
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual BOOL OnInitDialog();
 	//}}AFX_VIRTUAL
 
 // Implementierung
 protected:
-
+	void translateUI();
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CAITriggerAddDlg)
-	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

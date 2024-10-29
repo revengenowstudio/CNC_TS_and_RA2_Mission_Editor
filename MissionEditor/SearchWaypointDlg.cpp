@@ -25,6 +25,7 @@
 #include "finalsun.h"
 #include "SearchWaypointDlg.h"
 #include "variables.h"
+#include "functions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,6 +67,8 @@ BOOL CSearchWaypointDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	translateUI();
+
 	CListBox& ctrl = *(CListBox*)GetDlgItem(IDC_WAYPOINTS);
 
 	while (ctrl.DeleteString(0) != LB_ERR);
@@ -91,10 +94,20 @@ void CSearchWaypointDlg::OnOK()
 
 	int sel = ctrl.GetCurSel();
 
-	if (sel < 0) m_WaypointIndex = -1;
-	else {
+	if (sel < 0) {
+		m_WaypointIndex = -1;
+	} else {
 		m_WaypointIndex = ctrl.GetItemData(sel);
 	}
 
 	CDialog::OnOK();
+}
+
+void CSearchWaypointDlg::translateUI()
+{
+	TranslateWindowCaption(*this, "SearchWaypointDlgCaption");
+
+	TranslateDlgItem(*this, IDC_SEARCH_WP_WP, "SearchWaypointDlgWaypoints");
+	TranslateDlgItem(*this, IDOK, "SearchWaypointDlgOk");
+	TranslateDlgItem(*this, IDCANCEL, "SearchWaypointDlgCancel");
 }

@@ -120,7 +120,7 @@ BOOL CTriggerEditorDlg::OnInitDialog()
 	m_TriggerActions.SetWindowPos(NULL, 10, top, r.right - 20, bottom, SWP_NOZORDER);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
-				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+	// EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
 }
 
 void CTriggerEditorDlg::UpdateDialog()
@@ -203,11 +203,17 @@ void CTriggerEditorDlg::OnDeletetrigger()
 	CIniFile& ini = Map->GetIniFile();
 
 	int sel = m_Trigger.GetCurSel();
-	if (sel < 0) return;
+	if (sel < 0) {
+		return;
+	}
 	int curtrig = m_Trigger.GetItemData(sel);
 
-	int res = MessageBox("If you want to delete all attached tags, too, press 'Yes'.\nIf you don´t want to delete these tags, press 'No'.\nIf you want to cancel deletion of the trigger, press 'Cancel'.\n\nNote: CellTags will never be deleted using this function", "Delete trigger", MB_YESNOCANCEL);
-	if (res == IDCANCEL) return;
+	auto const title = TranslateStringACP("Delete trigger");
+	auto const content = EscapeString(TranslateStringACP("TriggerDeleteTip"));
+	int res = MessageBox(content, title, MB_YESNOCANCEL);
+	if (res == IDCANCEL) {
+		return;
+	}
 
 	auto const& triggerId = ini["Triggers"].Nth(curtrig).first;
 

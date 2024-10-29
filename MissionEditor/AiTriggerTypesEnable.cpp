@@ -72,11 +72,30 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // Behandlungsroutinen für Nachrichten CAiTriggerTypesEnable 
+BOOL CAiTriggerTypesEnable::OnInitDialog()
+{
+	auto const ret = CDialog::OnInitDialog();
+	translateUI();
+	return ret;
+}
+
+void CAiTriggerTypesEnable::translateUI()
+{
+	TranslateWindowCaption(*this, "AITriggerEnableCaption");
+
+	TranslateDlgItem(*this, IDC_AI_TRG_ENB_DESC, "AITriggerEnableDesc");
+	TranslateDlgItem(*this, IDC_ENABLEALL, "AITriggerEnableAll");
+	TranslateDlgItem(*this, IDC_AI_TRG_ENB_TYPE, "AITriggerEnableType");
+	TranslateDlgItem(*this, IDC_ADD, "AITriggerEnableAdd");
+	TranslateDlgItem(*this, IDC_DELETE, "AITriggerEnableDelete");
+}
 
 void CAiTriggerTypesEnable::UpdateDialog()
 {
 	int sel = m_AITriggerType.GetCurSel();
-	if (sel < 0) sel = 0;
+	if (sel < 0) {
+		sel = 0;
+	}
 
 	while (m_AITriggerType.DeleteString(0) != CB_ERR);
 
@@ -108,8 +127,9 @@ void CAiTriggerTypesEnable::UpdateDialog()
 		m_AITriggerType.AddString(str);
 	}
 
-	if (m_AITriggerType.SetCurSel(sel) == CB_ERR)
+	if (m_AITriggerType.SetCurSel(sel) == CB_ERR) {
 		m_AITriggerType.SetCurSel(0);
+	}
 
 	OnSelchangeAitriggertype();
 
@@ -119,7 +139,6 @@ void CAiTriggerTypesEnable::OnEnableall()
 {
 	// enable all standard ai triggers
 	CIniFile& ini = Map->GetIniFile();
-	int i;
 	for (auto const& [id, def] : ai["AITriggerTypes"]) {
 		ini.SetBool("AITriggerTypesEnable", id, true);
 	}
@@ -130,7 +149,9 @@ void CAiTriggerTypesEnable::OnEnableall()
 void CAiTriggerTypesEnable::OnSelchangeAitriggertype()
 {
 	int sel = m_AITriggerType.GetCurSel();
-	if (sel < 0) return;
+	if (sel < 0) {
+		return;
+	}
 
 }
 
@@ -154,7 +175,9 @@ void CAiTriggerTypesEnable::OnAdd()
 {
 	//CString newTriggerId=InputBox("Please enter the ID of the AITriggerType (for a list of all AITriggerType-IDs use the All-Section)","Enable AITriggerType");
 	CAITriggerAddDlg dlg;
-	if (dlg.DoModal() == IDCANCEL) return;
+	if (dlg.DoModal() == IDCANCEL) {
+		return;
+	}
 
 	CString newTriggerId = dlg.m_AITrigger;
 	TruncSpace(newTriggerId);

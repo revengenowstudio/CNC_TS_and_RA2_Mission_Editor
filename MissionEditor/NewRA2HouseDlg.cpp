@@ -68,6 +68,8 @@ BOOL CNewRA2HouseDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	translateUI();
+
 	CComboBox* country = (CComboBox*)GetDlgItem(IDC_COUNTRY);
 
 	for (auto const& [seq, id] : rules[HOUSES]) {
@@ -80,4 +82,13 @@ BOOL CNewRA2HouseDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+}
+
+void CNewRA2HouseDlg::translateUI()
+{
+	TranslateWindowCaption(*this, "NewRA2HouseDlgCaption");
+
+	TranslateDlgItem(*this, IDC_NEWHOUSE_PARERNT, "NewRA2HouseDlgChooseParent");
+	TranslateDlgItem(*this, IDOK, "OK");
+	TranslateDlgItem(*this, IDCANCEL, "Cancel");
 }

@@ -44,7 +44,7 @@ public:
 	enum { IDD = IDD_TSOPTIONS };
 	CComboBox	m_Language;
 	CEdit	m_TSExe;
-	int		m_LikeTS;
+	BOOL		m_LikeTS;
 	//}}AFX_DATA
 
 
@@ -52,20 +52,21 @@ public:
 	// Vom Klassen-Assistenten generierte virtuelle Funktionsüberschreibungen
 	//{{AFX_VIRTUAL(CTSOptions)
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV-Unterstützung
+	virtual void OnOK() override;
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_VIRTUAL
 
 // Implementierung
-protected:
+	DECLARE_MESSAGE_MAP()
 
 	// Generierte Nachrichtenzuordnungsfunktionen
-	//{{AFX_MSG(CTSOptions)
+
 	afx_msg void OnChoose();
-	virtual void OnOK();
-	virtual BOOL OnInitDialog();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-private:
+	afx_msg void OnCbnSelchangeLanguage();
+
+	void updateUI();
+	CString getLanguageSelected();
 };
 
 //{{AFX_INSERT_LOCATION}}

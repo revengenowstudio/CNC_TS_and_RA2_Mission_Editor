@@ -54,11 +54,13 @@ public:
 	// Der Klassen-Assistent generiert virtuelle Funktionsüberschreibungen
 	//{{AFX_VIRTUAL(CTags)
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual BOOL OnInitDialog() override;
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV-Unterstützung
 	//}}AFX_VIRTUAL
 
 // Implementierung
 protected:
+	void translateUI();
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CTags)
 	afx_msg void OnSelchangeTag();

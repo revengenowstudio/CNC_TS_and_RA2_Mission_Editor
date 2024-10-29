@@ -52,10 +52,12 @@ public:
 	//{{AFX_VIRTUAL(CAiTriggerTypesEnable)
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_VIRTUAL
 
 // Implementierung
-protected:
+
+	void translateUI();
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CAiTriggerTypesEnable)
 	afx_msg void OnEnableall();

@@ -166,14 +166,14 @@ IDB_SCROLLCURSOR        BITMAP                  "res\\scrollcursor_ra2.bmp"
 // Dialog
 //
 
-IDD_NEWRA2HOUSE DIALOG 0, 0, 186, 52
+IDD_NEWRA2HOUSE DIALOGEX 0, 0, 186, 52
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Create new house"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
-    LTEXT           "Choose parent country:",IDC_STATIC,7,7,98,12
+    LTEXT           "Choose parent country:",IDC_NEWHOUSE_PARERNT,7,7,98,12
     COMBOBOX        IDC_COUNTRY,7,20,112,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -300,15 +300,15 @@ BEGIN
     LTEXT           "UNDO IS NOT AVAILABLE!",IDC_STATIC,7,152,198,16
 END
 
-IDD_AITRIGGERADD DIALOG 0, 0, 222, 97
+IDD_AITRIGGERADD DIALOGEX 0, 0, 223, 292
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Enable AI Trigger"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,165,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,165,24,50,14
+    DEFPUSHBUTTON   "OK",IDOK,166,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,166,24,50,14
     LTEXT           "Select AI Trigger that should be enabled:",IDC_STATIC,7,7,136,21
-    LISTBOX         IDC_AITRIGGERS,7,48,208,42,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_AITRIGGERS,7,39,209,246,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_MYOPENDIALOG DIALOGEX 0, 0, 222, 30
@@ -356,12 +356,12 @@ FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,140,159,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,85,159,50,14
-    LTEXT           "Red Alert 2 EXE (make sure its in the correct path)",IDC_STATIC,5,5,130,20
+    LTEXT           "Red Alert 2 EXE (make sure its in the correct path)",IDC_DESC,5,5,184,20
     EDITTEXT        IDC_EDIT1,5,25,130,15,ES_AUTOHSCROLL
     PUSHBUTTON      "Browse",IDC_CHOOSE,140,25,50,15
-    LTEXT           "Language / Sprache:",IDC_STATIC,7,51,128,11
+    LTEXT           "Language / Sprache:",IDC_OPTIONS_LAN_TXT,7,51,128,11
     COMBOBOX        IDC_LANGUAGE,7,63,183,94,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Support settings",IDC_STATIC,7,81,183,71
+    GROUPBOX        "Support settings",IDC_OPTIONS_SUPPORT_TXT,7,81,183,71
     CONTROL         "Support mission disks and mods (recommended)",IDC_RULESLIKETS,
                     "Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_GROUP,14,92,170,16
     CONTROL         "Only support original Red Alert 2",IDC_ONLYORIGINAL,
@@ -371,20 +371,20 @@ BEGIN
 END
 #endif
 
-IDD_ALL DIALOG 0, 0, 303, 204
+IDD_ALL DIALOGEX 0, 0, 303, 204
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "INI Editor"
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
-    LTEXT           "We highly recommend not to use this editor except you really know what you are doing.",IDC_STATIC,6,5,290,15
-    LTEXT           "Sections:",IDC_STATIC,5,25,55,10
+    LTEXT           "We highly recommend not to use this editor except you really know what you are doing.",IDC_INI_EDITOR_DESC,6,5,290,15
+    LTEXT           "Sections:",IDC_INI_EDITOR_SECTIONS,5,25,55,10
     COMBOBOX        IDC_SECTIONS,61,25,235,85,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Keys:",IDC_STATIC,15,80,40,10
+    LTEXT           "Keys:",IDC_INI_EDITOR_KEYS,15,80,40,10
     PUSHBUTTON      "Add",IDC_ADDSECTION,60,40,55,15
     PUSHBUTTON      "Delete",IDC_DELETESECTION,120,40,55,15
-    GROUPBOX        "Section content",IDC_STATIC,6,67,290,130
+    GROUPBOX        "Section content",IDC_INI_EDITOR_CONTENT,6,67,290,130
     LISTBOX         IDC_KEYS,60,80,225,90,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Value:",IDC_STATIC,15,175,40,15
+    LTEXT           "Value:",IDC_INI_EDITOR_VAL,15,175,40,15
     EDITTEXT        IDC_VALUE,60,175,225,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Add",IDC_ADDKEY,15,95,40,15
     PUSHBUTTON      "Delete",IDC_DELETEKEY,15,115,40,15
@@ -412,15 +412,15 @@ BEGIN
     LTEXT           "Height:",IDC_MAP_D_HEIGHT,107,56,93,9
 END
 
-IDD_INPUTBOX DIALOG 0, 0, 214, 70
+IDD_INPUTBOX DIALOGEX 0, 0, 289, 62
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,160,5,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,160,25,50,14
-    LTEXT           "Static",IDC_SENTENCE,5,5,150,35
-    EDITTEXT        IDC_VAL,5,50,205,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,235,4,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,235,20,50,14
+    LTEXT           "Static",IDC_SENTENCE,5,5,228,33
+    EDITTEXT        IDC_VAL,2,46,280,12,ES_AUTOHSCROLL
 END
 
 IDD_IMPORTINI DIALOG 0, 0, 229, 150
@@ -811,23 +811,23 @@ BEGIN
     PUSHBUTTON      "Clone",IDC_COPYUNIT,17,118,61,15
 END
 
-IDD_TAGS DIALOG 0, 0, 303, 204
+IDD_TAGS DIALOGEX 0, 0, 303, 204
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "Tags"
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
-    LTEXT           "Tags make Triggers work. Without a tag, a trigger is usually useless, because it won't be executed (except if another triggers fires it directly).",IDC_STATIC,7,7,290,20
-    LTEXT           "Tag:",IDC_STATIC,7,36,54,12
+    LTEXT           "Tags make Triggers work. Without a tag, a trigger is usually useless, because it won't be executed (except if another triggers fires it directly).",IDC_DESC,7,7,290,20
+    LTEXT           "Tag:",IDC_TAGS_CUR_TXT,7,36,54,12
     COMBOBOX        IDC_TAG,61,37,236,196,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Add",IDC_ADD,169,53,59,14
     PUSHBUTTON      "Delete",IDC_DELETE,238,53,59,14
-    LTEXT           "Name:",IDC_STATIC,7,90,54,12
+    LTEXT           "Name:",IDC_TAGS_NAME,7,90,54,12
     EDITTEXT        IDC_NAME,61,89,236,13,ES_AUTOHSCROLL
-    LTEXT           "Repeat:",IDC_STATIC,7,110,54,13
+    LTEXT           "Repeat:",IDC_TAGS_REPEAT,7,110,54,13
     COMBOBOX        IDC_REPEAT,61,110,236,59,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Trigger:",IDC_STATIC,7,131,54,13
+    LTEXT           "Trigger:",IDC_TAGS_TRIGGER,7,131,54,13
     COMBOBOX        IDC_TRIGGER,61,131,236,135,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "For every trigger you create, you should create a tag to make the trigger work. A trigger consists of some general properties, an event and an action, which can all be defined in the ""trigger"" section.",IDC_STATIC,7,167,290,30
+    LTEXT           "For every trigger you create, you should create a tag to make the trigger work. A trigger consists of some general properties, an event and an action, which can all be defined in the ""trigger"" section.",IDC_TAGS_DESC_2,7,167,290,30
 END
 
 IDD_TRIGGERS DIALOG 0, 0, 303, 204
@@ -1096,13 +1096,13 @@ BEGIN
     PUSHBUTTON      "Copy",IDC_COPYACTION,165,201,60,14
 END
 
-IDD_AITRIGGERTYPESENABLE DIALOG 0, 0, 303, 204
+IDD_AITRIGGERTYPESENABLE DIALOGEX 0, 0, 303, 204
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "AI Trigger Types Enable"
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
-    LTEXT           "This allows the AI for example to create teams automatically. You simply specify which AITriggerTypes are enabled.",IDC_STATIC,7,7,287,23
-    LTEXT           "AITriggerType:",IDC_STATIC,7,62,60,13
+    LTEXT           "This allows the AI for example to create teams automatically. You simply specify which AITriggerTypes are enabled.",IDC_AI_TRG_ENB_DESC,7,7,287,23
+    LTEXT           "AITriggerType:",IDC_AI_TRG_ENB_TYPE,7,62,60,13
     COMBOBOX        IDC_AITRIGGERTYPE,71,62,223,281,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Enable all standard AI triggers (recommended)",IDC_ENABLEALL,7,30,160,14
     PUSHBUTTON      "Delete = Disable AITrigger",IDC_DELETE,192,81,102,15
@@ -1136,12 +1136,12 @@ BEGIN
     LTEXT           "Shutting down, please wait a few seconds",IDC_STATIC,7,14,172,13
 END
 
-IDD_DYNAMICLOAD DIALOG 0, 0, 220, 44
+IDD_DYNAMICLOAD DIALOGEX 0, 0, 220, 44
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_CENTER | WS_POPUP | WS_CAPTION
 CAPTION "Loading"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Loading graphics, please wait a few seconds.",IDC_STATIC,7,7,206,15
+    LTEXT           "Loading graphics, please wait a few seconds.",IDC_LOADING_GRAPH_TXT,7,7,206,15
     CONTROL         "Progress4",IDC_PROGRESS,"msctls_progress32",PBS_SMOOTH | WS_BORDER,7,22,206,15
 END
 
@@ -1197,50 +1197,50 @@ IDD_TRIGGEREVENTS DIALOGEX 0, 0, 365, 204
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
-    LTEXT           "Current event:",IDC_STATIC,6,6,64,11
+    LTEXT           "Current event:",IDC_EVENT_CUR_TXT,6,6,64,11
     COMBOBOX        IDC_EVENT,72,6,150,79,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "New event",IDC_NEWEVENT,233,6,61,14
     PUSHBUTTON      "Delete event",IDC_DELETEEVENT,300,6,61,14
-    GROUPBOX        "Event options",IDC_STATIC,6,19,355,178
-    LTEXT           "Event type:",IDC_STATIC,14,32,57,12
+    GROUPBOX        "Event options",IDC_EVENT_OPT_TXT,6,19,355,178
+    LTEXT           "Event type:",IDC_EVENT_TYPE_TXT,14,32,57,12
     COMBOBOX        IDC_EVENTTYPE,72,30,282,184,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EVENTDESCRIPTION,14,48,340,26,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    LTEXT           "Event parameters:",IDC_STATIC,14,79,74,10
+    LTEXT           "Event parameters:",IDC_EVENT_PARAM_TXT,14,79,74,10
     LISTBOX         IDC_PARAMETER,14,93,159,96,LBS_SORT | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    LTEXT           "Parameter value:",IDC_STATIC,185,79,118,10
+    LTEXT           "Parameter value:",IDC_EVENT_VAL_TXT,185,79,118,10
     COMBOBOX        IDC_PARAMVALUE,185,93,169,125,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_NOINTEGRALHEIGHT | CBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Select the event type first, then set all parameters.",IDC_STATIC,185,110,169,25
+    LTEXT           "Select the event type first, then set all parameters.",IDC_EVENT_DESC,185,110,169,25
 END
 
 IDD_TRIGGERACTIONS DIALOGEX 0, 0, 365, 202
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
-    LTEXT           "Current action:",IDC_STATIC,6,6,58,11
+    LTEXT           "Current action:",IDC_ACTION_CUR_TXT,6,6,58,11
     COMBOBOX        IDC_ACTION,72,6,149,79,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "New action",IDC_NEWACTION,233,6,60,14
     PUSHBUTTON      "Delete action",IDC_DELETEACTION,301,6,59,14
-    GROUPBOX        "Action options",IDC_STATIC,6,20,354,174
-    LTEXT           "Action type:",IDC_STATIC,14,32,57,12
+    GROUPBOX        "Action options",IDC_ACTION_OPT_TXT,6,20,354,174
+    LTEXT           "Action type:",IDC_ACTION_TYPE_TXT,14,32,57,12
     COMBOBOX        IDC_ACTIONTYPE,72,30,282,184,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_ACTIONDESCRIPTION,14,48,340,26,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    LTEXT           "Action parameters:",IDC_STATIC,14,79,74,10
+    LTEXT           "Action parameters:",IDC_ACTION_PARAM_TXT,14,79,74,10
     LISTBOX         IDC_PARAMETER,14,93,160,94,LBS_SORT | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    LTEXT           "Parameter value:",IDC_STATIC,186,79,118,10
+    LTEXT           "Parameter value:",IDC_ACTION_VAL_TXT,186,79,118,10
     COMBOBOX        IDC_PARAMVALUE,186,92,168,125,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_NOINTEGRALHEIGHT | CBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Select the event type first, then set all parameters.",IDC_STATIC,186,110,168,25
+    LTEXT           "Select the event type first, then set all parameters.",IDC_ACTION_DESC,186,110,168,25
 END
 
-IDD_GLOBALS DIALOG 0, 0, 186, 79
+IDD_GLOBALS DIALOGEX 0, 0, 186, 79
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Local Variables"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Select variable:",IDC_STATIC,7,7,60,12
+    LTEXT           "Select variable:",IDC_LOCAL_VAR_CUR_TXT,7,7,60,12
     COMBOBOX        IDC_GLOBAL,7,19,172,92,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Description:",IDC_STATIC,7,41,44,12
+    LTEXT           "Description:",IDC_DESC,7,41,44,12
     EDITTEXT        IDC_DESCRIPTION,56,41,123,13,ES_AUTOHSCROLL
-    LTEXT           "Preset value:",IDC_STATIC,7,60,45,11
+    LTEXT           "Preset value:",IDC_LOCAL_VAR_INIT_TXT,7,60,45,11
     COMBOBOX        IDC_VALUE,57,59,122,55,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -1599,14 +1599,14 @@ BEGIN
     GROUPBOX        "Preview",IDC_PREVIEW,7,140,179,86
 END
 
-IDD_SEARCHWAYPOINT DIALOG 0, 0, 186, 95
+IDD_SEARCHWAYPOINT DIALOGEX 0, 0, 186, 95
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Search Waypoint"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Search",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
-    LTEXT           "Waypoints:",IDC_STATIC,7,7,96,12
+    LTEXT           "Waypoints:",IDC_SEARCH_WP_WP,7,7,96,12
     LISTBOX         IDC_WAYPOINTS,7,21,97,67,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -1664,18 +1664,18 @@ BEGIN
 END
 #endif
 
-IDD_USERSCRIPTS DIALOG 0, 0, 301, 193
+IDD_USERSCRIPTS DIALOGEX 0, 0, 301, 193
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Map Scripts"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Run",IDOK,244,40,50,14
     PUSHBUTTON      "Quit",IDCANCEL,244,57,50,14
-    LTEXT           "Scripts available:",IDC_STATIC,7,24,109,12
+    LTEXT           "Scripts available:",IDC_USR_SCRIPTS_AVA,7,24,109,12
     LISTBOX         IDC_SCRIPTS,7,39,230,74,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Report:",IDC_STATIC,7,124,117,15
+    LTEXT           "Report:",IDC_USR_SCRIPTS_REPORT,7,124,117,15
     EDITTEXT        IDC_REPORT,7,145,287,41,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL
-    LTEXT           "For safety reasons, you should save your map before running scripts. Undo is not available.",IDC_STATIC,7,7,287,17
+    LTEXT           "For safety reasons, you should save your map before running scripts. Undo is not available.",IDC_USR_SCRIPTS_DESC,7,7,287,17
 END
 
 IDD_COMBO_UINPUT DIALOG 0, 0, 238, 63
@@ -1749,9 +1749,9 @@ BEGIN
     IDD_AITRIGGERADD, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 215
+        RIGHTMARGIN, 216
         TOPMARGIN, 7
-        BOTTOMMARGIN, 90
+        BOTTOMMARGIN, 285
     END
 
     IDD_MYOPENDIALOG, DIALOG
@@ -1782,6 +1782,8 @@ BEGIN
 
     IDD_INPUTBOX, DIALOG
     BEGIN
+        RIGHTMARGIN, 285
+        BOTTOMMARGIN, 60
     END
 
     IDD_IMPORTINI, DIALOG
@@ -1905,6 +1907,10 @@ BEGIN
         HORZGUIDE, 280
     END
 
+    IDD_AITRIGGERTYPESENABLE, DIALOG
+    BEGIN
+    END
+
     IDD_TERRAINBAR, DIALOG
     BEGIN
         RIGHTMARGIN, 412
@@ -1975,6 +1981,10 @@ BEGIN
         HORZGUIDE, 6
         HORZGUIDE, 74
         HORZGUIDE, 79
+    END
+
+    IDD_GLOBALS, DIALOG
+    BEGIN
     END
 
     "IDD_TSOPTIONS$(TS_MODE)", DIALOG
@@ -2550,20 +2560,6 @@ BEGIN
 END
 #endif
 
-IDD_TAGS DLGINIT
-BEGIN
-    IDC_REPEAT, 0x403, 36, 0
-0x2030, 0x202d, 0x614d, 0x656b, 0x7420, 0x6568, 0x7420, 0x6972, 0x6767, 
-0x7265, 0x7720, 0x726f, 0x206b, 0x6e6f, 0x796c, 0x6f20, 0x636e, 0x0065, 
-
-    IDC_REPEAT, 0x403, 12, 0
-0x2031, 0x202d, 0x6e55, 0x6e6b, 0x776f, 0x006e, 
-    IDC_REPEAT, 0x403, 32, 0
-0x2032, 0x202d, 0x614d, 0x656b, 0x7420, 0x6568, 0x7420, 0x6972, 0x6767, 
-0x7265, 0x7220, 0x7065, 0x6165, 0x6974, 0x676e, 0x0020, 
-    0
-END
-
 IDD_TRIGGERS DLGINIT
 BEGIN
     IDC_TRIGGER2, 0x403, 7, 0
@@ -2578,35 +2574,6 @@ IDD_AITRIGGERTYPES$(RA2_MODE) DLGINIT
 IDD_AITRIGGERTYPES DLGINIT
 #endif
 BEGIN
-    IDC_FLAG2, 0x403, 8, 0
-0x312d, 0x4e20, 0x6e6f, 0x0065, 
-    IDC_FLAG2, 0x403, 37, 0
-0x2030, 0x6e45, 0x6d65, 0x2079, 0x776f, 0x736e, 0x2820, 0x4f43, 0x444e, 
-0x5449, 0x4f49, 0x294e, 0x4e20, 0x6f20, 0x2066, 0x7974, 0x6570, 0x5820, 
-"\000" 
-    IDC_FLAG2, 0x403, 37, 0
-0x2031, 0x6f48, 0x7375, 0x2065, 0x776f, 0x736e, 0x2820, 0x4f43, 0x444e, 
-0x5449, 0x4f49, 0x294e, 0x4e20, 0x6f20, 0x2066, 0x7974, 0x6570, 0x5820, 
-"\000" 
-    IDC_FLAG2, 0x403, 22, 0
-0x2032, 0x6e45, 0x6d65, 0x3a79, 0x5920, 0x6c65, 0x6f6c, 0x2077, 0x6f70, 
-0x6577, 0x0072, 
-    IDC_FLAG2, 0x403, 19, 0
-0x2033, 0x6e45, 0x6d65, 0x3a79, 0x5220, 0x6465, 0x7020, 0x776f, 0x7265, 
-"\000" 
-    IDC_FLAG2, 0x403, 33, 0
-0x2034, 0x6e45, 0x6d65, 0x2079, 0x776f, 0x736e, 0x2820, 0x4f43, 0x444e, 
-0x5449, 0x4f49, 0x294e, 0x4e20, 0x6d20, 0x6e6f, 0x7965, "\000" 
-    IDC_FLAG2, 0x403, 26, 0
-0x2035, 0x7249, 0x6e6f, 0x6320, 0x7275, 0x6174, 0x6e69, 0x6e20, 0x6165, 
-0x2072, 0x6572, 0x6461, 0x0079, 
-    IDC_FLAG2, 0x403, 26, 0
-0x2036, 0x6843, 0x6f72, 0x6f6e, 0x7073, 0x6568, 0x6572, 0x6e20, 0x6165, 
-0x2072, 0x6572, 0x6461, 0x0079, 
-    IDC_FLAG2, 0x403, 39, 0
-0x2037, 0x654e, 0x7475, 0x6172, 0x206c, 0x776f, 0x736e, 0x2820, 0x4f43, 
-0x444e, 0x5449, 0x4f49, 0x294e, 0x4e20, 0x6f20, 0x2066, 0x7974, 0x6570, 
-0x5820, "\000" 
     IDC_DATA, 0x403, 65, 0
 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 
 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 0x3030, 
@@ -2824,23 +2791,10 @@ END
 
 IDD_TRIGGEROPTIONS DLGINIT
 BEGIN
-    IDC_TRIGGERTYPE, 0x403, 13, 0
-0x2030, 0x202d, 0x7453, 0x6e61, 0x6164, 0x6472, "\000" 
-    IDC_TRIGGERTYPE, 0x403, 14, 0
-0x2032, 0x202d, 0x6552, 0x6570, 0x7461, 0x6e69, 0x0067, 
     IDC_HOUSE, 0x403, 13, 0
 0x2030, 0x202d, 0x7453, 0x6e61, 0x6164, 0x6472, "\000" 
     IDC_HOUSE, 0x403, 14, 0
 0x2032, 0x202d, 0x6552, 0x6570, 0x7461, 0x6e69, 0x0067, 
-    0
-END
-
-IDD_GLOBALS DLGINIT
-BEGIN
-    IDC_VALUE, 0x403, 10, 0
-0x2030, 0x202d, 0x6c43, 0x6165, 0x0072, 
-    IDC_VALUE, 0x403, 8, 0
-0x2031, 0x202d, 0x6553, 0x0074, 
     0
 END
 
@@ -3626,6 +3580,56 @@ BEGIN
     0
 END
 #endif
+
+IDD_DYNAMICLOAD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_GLOBALS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_TAGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_AITRIGGERTYPESENABLE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_AITRIGGERADD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SEARCHWAYPOINT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_NEWRA2HOUSE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_USERSCRIPTS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ALL AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_INPUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////

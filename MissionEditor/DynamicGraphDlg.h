@@ -38,24 +38,23 @@ class CDynamicGraphDlg : public CDialog
 public:
 	CDynamicGraphDlg(CWnd* pParent = NULL);   // Standardkonstruktor
 
-// Dialogfelddaten
-	//{{AFX_DATA(CDynamicGraphDlg)
+	// Dialogfelddaten
 	enum { IDD = IDD_DYNAMICLOAD };
 	CProgressCtrl	m_Progress;
-	//}}AFX_DATA
 
 
 // Überschreibungen
 	// Vom Klassen-Assistenten generierte virtuelle Funktionsüberschreibungen
 	//{{AFX_VIRTUAL(CDynamicGraphDlg)
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
-	virtual void PostNcDestroy();
+	virtual BOOL OnInitDialog() override;
+	virtual void DoDataExchange(CDataExchange* pDX)override;    // DDX/DDV-Unterstützung
+	virtual void PostNcDestroy()override;
 	//}}AFX_VIRTUAL
 
 // Implementierung
 protected:
-
+	void TranslateUI();
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CDynamicGraphDlg)
 		// HINWEIS: Der Klassen-Assistent fügt hier Member-Funktionen ein

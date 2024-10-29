@@ -468,7 +468,9 @@ void CTaskForce::OnDeletetaskforce()
 	}
 	auto const tf = getCurrrentID();
 	int res;
-	res = MessageBox("Are you sure to delete the selected task force? If you delete it, make sure to eliminate ANY references to this task force in team-types.", "Delete task force", MB_YESNO);
+	auto const title = TranslateStringACP("Delete task force");
+	auto const content = TranslateStringACP("TaskforceDeleteMsgDesc");
+	res = MessageBox(content, title, MB_YESNO);
 	if (res == IDNO) {
 		return;
 	}

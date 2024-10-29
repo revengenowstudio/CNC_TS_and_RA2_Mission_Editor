@@ -48,16 +48,18 @@ public:
 	// Vom Klassen-Assistenten generierte virtuelle Funktionsüberschreibungen
 	//{{AFX_VIRTUAL(CSearchWaypointDlg)
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV-Unterstützung
+	virtual BOOL OnInitDialog() override;
+	virtual void OnOK() override;
 	//}}AFX_VIRTUAL
 
 // Implementierung
 protected:
+	void translateUI();
 
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CSearchWaypointDlg)
-	virtual BOOL OnInitDialog();
-	virtual void OnOK();
+
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

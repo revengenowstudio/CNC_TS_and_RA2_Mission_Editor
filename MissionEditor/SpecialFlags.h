@@ -37,8 +37,8 @@ public:
 	void UpdateDialog();
 	CSpecialFlags(CWnd* pParent = NULL);   // Standardkonstruktor
 
-// Dialogfelddaten
-	//{{AFX_DATA(CSpecialFlags)
+	// Dialogfelddaten
+		//{{AFX_DATA(CSpecialFlags)
 	enum { IDD = IDD_SPECIALFLAGS };
 	CMyComboBox	m_Visceroids;
 	CMyComboBox	m_TiberiumSpreads;
@@ -60,11 +60,13 @@ public:
 	// Vom Klassen-Assistenten generierte virtuelle Funktionsüberschreibungen
 	//{{AFX_VIRTUAL(CSpecialFlags)
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual BOOL OnInitDialog() override;
+	virtual void DoDataExchange(CDataExchange* pDX)override;    // DDX/DDV-Unterstützung
 	//}}AFX_VIRTUAL
 
 // Implementierung
 protected:
+	void TranslateUI();
 
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CSpecialFlags)

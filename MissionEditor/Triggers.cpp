@@ -1285,7 +1285,9 @@ void CTriggers::OnDeleteevent()
 	if (sel2 < 0) {
 		return;
 	}
-	if (MessageBox("Do you really want to delete this event?", "Delete event", MB_YESNO) == IDNO) {
+	auto const title = TranslateStringACP("Delete event");
+	auto const content = TranslateStringACP("Do you really want to delete this event?");
+	if (MessageBox(content, title, MB_YESNO) == IDNO) {
 		return;
 	}
 
@@ -1361,10 +1363,17 @@ void CTriggers::OnDeleteaction()
 	CIniFile& ini = Map->GetIniFile();
 
 	int sel = m_Trigger.GetCurSel();
-	if (sel < 0) return;
+	if (sel < 0) {
+		return;
+	}
 	int sel2 = m_Action.GetCurSel();
-	if (sel2 < 0) return;
-	if (MessageBox("Do you really want to delete this action?", "Delete action", MB_YESNO) == IDNO) {
+	if (sel2 < 0) {
+		return;
+	}
+
+	auto const title = TranslateStringACP("Delete action");
+	auto const content = TranslateStringACP("Do you really want to delete this action?");
+	if (MessageBox(content, title, MB_YESNO) == IDNO) {
 		return;
 	}
 

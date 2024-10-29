@@ -50,8 +50,8 @@ public:
 	CMyComboBox	m_TeamType1;
 	CMyComboBox	m_UnitType;
 	CMyComboBox	m_TeamType2;
-	CMyComboBox	m_Flag2;
-	CMyComboBox	m_Flag1;
+	CMyComboBox	m_conditionType;
+	CMyComboBox	m_technoLevel;
 	CMyComboBox	m_Data;
 	CMyComboBox	m_Owner;
 	CFloatEdit	m_Float3;
@@ -66,7 +66,7 @@ public:
 	CString	m_Flag8;
 	CString	m_Flag9;
 	BOOL	m_Enabled;
-	CComboBox		m_Condition;
+	CComboBox		m_operator;
 	int		m_Number;
 	BOOL	m_Easy;
 	BOOL	m_Medium;
@@ -88,6 +88,7 @@ protected:
 
 // implementation
 	void translateUI();
+	void initCondtionTypeComboBox();
 	void initMultisideComboBox();
 	void initConditionOpComboBox();
 	void addTrigger(CString&& content);

@@ -50,19 +50,20 @@ public:
 	// Vom Klassen-Assistenten generierte virtuelle Funktionsüberschreibungen
 	//{{AFX_VIRTUAL(CGlobalsDlg)
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual BOOL OnInitDialog() override;	
+	virtual void OnOK() override;
+	virtual void OnCancel() override;
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV-Unterstützung
 	//}}AFX_VIRTUAL
 
 // Implementierung
 protected:
-
+	void translateUI();
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CGlobalsDlg)
-	virtual void OnOK();
-	virtual void OnCancel();
+
 	afx_msg void OnChangeDescription();
 	afx_msg void OnSelchangeGlobal();
-	virtual BOOL OnInitDialog();
 	afx_msg void OnSelchangeValue();
 	afx_msg void OnEditchangeValue();
 	//}}AFX_MSG

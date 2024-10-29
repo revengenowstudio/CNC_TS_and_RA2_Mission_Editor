@@ -270,17 +270,32 @@ struct SMUDGE_INFO
 };
 #endif
 
-/*
-** Condition enumeration
+/**
+* Condtion Type enum
 */
-enum ConditionEnum {
-	COND_LT = 0,	// less than
-	COND_LE,			// less than or equal to
-	COND_EQ,			// equal to
-	COND_GE,			// greater than or equal to
-	COND_GT,			// greater than
-	COND_NE,			// not equal to
-	COND_COUNT
+enum ConditionType {
+	COND_TYPE_NONE = 0,
+	COND_TYPE_ENEMY_OWNS,
+	COND_TYPE_SELF_OWNS,
+	COND_TYPE_ENEMY_YELLOW_POWR,
+	COND_TYPE_ENEMY_RED_POWR,
+	COND_TYPE_ENEMY_OWNS_SOME_MONEY,
+	COND_TYPE_IRON_CURTAIN_READY,
+	COND_TYPE_CHRONO_SPHERE_READY,
+	COND_TYPE_NEUTRAL_OWNS,
+};
+
+/**
+* Condition Operator enumeration
+*/
+enum ConditionOpEnum {
+	COND_OP_LT = 0,	// less than
+	COND_OP_LE,			// less than or equal to
+	COND_OP_EQ,			// equal to
+	COND_OP_GE,			// greater than or equal to
+	COND_OP_GT,			// greater than
+	COND_OP_NE,			// not equal to
+	COND_OP_COUNT
 };
 
 struct AITrigInfo
@@ -288,7 +303,7 @@ struct AITrigInfo
 	union {
 		struct {
 			int Number;
-			ConditionEnum Condition;
+			ConditionOpEnum Condition;
 		};
 		char Padding[32];
 	};

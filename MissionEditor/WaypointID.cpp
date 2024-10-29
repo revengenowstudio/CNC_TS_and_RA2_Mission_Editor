@@ -26,6 +26,7 @@
 #include "WaypointID.h"
 #include "mapdata.h"
 #include "variables.h"
+#include "functions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -68,10 +69,9 @@ void CWaypointID::OnFree()
 {
 	CIniFile& ini = Map->GetIniFile();
 
-	int i;
 	CString freen;
 
-	for (i = 0; i > -1; i++) {
+	for (auto i = 0; ; i++) {
 		char d[50];
 		itoa(i, d, 10);
 		if (ini.GetString("Waypoints", d).IsEmpty()) {
@@ -100,8 +100,21 @@ BOOL CWaypointID::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	translateUI();
+
 	OnFree();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+}
+
+void CWaypointID::translateUI()
+{
+	TranslateWindowCaption(*this, "CreateWaypointDlgCaption");
+
+	TranslateDlgItem(*this, IDC_DESC, "CreateWaypointDlgDesc");
+	TranslateDlgItem(*this, IDC_LID, "CreateWaypointDlgID");
+	TranslateDlgItem(*this, IDC_FREE, "CreateWaypointDlgFree");
+	TranslateDlgItem(*this, IDOK, "CreateWaypointDlgOk");
+	TranslateDlgItem(*this, IDCANCEL, "CreateWaypointDlgCancel");
 }

@@ -68,6 +68,8 @@ BOOL CAITriggerAddDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	translateUI();
+
 	CListBox* lb = (CListBox*)GetDlgItem(IDC_AITRIGGERS);
 
 	int i;
@@ -79,4 +81,13 @@ BOOL CAITriggerAddDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+}
+
+void CAITriggerAddDlg::translateUI()
+{
+	TranslateWindowCaption(*this, "AITriggerEnableAddCaption");
+
+	TranslateDlgItem(*this, IDC_STATIC, "AITriggerEnableAddDesc");
+	TranslateDlgItem(*this, IDOK, "AITriggerEnableAddOK");
+	TranslateDlgItem(*this, IDCANCEL, "AITriggerEnableAddCancel");
 }

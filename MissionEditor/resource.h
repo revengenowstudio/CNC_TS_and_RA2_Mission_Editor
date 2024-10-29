@@ -586,6 +586,40 @@
 #define IDC_AITRIGGER_T_CONDITION       1510
 #define IDC_AITRIGGER_T_NUM             1511
 #define IDC_AITRIGGER_T_UNITTYPE        1512
+#define IDC_EVENT_CUR_TXT               1513
+#define IDC_EVENT_OPT_TXT               1514
+#define IDC_EVENT_TYPE_TXT              1515
+#define IDC_EVENT_PARAM_TXT             1516
+#define IDC_EVENT_VAL_TXT               1517
+#define IDC_EVENT_DESC                  1518
+#define IDC_ACTION_CUR_TXT              1519
+#define IDC_ACTION_OPT_TXT              1520
+#define IDC_ACTION_TYPE_TXT             1521
+#define IDC_ACTION_PARAM_TXT            1522
+#define IDC_ACTION_VAL_TXT              1523
+#define IDC_ACTION_DESC                 1524
+#define IDC_LOADING_GRAPH_TXT           1525
+#define IDC_LOCAL_VAR_CUR_TXT           1526
+#define IDC_LOCAL_VAR_INIT_TXT          1527
+#define IDC_TAGS_CUR_TXT                1528
+#define IDC_TAGS_NAME                   1529
+#define IDC_TAGS_REPEAT                 1530
+#define IDC_TAGS_TRIGGER                1531
+#define IDC_TAGS_DESC_2                 1532
+#define IDC_OPTIONS_LAN_TXT             1533
+#define IDC_OPTIONS_SUPPORT_TXT         1534
+#define IDC_AI_TRG_ENB_DESC             1535
+#define IDC_AI_TRG_ENB_TYPE             1536
+#define IDC_SEARCH_WP_WP                1537
+#define IDC_NEWHOUSE_PARERNT            1538
+#define IDC_USR_SCRIPTS_DESC            1539
+#define IDC_USR_SCRIPTS_REPORT          1540
+#define IDC_USR_SCRIPTS_AVA             1541
+#define IDC_INI_EDITOR_SECTIONS         1542
+#define IDC_INI_EDITOR_DESC             1543
+#define IDC_INI_EDITOR_CONTENT          1544
+#define IDC_INI_EDITOR_VAL              1545
+#define IDC_INI_EDITOR_KEYS             1546
 #define ID_FILE_OPENMAP                 40001
 #define ID_FILE_SAVEAS                  40002
 #define ID_FILE_QUIT                    40003
@@ -680,9 +714,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         40144
-#define _APS_NEXT_CONTROL_VALUE         1513
+#define _APS_NEXT_CONTROL_VALUE         1547
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

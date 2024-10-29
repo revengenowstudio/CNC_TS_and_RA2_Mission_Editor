@@ -121,8 +121,6 @@ void CSpecialFlags::UpdateDialog()
 	m_Visceroids.SetWindowText(sec.GetString("Visceroids"));
 
 #ifdef RA2_MODE
-	SetDlgItemText(IDC_LTIBERIUMGROWS, "Ore grows:");
-	SetDlgItemText(IDC_LTIBERIUMSPREADS, "Ore spreads:");
 	GetDlgItem(IDC_LTIBERIUMEXPLOSIVE)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_TIBERIUMEXPLOSIVE)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_HARVESTERIMMUNE)->ShowWindow(SW_HIDE);
@@ -131,14 +129,45 @@ void CSpecialFlags::UpdateDialog()
 	GetDlgItem(IDC_LMETEORITES)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_VISCEROIDS)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_LVISCEROIDS)->ShowWindow(SW_HIDE);
-
-	SetDlgItemText(IDC_LFOGOFWAR, "Shroud:");
-	SetDlgItemText(IDC_LIONSTORMS, "Weather Storms:");
 #endif
 
 };
 /////////////////////////////////////////////////////////////////////////////
 // Behandlungsroutinen für Nachrichten CSpecialFlags 
+
+BOOL CSpecialFlags::OnInitDialog()
+{
+	auto const ret = CDialog::OnInitDialog();
+
+#if defined(RA2_MODE)
+	SetDlgItemText(IDC_LTIBERIUMGROWS, "Ore grows:");
+	SetDlgItemText(IDC_LTIBERIUMSPREADS, "Ore spreads:");
+	SetDlgItemText(IDC_LFOGOFWAR, "Shroud:");
+	SetDlgItemText(IDC_LIONSTORMS, "Weather Storms:");
+#endif
+
+	TranslateUI();
+	return ret;
+}
+
+void CSpecialFlags::TranslateUI()
+{
+	TranslateWindowCaption(*this, "SpecialFlagsCaption");
+	TranslateDlgItem(*this, IDC_DESC, "SpecialFlagsDesc");
+	TranslateDlgItem(*this, IDC_LTIBERIUMGROWS, "SpecialFlagsTiberiumGrows");
+	TranslateDlgItem(*this, IDC_LTIBERIUMSPREADS, "SpecialFlagsTiberiumSpread");
+	TranslateDlgItem(*this, IDC_LTIBERIUMEXPLOSIVE, "SpecialFlagsTiberiumExplosive");
+	TranslateDlgItem(*this, IDC_LDESTROYABLEBRIDGES, "SpecialFlagsTiberiumBridgeDestroyable");
+	TranslateDlgItem(*this, IDC_LMCVDEPLOY, "SpecialFlagsMCVRedeploy");
+	TranslateDlgItem(*this, IDC_LINITIALVETERAN, "SpecialFlagsInitialVeteran");
+	TranslateDlgItem(*this, IDC_LFIXEDALLIANCE, "SpecialFlagsFixedAlliance");
+	TranslateDlgItem(*this, IDC_LHARVESTERIMMUNE, "SpecialFlagsHarvesterImmune");
+	TranslateDlgItem(*this, IDC_LINERT, "SpecialFlagsInert");
+	TranslateDlgItem(*this, IDC_LFOGOFWAR, "SpecialFlagsFogOfWar");
+	TranslateDlgItem(*this, IDC_LIONSTORMS, "SpecialFlagsIonStoms");
+	TranslateDlgItem(*this, IDC_LMETEORITES, "SpecialFlagsMeteorites");
+	TranslateDlgItem(*this, IDC_LVISCEROIDS, "SpecialFlagsVisceroids");
+}
 
 void CSpecialFlags::OnEditchangeTiberiumgrows()
 {

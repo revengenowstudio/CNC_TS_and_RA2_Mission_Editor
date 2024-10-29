@@ -278,19 +278,27 @@ BOOL CTriggerOptionsDlg::PreTranslateMessage(MSG* pMsg)
 
 BOOL CTriggerOptionsDlg::OnInitDialog()
 {
-	CDialog::OnInitDialog();
+	auto const ret = CDialog::OnInitDialog();
 	{
-		SetDlgItemText(IDC_TRIGGER_OPTION_TYPE_STR, GetLanguageStringACP("TriggerOptionType"));
-		SetDlgItemText(IDC_TRIGGER_OPTION_NAME, GetLanguageStringACP("TriggerOptionName"));
-		SetDlgItemText(IDC_TRIGGER_OPTION_HOUSE, GetLanguageStringACP("TriggerOptionHouse"));
-		SetDlgItemText(IDC_TRIGGER_OPTION_ATTACHED_TRIGGER, GetLanguageStringACP("TriggerOptionAttachedTrigger"));
-		SetDlgItemText(IDC_TRIGGER_OPTION_TRIGGER_DIS_TIP, GetLanguageStringACP("TriggerOptionDisableTip"));
+		TranslateDlgItem(*this, IDC_TRIGGER_OPTION_TYPE_STR, "TriggerOptionType");
+		TranslateDlgItem(*this, IDC_TRIGGER_OPTION_NAME, "TriggerOptionName");
+		TranslateDlgItem(*this, IDC_TRIGGER_OPTION_HOUSE, "TriggerOptionHouse");
+		TranslateDlgItem(*this, IDC_TRIGGER_OPTION_ATTACHED_TRIGGER, "TriggerOptionAttachedTrigger");
+		TranslateDlgItem(*this, IDC_TRIGGER_OPTION_TRIGGER_DIS_TIP, "TriggerOptionDisableTip");
+		TranslateDlgItem(*this, IDC_DISABLED, "TriggerOptionDisabled");
+		TranslateDlgItem(*this, IDC_EASY, "TriggerOptionEasy");
+		TranslateDlgItem(*this, IDC_MEDIUM, "TriggerOptionMedium");
+		TranslateDlgItem(*this, IDC_HARD, "TriggerOptionHard");
+
+		m_TriggerType.InsertString(0, TranslateStringACP("0 - Standard"));
+		m_TriggerType.InsertString(1, TranslateStringACP("1 - All Attached"));
+		m_TriggerType.InsertString(2, TranslateStringACP("2 - Repeating"));
 
 		m_tooltip.Create(this);
 		m_tooltip.Activate(TRUE);
 		m_tooltip.AddTool(GetDlgItem(IDC_HOUSE), GetLanguageStringACP("TT_TriggerHouse"));
 	}
-	return TRUE;
+	return ret;
 }
 
 void CTriggerOptionsDlg::OnDisabled()

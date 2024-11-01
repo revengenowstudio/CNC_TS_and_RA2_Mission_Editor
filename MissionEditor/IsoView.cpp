@@ -5669,7 +5669,8 @@ void CIsoView::DrawMap()
 				COLORREF c = GetColor(obj.house);
 
 				auto const facing = atoi(obj.direction) / 32;
-				CString lpPicFile = GetUnitPictureFilename(obj.type, facing);
+				auto const imageId = theApp.m_loading->GetArtID(obj.type);
+				CString lpPicFile = GetUnitPictureFilename(imageId, facing);
 
 #ifndef NOSURFACES
 				DrawCell(drawCoords.x, drawCoords.y, 1, 1, c);
@@ -5683,7 +5684,7 @@ void CIsoView::DrawMap()
 					if (!missingimages[obj.type]) {
 						SetError("Loading graphics");
 						theApp.m_loading->LoadUnitGraphic(obj.type);
-						lpPicFile = GetUnitPictureFilename(obj.type, facing);
+						lpPicFile = GetUnitPictureFilename(imageId, facing);
 						if (!lpPicFile.IsEmpty()) {
 							p = pics[lpPicFile];
 						}
@@ -5721,7 +5722,7 @@ void CIsoView::DrawMap()
 				COLORREF c = GetColor(obj.house);
 
 				auto const facing = atoi(obj.direction) / 32;
-				CString lpPicFile = GetUnitPictureFilename(obj.type, facing);
+				CString lpPicFile = GetUnitPictureFilename(theApp.m_loading->GetArtID(obj.type), facing);
 
 #ifndef NOSURFACES
 				DrawCell(drawCoords.x, drawCoords.y, 1, 1, c);
@@ -5735,7 +5736,7 @@ void CIsoView::DrawMap()
 					if (!missingimages[obj.type]) {
 						SetError("Loading graphics");
 						theApp.m_loading->LoadUnitGraphic(obj.type);
-						lpPicFile = GetUnitPictureFilename(obj.type, facing);
+						lpPicFile = GetUnitPictureFilename(theApp.m_loading->GetArtID(obj.type), facing);
 						if (!lpPicFile.IsEmpty()) {
 							p = pics[lpPicFile];
 						}
@@ -5781,10 +5782,10 @@ void CIsoView::DrawMap()
 
 					COLORREF c = GetColor(obj.house);
 
-
 					int dir = (7 - atoi(obj.direction) / 32) % 8;
 
-					CString lpPicFile = GetUnitPictureFilename(obj.type, dir);
+					auto const imageId = theApp.m_loading->GetArtID(obj.type);
+					CString lpPicFile = GetUnitPictureFilename(imageId, dir);
 #ifndef NOSURFACES
 					DrawCell(drawCoords.x, drawCoords.y, 1, 1, c);
 #endif
@@ -5802,7 +5803,7 @@ void CIsoView::DrawMap()
 						if (!missingimages[obj.type]) {
 							SetError("Loading graphics");
 							theApp.m_loading->LoadUnitGraphic(obj.type);
-							lpPicFile = GetUnitPictureFilename(obj.type, dir);
+							lpPicFile = GetUnitPictureFilename(imageId, dir);
 							if (!lpPicFile.IsEmpty()) {
 								p = pics[lpPicFile];
 							}

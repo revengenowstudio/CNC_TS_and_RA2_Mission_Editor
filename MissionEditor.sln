@@ -17,6 +17,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XCC Library", "3rdParty\xcc\Library\XCC Library.vcxproj", "{5E445578-CB45-4D82-9A1C-FC7D3E8D866A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "UnitTest\UnitTest.vcxproj", "{75E18879-7564-4A2C-8C00-393A5A17171F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DEB40EF0-E215-4C2F-A0AD-3742E2E01A8C} = {DEB40EF0-E215-4C2F-A0AD-3742E2E01A8C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CncVxlRenderText", "3rdParty\CncVxlRender\CncVxlRenderText.vcxproj", "{BAE32EF7-4F88-40D8-8984-A2EAF14C0A63}"
 EndProject

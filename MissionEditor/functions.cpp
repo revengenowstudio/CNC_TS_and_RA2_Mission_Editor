@@ -799,10 +799,10 @@ void ListAircraft(CComboBox& cb)
 void ListTechtypes(CComboBox& cb)
 {
 	while (cb.DeleteString(0) != CB_ERR);
-	listSpecifcTechnoTypes(cb, "AircraftTypes", false);
-	listSpecifcTechnoTypes(cb, "InfantryTypes", false);
-	listSpecifcTechnoTypes(cb, "VehicleTypes", false);
-	listSpecifcTechnoTypes(cb, "BuildingTypes", false);
+	listSpecifcTechnoTypes(cb, "AircraftTypes", false, true);
+	listSpecifcTechnoTypes(cb, "InfantryTypes", false, true);
+	listSpecifcTechnoTypes(cb, "VehicleTypes", false, true);
+	listSpecifcTechnoTypes(cb, "BuildingTypes", false, true);
 }
 
 void listLocalVariables(CComboBox& cb, const CIniFile& ini)

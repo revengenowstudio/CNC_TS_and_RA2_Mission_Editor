@@ -898,8 +898,8 @@ void CMapData::Unpack()
 		ovrl += val;
 	}
 
-	//BYTE values[262144];
-	const size_t VALUESIZE = 262144;
+	//BYTE values[overlayDataCapacity];
+	const size_t VALUESIZE = overlayDataCapacity;
 	std::vector<BYTE> values(VALUESIZE, 0xFF);
 	int hexlen;
 
@@ -1068,7 +1068,7 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 	}
 
 
-	BYTE* values = new(BYTE[262144]);
+	BYTE* values = new(BYTE[overlayDataCapacity]);
 	BYTE* hexpacked = NULL; // must be freed!
 
 
@@ -1079,11 +1079,11 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 	errstream << "Packing overlay" << endl;
 	errstream.flush();
 
-	for (i = 0; i < 262144; i++) {
+	for (i = 0; i < overlayDataCapacity; i++) {
 		values[i] = m_Overlay[i];
 	}
 
-	int hexpackedLen = FSunPackLib::EncodeF80(values, 262144, 32, &hexpacked);
+	int hexpackedLen = FSunPackLib::EncodeF80(values, overlayDataCapacity, 32, &hexpacked);
 	base64 = FSunPackLib::EncodeBase64(hexpacked, hexpackedLen);
 
 
@@ -1091,6 +1091,9 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 
 	i = 0;
 	pos = 0;
+
+	auto const b64StrLen = strlen(reinterpret_cast<const char*>(base64));
+
 	while (TRUE) {
 		i++;
 		char cLine[50];
@@ -1098,8 +1101,8 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 		char str[200];
 		memset(str, 0, 200);
 		WORD cpysize = 70;
-		if (pos + cpysize > strlen((char*)base64)) {
-			cpysize = strlen((char*)base64) - pos;
+		if (pos + cpysize > b64StrLen) {
+			cpysize = b64StrLen - pos;
 		}
 		memcpy(str, &base64[pos], cpysize);
 		if (strlen(str) > 0) {
@@ -1121,16 +1124,14 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 	errstream << "Pack overlaydata" << endl;
 	errstream.flush();
 
-	for (i = 0; i < 262144; i++) {
-		values[i] = m_OverlayData[i];
-	}
+	memcpy(values, m_OverlayData, overlayDataCapacity);
 
 	hexpacked = NULL;
 
 	errstream << "Format80" << endl;
 	errstream.flush();
 
-	hexpackedLen = FSunPackLib::EncodeF80(values, 262144, 32, &hexpacked);
+	hexpackedLen = FSunPackLib::EncodeF80(values, overlayDataCapacity, 32, &hexpacked);
 
 
 	errstream << "Base64" << endl;
@@ -1148,15 +1149,16 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 		i++;
 		char cLine[50];
 		itoa(i, cLine, 10);
-		char str[200];
-		memset(str, 0, 200);
+
 		WORD cpysize = 70;
 		if (pos + cpysize > strlen((char*)base64)) {
 			cpysize = strlen((char*)base64) - pos;
 		}
-		memcpy(str, &base64[pos], cpysize);
-		if (strlen(str) > 0) {
-			m_mapfile.SetString("OverlayDataPack", cLine, str);
+
+		CString str(reinterpret_cast<const char*>(base64 + pos), cpysize);
+
+		if (str.GetLength() > 0) {
+			m_mapfile.SetString("OverlayDataPack", cLine, std::move(str));
 		}
 		if (cpysize < 70) {
 			break;
@@ -1299,13 +1301,13 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 
 void CMapData::ClearOverlayData()
 {
-	memset(m_OverlayData, 0x0, 262144);
+	memset(m_OverlayData, 0x0, overlayDataCapacity);
 	// Pack();
 }
 
 void CMapData::ClearOverlay()
 {
-	memset(m_Overlay, 0xFF, 262144);
+	memset(m_Overlay, 0xFF, overlayDataCapacity);
 	// Pack();
 }
 
@@ -1314,7 +1316,7 @@ void CMapData::SetOverlayAt(DWORD dwPos, BYTE bValue)
 	int y = dwPos / m_IsoSize;
 	int x = dwPos % m_IsoSize;
 
-	if (y + x * 512 > 262144 || dwPos > m_IsoSize * m_IsoSize) return;
+	if (y + x * 512 > overlayDataCapacity || dwPos > m_IsoSize * m_IsoSize) return;
 
 	BYTE& ovrl = m_Overlay[y + x * 512];
 	BYTE& ovrld = m_OverlayData[y + x * 512];
@@ -1360,7 +1362,7 @@ void CMapData::SetOverlayDataAt(DWORD dwPos, BYTE bValue)
 	int y = dwPos / m_IsoSize;
 	int x = dwPos % m_IsoSize;
 
-	if (y + x * 512 > 262144 || dwPos > m_IsoSize * m_IsoSize) return;
+	if (y + x * 512 > overlayDataCapacity || dwPos > m_IsoSize * m_IsoSize) return;
 
 	BYTE& ovrl = m_Overlay[y + x * 512];
 	BYTE& ovrld = m_OverlayData[y + x * 512];

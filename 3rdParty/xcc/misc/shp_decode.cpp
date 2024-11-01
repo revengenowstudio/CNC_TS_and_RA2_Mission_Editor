@@ -198,32 +198,32 @@ static void write_v80(byte v, int count, byte*& d)
 	}
 }
 
-void get_same(const byte* s, const byte* r, const byte* s_end, const byte*& p, int& cb_p)
+void get_same(const byte* src_start, const byte* src_pos, const byte* src_end, const byte*& p_same_content_beg, int& same_content_len)
 {
 	// init
-	p = nullptr;
-	cb_p = 0;
+	p_same_content_beg = nullptr;
+	same_content_len = 0;
 
-	while (s++ < s_end) {
+	while (src_start++ < src_end) {
 		// reset round
 		int counted = 0;
 		// early safe check
-		if (s >= r) {
+		if (src_start >= src_pos) {
 			break;
 		}
-		while (s[counted] == r[counted]) {
+		while (src_start[counted] == src_pos[counted]) {
 			// match begins, early safe check
-			if (s + counted >= s_end) {
+			if (src_start + counted >= src_end) {
 				break;
 			}
-			if (r + counted >= s_end) {
+			if (src_pos + counted >= src_end) {
 				break;
 			}
 			counted++;
 		}
-		if (counted > cb_p) {
-			cb_p = counted;
-			p = s;
+		if (counted >= same_content_len) {
+			same_content_len = counted;
+			p_same_content_beg = src_start;
 		}
 	}
 }
@@ -274,41 +274,47 @@ static void flush_c1(byte*& w, const byte* r, const byte*& copy_from)
 	}
 }
 
-int encode80(const byte* s, byte* d, int cb_s)
+int encode80(const byte* src, byte* dst, int src_len)
 {
+	//using std::cout;
+	//using std::endl;
 	// full compression
-	const byte* s_end = s + cb_s;
-	const byte* r = s;
-	byte* w = d;
+	const byte* src_end = src + src_len;
+	const byte* src_pos = src;
+	byte* w = dst;
 	const byte* copy_from = NULL;
-	while (r < s_end) {
-		const byte* p;
-		int cb_p;
-		int t = get_run_length(r, s_end);
-		get_same(s, r, s_end, p, cb_p);
-		if (t < cb_p && cb_p > 2) {
-			flush_c1(w, r, copy_from);
-			if (cb_p - 3 < 8 && r - p < 0x1000)
-				write80_c0(w, cb_p, r - p);
-			else if (cb_p - 3 < 0x3e)
-				write80_c2(w, cb_p, p - s);
+	while (src_pos < src_end) {
+		const byte* p_block_begin;
+		int block_len;
+		int same_data_len = get_run_length(src_pos, src_end);
+		get_same(src, src_pos, src_end, p_block_begin, block_len);
+
+		//cout << "p_block_begin:" << std::showbase << std::hex << (std::uintptr_t)p_block_begin << ", block_len:" << block_len << endl;
+		if (same_data_len < block_len && block_len > 2) {
+			flush_c1(w, src_pos, copy_from);
+			if (block_len - 3 < 8 && src_pos - p_block_begin < 0x1000)
+				write80_c0(w, block_len, src_pos - p_block_begin);
+			else if (block_len - 3 < 0x3e)
+				write80_c2(w, block_len, p_block_begin - src);
 			else
-				write80_c4(w, cb_p, p - s);
-			r += cb_p;
-		} else {
-			if (t < 3) {
+				write80_c4(w, block_len, p_block_begin - src);
+			src_pos += block_len;
+		}
+		else {
+			if (same_data_len < 3) {
 				if (!copy_from)
-					copy_from = r;
-			} else {
-				flush_c1(w, r, copy_from);
-				write80_c3(w, t, *r);
+					copy_from = src_pos;
 			}
-			r += t;
+			else {
+				flush_c1(w, src_pos, copy_from);
+				write80_c3(w, same_data_len, *src_pos);
+			}
+			src_pos += same_data_len;
 		}
 	}
-	flush_c1(w, r, copy_from);
+	flush_c1(w, src_pos, copy_from);
 	write80_c1(w, 0, NULL);
-	return w - d;
+	return w - dst;
 }
 
 int decode80(const byte source[], byte dest[])

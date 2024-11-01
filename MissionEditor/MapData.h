@@ -484,8 +484,11 @@ private:
 #ifdef SMUDGE_SUPP
 	map<CString, int> smudgeid;
 #endif
-	BYTE m_Overlay[262144]; // overlay byte values (extracted)
-	BYTE m_OverlayData[262144]; // overlay data byte values (extracted)
+
+	static constexpr size_t overlayDataCapacity = 262144;
+
+	BYTE m_Overlay[overlayDataCapacity]; // overlay byte values (extracted)
+	BYTE m_OverlayData[overlayDataCapacity]; // overlay data byte values (extracted)
 	BYTE* m_mfd;	// map field data buffer
 	DWORD dwIsoMapSize;
 	CIniFile m_mapfile;

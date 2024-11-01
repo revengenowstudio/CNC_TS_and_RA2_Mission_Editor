@@ -13,19 +13,19 @@ void printBin(const std::span<BYTE> input, const char* fileName)
 	size_t count = 0;
 
 	for (const auto& byte : input) {
-		// 将字节格式化为十六进制字符串
+		// to hex
 		line_stream << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte) << " ";
 		count++;
 
-		// 每16个字节换行
+		// switch line every 16 bytes
 		if (count % 16 == 0) {
 			file << line_stream.str() << std::endl;
-			line_stream.str(""); // 清空流内容
-			line_stream.clear(); // 重置流状态
+			line_stream.str(""); // clear stream
+			line_stream.clear(); // reset stream
 		}
 	}
 
-	// 如果还有剩余的字节未输出
+	// for the rest of bytes
 	if (count % 16 != 0) {
 		file << line_stream.str() << std::endl;
 	}

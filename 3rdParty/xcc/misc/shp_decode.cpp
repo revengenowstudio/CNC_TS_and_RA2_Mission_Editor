@@ -274,7 +274,7 @@ static void flush_c1(byte*& w, const byte* r, const byte*& copy_from)
 	}
 }
 
-int encode80(const byte* src, byte* dst, int src_len)
+int encode80(const byte* src, byte* dst, const size_t src_len)
 {
 	//using std::cout;
 	//using std::endl;
@@ -689,7 +689,7 @@ int encode5(const byte* s, byte* d, int cb_s, int format)
 	return w - d;
 }
 
-int decode5(const byte* s, byte* d, int cb_s, int format)
+int decode5(const byte* s, byte* d, const size_t cb_s, int format)
 {
 	const byte* r = s;
 	const byte* r_end = s + cb_s;

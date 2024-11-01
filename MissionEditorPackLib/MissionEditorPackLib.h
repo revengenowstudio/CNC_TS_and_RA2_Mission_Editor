@@ -116,7 +116,7 @@ namespace FSunPackLib
 	len - length of hex data
 	Returns a poINTer to the base64 data. Caller must free this memory.
 	*/
-	BYTE* EncodeBase64(BYTE* sp, UINT len);
+	BYTE* EncodeBase64(BYTE* sp, const size_t len);
 	/*
 	Converts Base64 data to hex data.
 	sp - source poINTer
@@ -135,7 +135,7 @@ namespace FSunPackLib
 	dest - poINTer to dest poINTer. Function allocates memory, caller must free this memory.
 	Returns the length of the packed data.
 	*/
-	INT EncodeF80(BYTE* sp, UINT len, UINT nSections, BYTE** dest);
+	size_t EncodeF80(BYTE* sp, size_t len, UINT nSections, BYTE** dest);
 
 	/*
 	Extracts a simple format 80 pack like the Overlay & OverlayData-Pack
@@ -146,7 +146,7 @@ namespace FSunPackLib
 		dp - dest buffer
 		max_size - maximum allowed destination size
 	*/
-	bool DecodeF80(const BYTE* sp, UINT SourceLength, std::vector<BYTE>& dp, std::size_t max_size);
+	bool DecodeF80(const BYTE* sp, size_t SourceLength, std::vector<BYTE>& dp, std::size_t max_size);
 
 	// IsoMapPack5
 	/*

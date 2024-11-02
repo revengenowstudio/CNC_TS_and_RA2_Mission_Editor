@@ -5,7 +5,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <DistributionFolder>$(MSBuildThisFileDirectory)\..\..\dist\$(DistributionName)</DistributionFolder>
-	<OutDir>$(DistributionFolder)\</OutDir>
+	  <OutDir>$(DistributionFolder)\</OutDir>
+    <TestOutDir>$(MSBuildThisFileDirectory)\..\..\$(Platform)\$(SchemaType)</TestOutDir>
   </PropertyGroup>
   <ItemGroup>
     <!--<XccVcpkgLic Include="$(XccVcpkgDirTriplet)\share\boost-config\copyright"><Dest>boost\license.txt</Dest></XccVcpkgLic>-->
@@ -29,6 +30,9 @@
   </Target>
   <Target Name="CopyDllFiles" AfterTargets="Build" BeforeTargets="BuildAndZipDistribution">
     <Copy SourceFiles="@(XccVcpkgBin)" DestinationFolder="$(OutDir)" />
+  </Target>
+  <Target Name="CopyDllFilesForUT" AfterTargets="Build" BeforeTargets="BuildAndZipDistribution">
+    <Copy SourceFiles="@(XccVcpkgBin)" DestinationFolder="$(TestOutDir)" />
   </Target>
   <Target Name="CopyVxlLibDll" AfterTargets="Build" BeforeTargets="BuildAndZipDistribution">
     <Copy SourceFiles="@(VxlLibBin)" DestinationFolder="$(OutDir)" />

@@ -171,7 +171,7 @@ namespace FSunPackLib
 	extern "C" int last_succeeded_operation = 0;
 
 
-	BYTE* EncodeBase64(BYTE* sp, UINT len)
+	BYTE* EncodeBase64(BYTE* sp, const size_t len)
 	{
 		auto encoded = encode64(data_ref(sp, std::size_t(len)));
 		// for now make a copy, we might refactor this
@@ -189,13 +189,13 @@ namespace FSunPackLib
 
 
 
-	INT EncodeF80(BYTE* sp, UINT len, UINT nSections, BYTE** dest)
+	size_t EncodeF80(BYTE* sp, size_t len, UINT nSections, BYTE** dest)
 	{
 		*dest = new(BYTE[len * 4]); // as large as sp, to make sure it works
 
 		BYTE* data = *dest;
 
-		int length = len / nSections;
+		auto const length = len / nSections;
 		// each section has this length
 
 #ifdef DBG2
@@ -210,11 +210,11 @@ namespace FSunPackLib
 		WriteFile(hOut, out.data(), out.size(), &dw, NULL);
 #endif
 
-		UINT i;
-		UINT DP = 0;
-		UINT SP = 0;
+		size_t i;
+		size_t DP = 0;
+		size_t SP = 0;
 		for (i = 0; i < nSections; i++) {
-			UINT packLen = encode80(&sp[SP], &data[DP + 4], length); //ConvertToF80(&sp[SP], length, &data[DP+4]);
+			const size_t packLen = encode80(&sp[SP], &data[DP + 4], length); //ConvertToF80(&sp[SP], length, &data[DP+4]);
 
 			memcpy(&data[DP], &packLen, 3);
 			DP += 3;
@@ -255,7 +255,7 @@ namespace FSunPackLib
 		return DP;
 	}
 
-	bool DecodeF80(const BYTE* const sp, const UINT SourceLength, std::vector<BYTE>& dp, const std::size_t max_size)
+	bool DecodeF80(const BYTE* const sp, const size_t SourceLength, std::vector<BYTE>& dp, const std::size_t max_size)
 	{
 		static_assert(4 == sizeof(t_pack_section_header));
 

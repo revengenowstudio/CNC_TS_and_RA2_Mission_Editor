@@ -7,6 +7,7 @@
   <XccVcpkgDirTriplet>$(XccDir)\vcpkg_installed\$(Platform)-windows\$(Platform)-windows</XccVcpkgDirTriplet>
     <XccVcpkgDir>$(XccVcpkgDirTriplet)</XccVcpkgDir>
     <VxlLibDir>$(SolutionDir)$(Platform)\Release</VxlLibDir>
+    <SchemaType>Release</SchemaType>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />

@@ -27,9 +27,26 @@ jobs:
       with:
         # Target architecture
         arch: x64
-    - name: build-msvc
+    - name: Restore cache vcpkg
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          3rdParty/xcc/vcpkg_downloads
+          3rdParty/xcc/vcpkg_installed
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+    - name: Build Main Program (MSVC)
+      run: |
+        devenv.com "MissionEditor.sln"  /Build "${{ env.CONFIGURATION }}|x64" /project MissionEditor
+    - name: Build UT tool (MSVC)
       run: |
         devenv.com "MissionEditor.sln"  /Build "${{ env.CONFIGURATION }}|x64" /project UnitTest
+    - name: Cache vcpkg
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          3rdParty/xcc/vcpkg_downloads
+          3rdParty/xcc/vcpkg_installed
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
     - name: do UT
       run: |
         cd x64\Debug

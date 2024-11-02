@@ -42,6 +42,13 @@ jobs:
         ./scripts/update_product_version.ps1 -major ${{ env.VERSION_MAJOR }} -minor ${{ env.VERSION_MINOR }} -revision ${{ github.run_number }}
         echo "RELEASE_VER=$versionNum" >> $GITHUB_ENV
         echo "PACKAGE_NAME=$pkgName" >> $GITHUB_ENV
+    - name: Restore cache vcpkg
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          3rdParty/xcc/vcpkg_downloads
+          3rdParty/xcc/vcpkg_installed
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
     - name: build-msvc
       run: |
         devenv.com "MissionEditor.sln"  /Build "${{ env.CONFIGURATION }}|x64" /project MissionEditor

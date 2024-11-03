@@ -101,6 +101,8 @@ public:
 	CIsoView();
 	virtual ~CIsoView();
 
+	BOOL RecreateSurfaces();
+
 	// overwriteables
 		//{{AFX_VIRTUAL(CIsoView)
 public:

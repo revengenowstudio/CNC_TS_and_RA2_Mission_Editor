@@ -6062,8 +6062,12 @@ void CIsoView::RenderUIOverlay()
 	ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT;
 
 	dds->GetSurfaceDesc(&ddsd);
+	ASSERT(ddsd.lpSurface != nullptr);
 
-	dds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+	auto const lockRet = dds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+	ASSERT(lockRet == S_OK);
+	ASSERT(ddsd.lpSurface != nullptr);
+
 	LineDrawer d(ddsd.lpSurface, bpp, ddsd.dwWidth, ddsd.dwHeight, ddsd.lPitch);
 
 	int lr, lt, ll, lb;

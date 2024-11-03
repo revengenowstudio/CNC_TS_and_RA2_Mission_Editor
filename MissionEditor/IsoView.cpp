@@ -6256,11 +6256,8 @@ void CIsoView::DrawMap()
 
 }
 
-void CIsoView::RenderUIOverlay()
+std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> CIsoView::getDDDesc(bool recreated)
 {
-	if (!m_textDefault)
-		updateFontScaled();
-
 	LPDIRECTDRAWSURFACE4 dds = lpdsBack;
 	bool useHighRes = false;
 	if (m_viewScale != Vec2<CSProjected, float>(1.0f, 1.0f) && lpdsBackHighRes) {
@@ -6276,15 +6273,25 @@ void CIsoView::RenderUIOverlay()
 	dds->GetSurfaceDesc(&ddsd);
 
 	auto const lockRet = dds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+
+	if (lockRet == DDERR_SURFACELOST && !recreated) {
+		RecreateSurfaces();
+		return getDDDesc(true);
+	}
+
 	ASSERT(lockRet == S_OK);
 	ASSERT(ddsd.lpSurface != nullptr);
 
-	if (lockRet == DDERR_SURFACELOST) {
-		RecreateSurfaces();
-		auto const lockRet2 = dds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
-		ASSERT(lockRet == S_OK);
-		ASSERT(ddsd.lpSurface != nullptr);
+	return { ddsd, dds, useHighRes };
+}
+
+void CIsoView::RenderUIOverlay()
+{
+	if (!m_textDefault) {
+		updateFontScaled();
 	}
+
+	auto const [ddsd, dds, useHighRes] = getDDDesc(false);
 
 	LineDrawer d(ddsd.lpSurface, bpp, ddsd.dwWidth, ddsd.dwHeight, ddsd.lPitch);
 

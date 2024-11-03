@@ -121,7 +121,7 @@ protected:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-
+	std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> getDDDesc(bool recreated);
 
 	// generated message maps
 	//{{AFX_MSG(CIsoView)

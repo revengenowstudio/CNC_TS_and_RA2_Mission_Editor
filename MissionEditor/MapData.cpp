@@ -618,10 +618,12 @@ void CMapData::LoadMap(const std::string& file)
 					((LPDIRECTDRAWSURFACE4)it->second.pic)->Release();
 				}
 			} else {
-				if (it->second.pic != NULL) {
-					delete[] it->second.pic;
+				if (auto pPic = std::exchange(it->second.pic, nullptr)) {
+					delete[](pPic);
 				}
-				if (it->second.vborder) delete[] it->second.vborder;
+				if (auto pBorder = std::exchange(it->second.vborder, nullptr)) {
+					delete[](pBorder);
+				}
 			}
 #else
 			if (it->second.pic != NULL) it->second.pic->Release();
@@ -3791,10 +3793,12 @@ void CMapData::CreateMap(DWORD dwWidth, DWORD dwHeight, LPCTSTR lpTerrainType, D
 					((LPDIRECTDRAWSURFACE4)it->second.pic)->Release();
 				}
 			} else {
-				if (it->second.pic != NULL) {
-					delete[] it->second.pic;
+				if (auto pPic = std::exchange(it->second.pic, nullptr)) {
+					delete[](pPic);
 				}
-				if (it->second.vborder) delete[] it->second.vborder;
+				if (auto pBorder = std::exchange(it->second.vborder, nullptr)) {
+					delete[](pBorder);
+				}
 			}
 #else
 			if (it->second.pic != NULL) it->second.pic->Release();

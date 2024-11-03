@@ -3888,10 +3888,12 @@ void CLoading::FreeAll()
 					((LPDIRECTDRAWSURFACE4)i->second.pic)->Release();
 				}
 			} else {
-				if (i->second.pic != NULL) {
-					delete[] i->second.pic;
+				if (auto pPic = std::exchange(i->second.pic, nullptr)) {
+					delete[](pPic);
 				}
-				if (i->second.vborder) delete[] i->second.vborder;
+				if (auto pBorder = std::exchange(i->second.vborder, nullptr)) {
+					delete[](pBorder);
+				}
 			}
 #else
 			if (i->second.pic != NULL) i->second.pic->Release();

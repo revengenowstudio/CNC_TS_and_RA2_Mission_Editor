@@ -6301,7 +6301,7 @@ std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> CIsoView::getDDDesc(bool 
 	auto const lockRet = dds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
 
 	if (lockRet == DDERR_SURFACELOST && !recreated) {
-		RecreateSurfaces();
+		ReInitializeDDraw();
 		return getDDDesc(true);
 	}
 

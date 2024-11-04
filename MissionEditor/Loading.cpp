@@ -3712,18 +3712,30 @@ void CLoading::FreeAll()
 
 	try {
 		CFinalSunDlg* dlg = ((CFinalSunDlg*)theApp.m_pMainWnd);
-		if (dlg->m_view.m_isoview->lpds != NULL) dlg->m_view.m_isoview->lpds->Release();
-		dlg->m_view.m_isoview->lpds = NULL;
-		if (dlg->m_view.m_isoview->lpdsBack != NULL) dlg->m_view.m_isoview->lpdsBack->Release();
-		dlg->m_view.m_isoview->lpdsBack = NULL;
-		if (dlg->m_view.m_isoview->lpdsBackHighRes != NULL) dlg->m_view.m_isoview->lpdsBackHighRes->Release();
-		dlg->m_view.m_isoview->lpdsBackHighRes = NULL;
-		if (dlg->m_view.m_isoview->lpdsTemp != NULL) dlg->m_view.m_isoview->lpdsTemp->Release();
-		dlg->m_view.m_isoview->lpdsTemp = NULL;
-		if (dlg->m_view.m_isoview->dd != NULL) dlg->m_view.m_isoview->dd->Release();
-		dlg->m_view.m_isoview->dd = NULL;
-		if (dlg->m_view.m_isoview->dd_1 != NULL) dlg->m_view.m_isoview->dd_1->Release();
-		dlg->m_view.m_isoview->dd_1 = NULL;
+		if (dlg->m_view.m_isoview->lpds != NULL) {
+			dlg->m_view.m_isoview->lpds->Release();
+			dlg->m_view.m_isoview->lpds = NULL;
+		}
+		if (dlg->m_view.m_isoview->lpdsBack != NULL) {
+			dlg->m_view.m_isoview->lpdsBack->Release();
+			dlg->m_view.m_isoview->lpdsBack = NULL;
+		}
+		if (dlg->m_view.m_isoview->lpdsBackHighRes != NULL) {
+			dlg->m_view.m_isoview->lpdsBackHighRes->Release();
+			dlg->m_view.m_isoview->lpdsBackHighRes = NULL;
+		}
+		if (dlg->m_view.m_isoview->lpdsTemp != NULL) {
+			dlg->m_view.m_isoview->lpdsTemp->Release();
+			dlg->m_view.m_isoview->lpdsTemp = NULL;
+		}
+		if (dlg->m_view.m_isoview->dd != NULL) {
+			dlg->m_view.m_isoview->dd->Release();
+			dlg->m_view.m_isoview->dd = NULL;
+		}
+		if (dlg->m_view.m_isoview->dd_1 != NULL) {
+			dlg->m_view.m_isoview->dd_1->Release();
+			dlg->m_view.m_isoview->dd_1 = NULL;
+		}
 	} catch (...) {
 		errstream << "Exception while freeing DirectDraw" << endl;
 	}

@@ -209,6 +209,11 @@ BOOL CIsoView::RecreateSurfaces()
 	errstream.flush();
 
 	CIsoView& isoView = *this;
+
+	if (isoView.dd_1) {
+		isoView.dd_1->Release();
+	}
+
 	if (DirectDrawCreate(NULL, &isoView.dd_1, NULL) != DD_OK) {
 		errstream << "DirectDrawCreate() failed\n";
 		errstream.flush();
@@ -224,6 +229,10 @@ BOOL CIsoView::RecreateSurfaces()
 
 	errstream << "Now querying the DirectX 7 or 6 interface\n";
 	errstream.flush();
+
+	if (isoView.dd) {
+		isoView.dd->Release();
+	}
 
 	if (isoView.dd_1->QueryInterface(IID_IDirectDraw7, (void**)&isoView.dd) != DD_OK) {
 		errstream << "QueryInterface() failed -> Using DirectX 6.0\n";
@@ -272,6 +281,11 @@ BOOL CIsoView::RecreateSurfaces()
 	int res = 0;
 	int trycount = 0;
 	do {
+
+		if (isoView.lpds) {
+			isoView.lpds->Release();
+		}
+
 		res = isoView.dd->CreateSurface(&ddsd, &isoView.lpds, NULL);
 		errstream << "Return code: " << res << endl;
 		errstream.flush();
@@ -332,6 +346,9 @@ BOOL CIsoView::RecreateSurfaces()
 
 	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 
+	if (isoView.lpdsBack) {
+		isoView.lpdsBack->Release();
+	}
 
 	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBack, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
@@ -346,6 +363,11 @@ BOOL CIsoView::RecreateSurfaces()
 
 		return FALSE;
 	}
+
+	if (isoView.lpdsBackHighRes) {
+		isoView.lpdsBackHighRes->Release();
+	}
+
 	if (theApp.m_Options.bHighResUI && isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBackHighRes, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
 		errstream.flush();
@@ -360,6 +382,10 @@ BOOL CIsoView::RecreateSurfaces()
 		exit(-4);
 
 		return FALSE;
+	}
+
+	if (isoView.lpdsTemp) {
+		isoView.lpdsTemp->Release();
 	}
 	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsTemp, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";

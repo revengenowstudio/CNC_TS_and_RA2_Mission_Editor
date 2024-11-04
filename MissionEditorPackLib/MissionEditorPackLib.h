@@ -228,7 +228,9 @@ namespace FSunPackLib
 
 	BOOL GetVXLSectionInfo(int section, VoxelNormalClass& normalClass);
 
+#if defined(XCC_VXL_DRAW)
 	BOOL LoadVXLImageInSurface(const VoxelNormalTables& normalTables, Vec3f lightDirection, IDirectDraw4* pdd, int iStart, int iCount, Vec3f rotation, Vec3f modelOffset, LPDIRECTDRAWSURFACE4* pdds, HTSPALETTE hPalette, int* lpXCenter = NULL, int* lpYCenter = NULL, int ZAdjust = 0, int* lpXCenterZMax = NULL, int* lpYCenterZMax = NULL, int i3dCenterX = -1, int i3dCenterY = -1);
+#endif
 
 	// modelOffset is applied before VXL/HVA translates and scales and before model-to-world rotation
 	BOOL LoadVXLImage(const VoxelNormalTables& normalTables, 

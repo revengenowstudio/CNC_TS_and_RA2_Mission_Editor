@@ -1635,6 +1635,7 @@ namespace FSunPackLib
 
 	VoxelNormalTable emptyNormalTable;
 
+#if defined(XCC_VXL_DRAW)
 	BOOL LoadVXLImageInSurface(const VoxelNormalTables& normalTables, Vec3f lightDirection, IDirectDraw4* pdd, int iStart, int iCount, const Vec3f rotation, const Vec3f postHVAOffset, LPDIRECTDRAWSURFACE4* pdds, HTSPALETTE hPalette, int* lpXCenter, int* lpYCenter, int ZAdjust, int* lpXCenterZMax, int* lpYCenterZMax, int i3dCenterX, int i3dCenterY)
 	{
 		if (hPalette == NULL || hPalette > dwPalCount) return NULL;
@@ -1850,6 +1851,7 @@ namespace FSunPackLib
 		//pal.close();
 		return TRUE;
 	}
+#endif
 
 	BOOL LoadVXLImage(
 		const VoxelNormalTables& normalTables,

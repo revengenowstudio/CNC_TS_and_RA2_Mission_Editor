@@ -201,6 +201,218 @@ CIsoView::~CIsoView()
 	bNoThreadDraw = TRUE;
 }
 
+BOOL CIsoView::RecreateSurfaces()
+{
+	last_succeeded_operation = 7;
+
+	errstream << "\n\nDirectDrawCreate() will be called now\n";
+	errstream.flush();
+
+	CIsoView& isoView = *this;
+	if (DirectDrawCreate(NULL, &isoView.dd_1, NULL) != DD_OK) {
+		errstream << "DirectDrawCreate() failed\n";
+		errstream.flush();
+		ShowWindow(SW_HIDE);
+		MessageBox("DirectDraw could not be initialized! Quitting...");
+		exit(-1);
+
+		return FALSE;
+	}
+
+	errstream << "DirectDrawCreate() successful\n\n";
+	errstream.flush();
+
+	errstream << "Now querying the DirectX 7 or 6 interface\n";
+	errstream.flush();
+
+	if (isoView.dd_1->QueryInterface(IID_IDirectDraw7, (void**)&isoView.dd) != DD_OK) {
+		errstream << "QueryInterface() failed -> Using DirectX 6.0\n";
+		errstream.flush();
+		//ShowWindow(SW_HIDE);
+		//MessageBox("You don´t have DirectX 6.0 but an older version. Quitting...");
+		//exit(-1);
+
+		//return FALSE;
+
+		if (isoView.dd_1->QueryInterface(IID_IDirectDraw4, (void**)&isoView.dd) != DD_OK) {
+			MessageBox("You need at least DirectX 6.0 to run this program", "Error");
+			exit(-1);
+			return FALSE;
+		}
+	}
+
+	errstream << "QueryInterface() successful\n\nNow setting cooperative level\n";
+	errstream.flush();
+
+	if (isoView.dd->SetCooperativeLevel(isoView.m_hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES) != DD_OK) {
+		errstream << "SetCooperativeLevel() failed\n";
+		errstream.flush();
+		ShowWindow(SW_HIDE);
+		MessageBox("Cooperative Level could not be set! Quitting...");
+		isoView.dd->Release();
+		isoView.dd = NULL;
+		exit(-2);
+
+		return FALSE;
+	}
+
+	errstream << "SetCooperativeLevel() successful\n\nCreating primary surface\n";
+	errstream.flush();
+
+	DDSURFACEDESC2 ddsd;
+
+
+	memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+	ddsd.dwSize = sizeof(DDSURFACEDESC2);
+	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+	ddsd.dwFlags = DDSD_CAPS;
+
+
+
+	int res = 0;
+	int trycount = 0;
+	do {
+		res = isoView.dd->CreateSurface(&ddsd, &isoView.lpds, NULL);
+		errstream << "Return code: " << res << endl;
+		errstream.flush();
+
+		//if(res!=DD_OK && (res!=DDERR_PRIMARYSURFACEALREADYEXISTS || trycount>100))
+		if (res != DD_OK && trycount >= 300) {
+
+			errstream << "CreateSurface() failed\n";
+
+			errstream.flush();
+			ShowWindow(SW_HIDE);
+			MessageBox("Primary surface could not be initialized! Quitting...");
+			isoView.dd->Release();
+			isoView.dd = NULL;
+			exit(-3);
+
+			return FALSE;
+		}
+		trycount++;
+		if (res != DD_OK) {
+			Sleep(50);
+		}
+
+
+	} while (res != DD_OK);
+
+#ifdef NOSURFACES
+	DDPIXELFORMAT pf;
+	memset(&pf, 0, sizeof(DDPIXELFORMAT));
+	pf.dwSize = sizeof(DDPIXELFORMAT);
+
+	isoView.lpds->GetPixelFormat(&pf);
+
+	if (!pf.dwBBitMask || !pf.dwRBitMask || !pf.dwGBitMask) {
+		ShowWindow(SW_HIDE);
+		MessageBox("You must not use a palette color mode like 8 bit in order to run FinalSun/FinalAlert 2. Please check readme.txt", "Error", MB_OK);
+
+		isoView.lpds->Release();
+		isoView.lpds = NULL;
+		isoView.dd->Release();
+		isoView.dd = NULL;
+		exit(-3);
+		return FALSE;
+	}
+	bpp = (pf.dwRGBBitCount + 7) / 8;
+#endif
+
+
+	errstream << "CreateSurface() successful\n\nCreating backbuffer surface\n";
+	errstream.flush();
+
+	memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
+	ddsd.dwSize = sizeof(DDSURFACEDESC2);
+	ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT;
+	isoView.lpds->GetSurfaceDesc(&ddsd);
+	ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
+
+
+	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+
+
+	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBack, NULL) != DD_OK) {
+		errstream << "CreateSurface() failed\n";
+		errstream.flush();
+		ShowWindow(SW_HIDE);
+		MessageBox("Backbuffer surface could not be initialized! Quitting...");
+		isoView.lpds->Release();
+		isoView.lpds = NULL;
+		isoView.dd->Release();
+		isoView.dd = NULL;
+		exit(-4);
+
+		return FALSE;
+	}
+	if (theApp.m_Options.bHighResUI && isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBackHighRes, NULL) != DD_OK) {
+		errstream << "CreateSurface() failed\n";
+		errstream.flush();
+		ShowWindow(SW_HIDE);
+		MessageBox("Highres Backbuffer surface could not be initialized! Quitting...");
+		isoView.lpdsBack->Release();
+		isoView.lpdsBack = NULL;
+		isoView.lpds->Release();
+		isoView.lpds = NULL;
+		isoView.dd->Release();
+		isoView.dd = NULL;
+		exit(-4);
+
+		return FALSE;
+	}
+	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsTemp, NULL) != DD_OK) {
+		errstream << "CreateSurface() failed\n";
+		errstream.flush();
+		ShowWindow(SW_HIDE);
+		MessageBox("Tempbuffer surface could not be initialized! Quitting...");
+		isoView.lpdsBack->Release();
+		isoView.lpdsBack = NULL;
+		if (isoView.lpdsBackHighRes)
+			isoView.lpdsBackHighRes->Release();
+		isoView.lpdsBackHighRes = nullptr;
+		isoView.lpds->Release();
+		isoView.lpds = NULL;
+		isoView.dd->Release();
+		isoView.dd = NULL;
+		exit(-4);
+
+		return FALSE;
+	}
+
+	errstream << "CreateSurface() successful\n\nNow creating clipper\n";
+	errstream.flush();
+
+	LPDIRECTDRAWCLIPPER ddc;
+	if (isoView.dd->CreateClipper(0, &ddc, NULL) != DD_OK) {
+		errstream << "CreateClipper() failed\n";
+		errstream.flush();
+		ShowWindow(SW_HIDE);
+		MessageBox("Clipper could not be created! Quitting...");
+		isoView.lpdsTemp->Release();
+		isoView.lpdsTemp = NULL;
+		isoView.lpdsBack->Release();
+		isoView.lpdsBack = NULL;
+		if (isoView.lpdsBackHighRes)
+			isoView.lpdsBackHighRes->Release();
+		isoView.lpdsBackHighRes = nullptr;
+		isoView.lpds->Release();
+		isoView.lpds = NULL;
+		isoView.dd->Release();
+		isoView.dd = NULL;
+		exit(-6);
+	}
+
+	errstream << "CreateClipper() successful\n\n";
+	errstream.flush();
+
+	isoView.lpds->SetClipper(ddc);
+
+	ddc->SetHWnd(0, isoView.m_hWnd);
+
+	return TRUE;
+}
+
 
 BEGIN_MESSAGE_MAP(CIsoView, CView)
 	//{{AFX_MSG_MAP(CIsoView)
@@ -6044,11 +6256,8 @@ void CIsoView::DrawMap()
 
 }
 
-void CIsoView::RenderUIOverlay()
+std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> CIsoView::getDDDesc(bool recreated)
 {
-	if (!m_textDefault)
-		updateFontScaled();
-
 	LPDIRECTDRAWSURFACE4 dds = lpdsBack;
 	bool useHighRes = false;
 	if (m_viewScale != Vec2<CSProjected, float>(1.0f, 1.0f) && lpdsBackHighRes) {
@@ -6063,7 +6272,27 @@ void CIsoView::RenderUIOverlay()
 
 	dds->GetSurfaceDesc(&ddsd);
 
-	dds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+	auto const lockRet = dds->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+
+	if (lockRet == DDERR_SURFACELOST && !recreated) {
+		ReInitializeDDraw();
+		return getDDDesc(true);
+	}
+
+	ASSERT(lockRet == S_OK);
+	ASSERT(ddsd.lpSurface != nullptr);
+
+	return { ddsd, dds, useHighRes };
+}
+
+void CIsoView::RenderUIOverlay()
+{
+	if (!m_textDefault) {
+		updateFontScaled();
+	}
+
+	auto const [ddsd, dds, useHighRes] = getDDDesc(false);
+
 	LineDrawer d(ddsd.lpSurface, bpp, ddsd.dwWidth, ddsd.dwHeight, ddsd.lPitch);
 
 	int lr, lt, ll, lb;

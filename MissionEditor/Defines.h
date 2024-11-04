@@ -62,7 +62,7 @@
 #define PICDATA_TYPE_SHP 1
 #define PICDATA_TYPE_VXL 2
 
-#define SUBPOS_COUNT 3
+#define SUBPOS_COUNT 4
 #define REAL_SUBPOS_COUNT 3
 
 #define SOUND_NONE 0

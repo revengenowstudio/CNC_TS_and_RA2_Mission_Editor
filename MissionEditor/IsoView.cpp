@@ -6002,8 +6002,14 @@ void CIsoView::DrawMap()
 					DrawCell(drawCoords.x, drawCoords.y, 1, 1, c);
 #endif
 
-					static const ProjectedVec subPosLookup[5] = { ProjectedVec(0, -f_y / 4), ProjectedVec(f_x / 4 , 0), ProjectedVec(-f_x / 4, 0), ProjectedVec(0, f_y / 4), ProjectedVec() };
-					auto drawCoordsInf = drawCoords + subPosLookup[ic > 4 ? 4 : ic];
+					static const ProjectedVec subPosLookup[5] = { 
+						ProjectedVec(),
+						ProjectedVec(f_x / 4 , 0),
+						ProjectedVec(-f_x / 4, 0),
+						ProjectedVec(0, f_y / 4),
+						ProjectedVec(0, -f_y / 4),
+					};
+					auto drawCoordsInf = drawCoords + subPosLookup[std::min(ic, 4)];
 
 					PICDATA p;
 

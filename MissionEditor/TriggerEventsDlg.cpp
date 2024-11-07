@@ -99,7 +99,9 @@ void CTriggerEventsDlg::TranslateUI()
 int GetEventParamStart(const CString& EventData, int param)
 {
 	int count = atoi(GetParam(EventData, 0));
-	if (param >= count) return -1;
+	if (param >= count) {
+		return -1;
+	}
 
 	int pos = 1;
 	int i;
@@ -108,8 +110,8 @@ int GetEventParamStart(const CString& EventData, int param)
 		int needs = atoi(GetParam(EventData, pos));
 
 		pos += 2; // jump to next usual eventtype
-		if (needs == 2) // if needs of last eventtype is 2, we need to add 1
-		{
+		// if needs of last eventtype is 2, we need to add 1
+		if (needs == 2) {
 			pos += 1;
 		}
 	}

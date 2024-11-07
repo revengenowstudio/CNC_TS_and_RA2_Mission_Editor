@@ -42,7 +42,8 @@ CSaveMapOptionsDlg::CSaveMapOptionsDlg(CWnd* pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(CSaveMapOptionsDlg)
 	m_Compress = 1;
-	m_PreviewMode = 0;
+	m_PreviewMode = PREVIEW_MINIMAP;
+	m_MinPlayers = 2;
 	m_MapName = _T("");
 	m_AirWar = FALSE;
 	m_Cooperative = FALSE;
@@ -56,10 +57,12 @@ CSaveMapOptionsDlg::CSaveMapOptionsDlg(CWnd* pParent /*=NULL*/)
 	//}}AFX_DATA_INIT
 
 	CIniFile& ini = Map->GetIniFile();
-	if (!Map->IsMultiplayer())
-		m_PreviewMode = 1;
+	if (!Map->IsMultiplayer()) {
+		m_PreviewMode = PREVIEW_DONT_CHANGE;
+	}
 
 	m_MapName = ini.GetString("Basic", "Name");
+	m_MinPlayers = ini.GetInteger("Basic", "MinPlayer");
 }
 
 
@@ -68,7 +71,7 @@ void CSaveMapOptionsDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSaveMapOptionsDlg)
 	DDX_Radio(pDX, IDC_COMPRESS, m_Compress);
-	DDX_Radio(pDX, IDC_PREVIEWMODE, m_PreviewMode);
+	DDX_Radio(pDX, IDC_PREVIEWMODE, reinterpret_cast<int&>(m_PreviewMode));
 	DDX_Text(pDX, IDC_MAPNAME, m_MapName);
 #ifdef RA2_MODE
 	DDX_Check(pDX, IDC_AIRWAR, m_AirWar);

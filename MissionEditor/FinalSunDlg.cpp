@@ -1061,20 +1061,20 @@ void CFinalSunDlg::SaveMap(CString FileName_)
 			}
 		}
 
-		if (count < 2) {
-			count = 2;
+		if (count < 1) {
+			count = 1;
 		}
 		// TODO: control from dialog
-		Map->GetIniFile().SetInteger("Basic", "MinPlayer", 2);
+		Map->GetIniFile().SetInteger("Basic", "MinPlayer", opt.m_MinPlayers);
 		Map->GetIniFile().SetInteger("Basic", "MaxPlayer", count);
 
 		if (opt.m_Compress == 0) {
 			dwFlags |= MAPDATA_UPDATE_TO_INI_ALL_COMPRESSED;
 		}
-		if (opt.m_PreviewMode == 0) {
+		if (opt.m_PreviewMode == CSaveMapOptionsDlg::PREVIEW_MINIMAP) {
 			dwFlags |= MAPDATA_UPDATE_TO_INI_ALL_PREVIEW;
 		}
-		if (opt.m_PreviewMode == 2) {
+		if (opt.m_PreviewMode == CSaveMapOptionsDlg::PREVIEW_STRIP) {
 			hidePreview = TRUE;
 		}
 	} else {

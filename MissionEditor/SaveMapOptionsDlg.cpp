@@ -70,9 +70,9 @@ void CSaveMapOptionsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSaveMapOptionsDlg)
-	DDX_Radio(pDX, IDC_COMPRESS, m_Compress);
 	DDX_Radio(pDX, IDC_PREVIEWMODE, reinterpret_cast<int&>(m_PreviewMode));
 	DDX_Text(pDX, IDC_MAPNAME, m_MapName);
+	DDX_Text(pDX, IDC_SAVE_OPT_M_PLAYERS, m_MinPlayers);
 #ifdef RA2_MODE
 	DDX_Check(pDX, IDC_AIRWAR, m_AirWar);
 	DDX_Check(pDX, IDC_COOPERATIVE, m_Cooperative);
@@ -121,4 +121,9 @@ BOOL CSaveMapOptionsDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX-Eigenschaftenseiten sollten FALSE zurückgeben
+}
+
+void translateUI()
+{
+	//IDC_SAVE_OPT_MP_TXT;
 }

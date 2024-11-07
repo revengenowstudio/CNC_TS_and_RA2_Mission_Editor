@@ -586,7 +586,6 @@
     <ClCompile Include="TriggerEditorDlg.cpp" />
     <ClCompile Include="TriggerEventsDlg.cpp" />
     <ClCompile Include="TriggerOptionsDlg.cpp" />
-    <ClCompile Include="Triggers.cpp" />
     <ClCompile Include="TSOptions.cpp" />
     <ClCompile Include="Tube.cpp" />
     <ClCompile Include="TubeTool.cpp" />
@@ -688,7 +687,6 @@
     <ClInclude Include="TriggerEditorDlg.h" />
     <ClInclude Include="TriggerEventsDlg.h" />
     <ClInclude Include="TriggerOptionsDlg.h" />
-    <ClInclude Include="Triggers.h" />
     <ClInclude Include="TSOptions.h" />
     <ClInclude Include="Tube.h" />
     <ClInclude Include="TubeTool.h" />

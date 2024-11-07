@@ -659,9 +659,6 @@ void CFinalSunDlg::UpdateDialogs(BOOL bOnlyMissionControl, BOOL bNoRepos)
 	if (m_Scripttypes.m_hWnd) {
 		m_Scripttypes.UpdateDialog();
 	}
-	if (m_triggers.m_hWnd) {
-		m_triggers.UpdateDialog();
-	}
 	if (m_triggereditor.m_hWnd) {
 		m_triggereditor.UpdateDialog();
 	}
@@ -2284,8 +2281,6 @@ void CFinalSunDlg::HideAllDialogs()
 		m_taskforces.ShowWindow(SW_HIDE);
 	if (m_teamtypes)
 		m_teamtypes.ShowWindow(SW_HIDE);
-	if (m_triggers)
-		m_triggers.ShowWindow(SW_HIDE);
 }
 
 void CFinalSunDlg::OnFileValidatemap()
@@ -2542,18 +2537,6 @@ void CFinalSunDlg::OnEditTeams()
 
 void CFinalSunDlg::OnEditTriggers()
 {
-	if (m_triggers.m_hWnd == NULL) {
-		if (!m_triggers.Create(CTriggers::IDD, NULL)) {
-			MessageBox(GetLanguageStringACP("Err_CreateErr"), "Error");
-		}
-	}
-
-	if (m_triggers.m_hWnd != NULL) {
-		//m_triggers.UpdateStrings();
-		m_triggers.UpdateDialog();
-		m_triggers.ShowWindow(SW_SHOW);
-		Sound(SOUND_POSITIVE);
-	}
 }
 
 void CFinalSunDlg::OnSetFocus(CWnd* pOldWnd)

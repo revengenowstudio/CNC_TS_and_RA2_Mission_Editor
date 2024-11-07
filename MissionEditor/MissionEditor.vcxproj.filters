@@ -240,9 +240,6 @@
     <ClCompile Include="TriggerOptionsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Triggers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TSOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -536,9 +533,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TriggerOptionsDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Triggers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TSOptions.h">

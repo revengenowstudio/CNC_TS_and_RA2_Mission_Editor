@@ -215,7 +215,7 @@ void CTriggerEditorDlg::OnDeletetrigger()
 		return;
 	}
 
-	auto const& triggerId = ini["Triggers"].Nth(curtrig).first;
+	auto const triggerId = ini["Triggers"].Nth(curtrig).first;
 
 	if (res == IDYES) {
 		std::vector<CString> keysToDelete;
@@ -230,9 +230,14 @@ void CTriggerEditorDlg::OnDeletetrigger()
 		}
 	}
 
-	ini.RemoveValueByKey("Triggers", triggerId);
-	ini.RemoveValueByKey("Events", triggerId);
-	ini.RemoveValueByKey("Actions", triggerId);
+	bool deleted = false;
+	deleted = ini.RemoveValueByKey("Triggers", triggerId);
+	ASSERT(deleted);
+	deleted = ini.RemoveValueByKey("Events", triggerId);
+	ASSERT(deleted);
+	deleted = ini.RemoveValueByKey("Actions", triggerId);
+	ASSERT(deleted);
+	(void)deleted;
 
 	((CFinalSunDlg*)theApp.m_pMainWnd)->UpdateDialogs(TRUE);
 

@@ -215,7 +215,7 @@ void CTriggerEditorDlg::OnDeletetrigger()
 		return;
 	}
 
-	auto const triggerId = ini["Triggers"].Nth(curtrig).first;
+	auto const& triggerId = ini["Triggers"].Nth(curtrig).first;
 
 	if (res == IDYES) {
 		std::vector<CString> keysToDelete;

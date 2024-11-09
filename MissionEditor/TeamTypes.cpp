@@ -800,6 +800,9 @@ void CTeamTypes::OnEditchangeWaypoint()
 	TruncSpace(str);
 	auto sec = ini.TryGetSection(str);
 	ASSERT(sec != nullptr);
+	if (sec == nullptr) {
+		return;
+	}
 
 	if (strlen(m_Waypoint) == 0) {
 		sec->SetString("Waypoint", "");

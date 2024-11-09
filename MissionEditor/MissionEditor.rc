@@ -245,29 +245,25 @@ END
 
 #if defined(APSTUDIO_INVOKED) || defined(RA2_MODE)
 #if defined(APSTUDIO_INVOKED)
-IDD_SAVEOPTIONS$(RA2_MODE) DIALOG 0, 0, 233, 186
+IDD_SAVEOPTIONS$(RA2_MODE) DIALOGEX 0, 0, 233, 186
 #else
-IDD_SAVEOPTIONS DIALOG 0, 0, 233, 186
+IDD_SAVEOPTIONS DIALOGEX 0, 0, 233, 186
 #endif
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Save options"
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,176,165,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,117,165,50,14
-    CONTROL         "Compress map",IDC_COMPRESS,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE | WS_GROUP,201,46,25,8
-    CONTROL         "Don't compress map (use this if any problems with the map occur in RA2/TS)",IDC_NOCOMPRESSION,
-                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE | NOT WS_VISIBLE,184,62,42,13
     CONTROL         "Create new preview using minimap",IDC_PREVIEWMODE,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,19,40,150,13
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,19,40,129,13
     CONTROL         "Use existing preview (if possible)",IDC_EXISTINGPREVIEW,
-                    "Button",BS_AUTORADIOBUTTON,19,53,141,12
-    CONTROL         "Don't save any preview",IDC_NOPREVIEW,"Button",BS_AUTORADIOBUTTON,19,66,141,12
-    GROUPBOX        "Compression",IDC_STATIC,119,52,107,15,NOT WS_VISIBLE
-    GROUPBOX        "Preview",IDC_STATIC,7,29,219,56
+                    "Button",BS_AUTORADIOBUTTON,19,53,127,12
+    CONTROL         "Don't save any preview",IDC_NOPREVIEW,"Button",BS_AUTORADIOBUTTON,19,66,127,12
+    GROUPBOX        "Preview",IDC_STATIC,7,29,145,56
     LTEXT           "If you want to play the map online, you should try to make the file size as low as possible. This includes turning off the preview.",IDC_STATIC,7,143,219,21
-    LTEXT           "Map name:",IDC_STATIC,7,7,63,13
-    EDITTEXT        IDC_MAPNAME,73,7,153,12,ES_AUTOHSCROLL
+    LTEXT           "Map name:",IDC_STATIC,7,7,41,13
+    EDITTEXT        IDC_MAPNAME,52,7,174,12,ES_AUTOHSCROLL
     CONTROL         "Standard",IDC_STANDARD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,89,67,14
     CONTROL         "Meatgrind",IDC_MEATGRIND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,90,65,14
     CONTROL         "Naval War",IDC_NAVALWAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,90,65,14
@@ -277,6 +273,8 @@ BEGIN
     CONTROL         "Land Rush",IDC_DUEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,121,59,14
     CONTROL         "Cooperative",IDC_COOPERATIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,121,70,14
     CONTROL         "Team Alliance",IDC_TEAMGAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,121,65,14
+    LTEXT           "Min players:",IDC_SAVE_OPT_MP_TXT,159,30,57,8
+    EDITTEXT        IDC_SAVE_OPT_M_PLAYERS,157,42,69,14,ES_AUTOHSCROLL
 END
 #endif
 
@@ -3630,6 +3628,17 @@ IDD_INPUTBOX AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
+
+#if defined(APSTUDIO_INVOKED) || defined(RA2_MODE)
+#if defined(APSTUDIO_INVOKED)
+IDD_SAVEOPTIONS$(RA2_MODE) AFX_DIALOG_LAYOUT
+#else
+IDD_SAVEOPTIONS AFX_DIALOG_LAYOUT
+#endif
+BEGIN
+    0
+END
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -32,25 +32,32 @@
 
 class CSaveMapOptionsDlg : public CDialog
 {
-	// Konstruktion
 public:
+	enum PreviewType {
+		PREVIEW_MINIMAP,
+		PREVIEW_DONT_CHANGE,
+		PREVIEW_STRIP,
+	};
+
+	// Konstruktion
 	CSaveMapOptionsDlg(CWnd* pParent = NULL);   // Standardkonstruktor
 
 // Dialogfelddaten
 	//{{AFX_DATA(CSaveMapOptionsDlg)
 	enum { IDD = IDD_SAVEOPTIONS };
-	int		m_Compress;
-	int		m_PreviewMode;
-	CString	m_MapName;
-	BOOL	m_AirWar;
-	BOOL	m_Cooperative;
-	BOOL	m_Duel;
-	BOOL	m_Meatgrind;
-	BOOL	m_Megawealth;
-	BOOL	m_Navalwar;
-	BOOL	m_Nukewar;
-	BOOL	m_Standard;
-	BOOL	m_TeamGame;
+	int				m_Compress;
+	PreviewType		m_PreviewMode;
+	int				m_MinPlayers;
+	CString			m_MapName;
+	BOOL			m_AirWar;
+	BOOL			m_Cooperative;
+	BOOL			m_Duel;
+	BOOL			m_Meatgrind;
+	BOOL			m_Megawealth;
+	BOOL			m_Navalwar;
+	BOOL			m_Nukewar;
+	BOOL			m_Standard;
+	BOOL			m_TeamGame;
 	//}}AFX_DATA
 
 

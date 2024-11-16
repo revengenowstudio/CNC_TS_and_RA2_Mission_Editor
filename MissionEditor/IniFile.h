@@ -220,11 +220,13 @@ public:
 		}
 	}
 
-	void RemoveByKey(const CString& key) {
+	bool RemoveByKey(const CString& key) {
 		auto const idx = this->FindIndex(key);
 		if (idx >= 0) {
 			RemoveAt(idx);
+			return true;
 		}
+		return false;
 	}
 
 	void RemoveValue(const CString& val) {
@@ -384,10 +386,11 @@ public:
 		}
 	}
 
-	void RemoveValueByKey(const CString& section, const CString& key) {
+	bool RemoveValueByKey(const CString& section, const CString& key) {
 		if (auto pSec = this->TryGetSection(section)) {
-			pSec->RemoveByKey(key);
+			return pSec->RemoveByKey(key);
 		}
+		return false;
 	}
 
 	// ================= Iterator Related =============================

@@ -26,7 +26,6 @@
 #define AFX_TIBERIANSUNMISSIONEDITORDLG_H__9F773424_63BB_11D3_99E0_C30F10710B17__INCLUDED_
 
 #include "ScriptTypes.h"
-#include "Triggers.h"
 #include "Houses.h"
 #include "Basic.h"
 #include "all.h"
@@ -80,7 +79,6 @@ public:
 	void SaveMap(CString FileName);
 	void SetReady();
 	CScriptTypes m_Scripttypes;
-	CTriggers m_triggers;
 	CTriggerEditorDlg m_triggereditor;
 	CTags m_tags;
 	CTaskForce m_taskforces;

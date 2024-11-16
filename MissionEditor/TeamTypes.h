@@ -45,7 +45,7 @@ struct TeamTypeParams
 	int Priority{ 5 };
 	int TechLevel{};
 	int Max{ 1 };
-	int Waypoint{};
+	CString Waypoint{};
 	int TransportWaypoint{};
 #ifdef RA2_MODE
 	int MindControlDecision{};

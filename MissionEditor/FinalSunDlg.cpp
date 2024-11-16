@@ -659,9 +659,6 @@ void CFinalSunDlg::UpdateDialogs(BOOL bOnlyMissionControl, BOOL bNoRepos)
 	if (m_Scripttypes.m_hWnd) {
 		m_Scripttypes.UpdateDialog();
 	}
-	if (m_triggers.m_hWnd) {
-		m_triggers.UpdateDialog();
-	}
 	if (m_triggereditor.m_hWnd) {
 		m_triggereditor.UpdateDialog();
 	}
@@ -1064,20 +1061,20 @@ void CFinalSunDlg::SaveMap(CString FileName_)
 			}
 		}
 
-		if (count < 2) {
-			count = 2;
+		if (count < 1) {
+			count = 1;
 		}
 		// TODO: control from dialog
-		Map->GetIniFile().SetInteger("Basic", "MinPlayer", 2);
+		Map->GetIniFile().SetInteger("Basic", "MinPlayer", opt.m_MinPlayers);
 		Map->GetIniFile().SetInteger("Basic", "MaxPlayer", count);
 
 		if (opt.m_Compress == 0) {
 			dwFlags |= MAPDATA_UPDATE_TO_INI_ALL_COMPRESSED;
 		}
-		if (opt.m_PreviewMode == 0) {
+		if (opt.m_PreviewMode == CSaveMapOptionsDlg::PREVIEW_MINIMAP) {
 			dwFlags |= MAPDATA_UPDATE_TO_INI_ALL_PREVIEW;
 		}
-		if (opt.m_PreviewMode == 2) {
+		if (opt.m_PreviewMode == CSaveMapOptionsDlg::PREVIEW_STRIP) {
 			hidePreview = TRUE;
 		}
 	} else {
@@ -2284,8 +2281,6 @@ void CFinalSunDlg::HideAllDialogs()
 		m_taskforces.ShowWindow(SW_HIDE);
 	if (m_teamtypes)
 		m_teamtypes.ShowWindow(SW_HIDE);
-	if (m_triggers)
-		m_triggers.ShowWindow(SW_HIDE);
 }
 
 void CFinalSunDlg::OnFileValidatemap()
@@ -2542,18 +2537,6 @@ void CFinalSunDlg::OnEditTeams()
 
 void CFinalSunDlg::OnEditTriggers()
 {
-	if (m_triggers.m_hWnd == NULL) {
-		if (!m_triggers.Create(CTriggers::IDD, NULL)) {
-			MessageBox(GetLanguageStringACP("Err_CreateErr"), "Error");
-		}
-	}
-
-	if (m_triggers.m_hWnd != NULL) {
-		//m_triggers.UpdateStrings();
-		m_triggers.UpdateDialog();
-		m_triggers.ShowWindow(SW_SHOW);
-		Sound(SOUND_POSITIVE);
-	}
 }
 
 void CFinalSunDlg::OnSetFocus(CWnd* pOldWnd)

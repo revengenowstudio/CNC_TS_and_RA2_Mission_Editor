@@ -749,6 +749,10 @@ void listSpecifcTechnoTypes(CComboBox& cb, const CString& sectionName, bool clea
 		if (useIniName) {
 			record = kvPair.second;
 		}
+		else {
+			record += ' ';
+			record += kvPair.second;
+		}
 		record += " ";
 
 		CString translated = Map->GetUnitName(kvPair.second);

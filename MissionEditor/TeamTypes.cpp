@@ -358,14 +358,14 @@ int GetWaypoint(const char* c)
 	return res;
 }
 
+// Serialize waypoint, will be renamed later
 CString GetWaypoint(int n)
 {
 	if (n == -1) {
-		return (CString)("");
+		return "";
 	}
-	int i, e;
-	for (i = -1; i < 26; i++) {
-		for (e = 0; e < 26; e++) {
+	for (int i = -1; i < 26; i++) {
+		for (int e = 0; e < 26; e++) {
 			char c[50];
 			CString p;
 			if (i == -1) {
@@ -385,7 +385,7 @@ CString GetWaypoint(int n)
 
 		}
 	}
-	return (CString)("");
+	return "";
 }
 
 
@@ -800,6 +800,9 @@ void CTeamTypes::OnEditchangeWaypoint()
 	TruncSpace(str);
 	auto sec = ini.TryGetSection(str);
 	ASSERT(sec != nullptr);
+	if (sec == nullptr) {
+		return;
+	}
 
 	if (strlen(m_Waypoint) == 0) {
 		sec->SetString("Waypoint", "");
@@ -1258,7 +1261,7 @@ void CTeamTypes::addTeamtype(const TeamTypeParams& params)
 	s.SetInteger("Max", params.Max);
 	s.SetInteger("TechLevel", params.TechLevel);
 	s.SetInteger("Group", params.Group);
-	s.SetInteger("Waypoint", params.Waypoint);
+	s.SetString("Waypoint", params.Waypoint);
 	s.SetInteger("TransportWaypoint", params.TransportWaypoint);
 	s.SetBool("OnTransOnly", params.OnTransOnly);
 	s.SetBool("AvoidThreats", params.AvoidThreats);
@@ -1268,17 +1271,22 @@ void CTeamTypes::addTeamtype(const TeamTypeParams& params)
 	s.SetBool("IsBaseDefense", params.IsBaseDefense);
 	s.SetBool("OnlyTargetHouseEnemy", params.OnlyTargetHouseEnemy);
 
+	bool anythingCopied = false;
 	if (!params.House.IsEmpty()) {
 		s.SetString("House", params.House);
+		anythingCopied = true;
 	}
 	if (!params.TaskForce.IsEmpty()) {
 		s.SetString("TaskForce", params.TaskForce);
+		anythingCopied = true;
 	}
 	if (!params.Script.IsEmpty()) {
 		s.SetString("Script", params.Script);
+		anythingCopied = true;
 	}
 	if (!params.Tag.IsEmpty()) {
 		s.SetString("Tag", params.Tag);
+		anythingCopied = true;
 	}
 
 #ifdef RA2_MODE
@@ -1302,19 +1310,22 @@ void CTeamTypes::addTeamtype(const TeamTypeParams& params)
 		}
 	}
 
-	CComboBox& houses = *(CComboBox*)GetDlgItem(IDC_HOUSE);
-	houses.SetCurSel(0);
-	OnEditchangeHouse();
-	CComboBox& waypoints = *(CComboBox*)GetDlgItem(IDC_WAYPOINT);
-	waypoints.SetCurSel(0);
-	CComboBox& script = *(CComboBox*)GetDlgItem(IDC_SCRIPT);
-	script.SetCurSel(0);
-	CComboBox& taskforce = *(CComboBox*)GetDlgItem(IDC_TASKFORCE);
-	taskforce.SetCurSel(0);
-	OnKillfocusHouse();
-	OnKillfocusWaypoint();
-	OnKillfocusScript();
-	OnKillfocusTaskforce();
+	if (!anythingCopied) {
+		CComboBox& houses = *(CComboBox*)GetDlgItem(IDC_HOUSE);
+		houses.SetCurSel(0);
+		OnEditchangeHouse();
+		CComboBox& waypoints = *(CComboBox*)GetDlgItem(IDC_WAYPOINT);
+		waypoints.SetCurSel(0);
+		CComboBox& script = *(CComboBox*)GetDlgItem(IDC_SCRIPT);
+		script.SetCurSel(0);
+		CComboBox& taskforce = *(CComboBox*)GetDlgItem(IDC_TASKFORCE);
+		taskforce.SetCurSel(0);
+
+		OnKillfocusHouse();
+		OnKillfocusWaypoint();
+		OnKillfocusScript();
+		OnKillfocusTaskforce();
+	}
 }
 
 void CTeamTypes::OnNewteamtype()
@@ -1349,7 +1360,7 @@ void CTeamTypes::OnBnClickedTeamtypeCopy()
 	.Priority = sec.GetInteger("Priority"),
 	.TechLevel = sec.GetInteger("TechLevel"),
 	.Max = sec.GetInteger("Max"),
-	.Waypoint = sec.GetInteger("Waypoint"),
+	.Waypoint = sec.GetString("Waypoint"),
 	.TransportWaypoint = sec.GetInteger("TransportWaypoint"),
 #ifdef RA2_MODE
 	.MindControlDecision = sec.GetInteger("MindControlDecision"),

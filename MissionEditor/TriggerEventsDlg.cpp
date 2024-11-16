@@ -435,7 +435,7 @@ void CTriggerEventsDlg::OnSelchangeParameter()
 	CString Param1 = GetParam(g_data["EventsRA2"][GetParam(EventData, startpos)], 1);
 	CString Code = GetParam(g_data["ParamTypes"][Param1], 2);
 	//MessageBox(Param1, Code);
-	if (atoi(Code) != 0) curparam--;
+	if (atoi(Code) == 2) curparam--;
 #endif
 	// END FIx
 

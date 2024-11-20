@@ -2074,14 +2074,14 @@ BOOL CMapData::AddWaypoint(CString id, DWORD dwPos)
 
 
 
-void CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
+CString CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
 {
 	auto const& section = m_mapfile.GetSection("Structures");
 	if (dwIndex >= section.Size()) {
-		return;
+		return {};
 	}
 
-	auto const& data = section.Nth(dwIndex).second;
+	auto const& [id, data] = section.Nth(dwIndex);
 
 	lpStructure->house = GetParam(data, 0);
 	lpStructure->type = GetParam(data, 1);
@@ -2101,6 +2101,7 @@ void CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
 	lpStructure->flag3 = GetParam(data, 15);
 	lpStructure->flag4 = GetParam(data, 16);
 
+	return id;
 }
 
 void CMapData::GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const

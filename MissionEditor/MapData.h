@@ -261,7 +261,7 @@ public:
 	BOOL AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, int suggestedIndex = -1);
 	BOOL AddNode(NODE* lpNode, WORD dwPos);
 	void GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const;
-	void GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
+	CString GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
 	BOOL AddWaypoint(CString lpID, DWORD dwPos);
 
 	void DeleteNode(LPCTSTR lpHouse, DWORD dwIndex);

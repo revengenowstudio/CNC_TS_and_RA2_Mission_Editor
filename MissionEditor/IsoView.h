@@ -116,6 +116,7 @@ protected:
 
 // implementation
 protected:
+	void handleMouseActionManageOverlays(int x, int y);
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;

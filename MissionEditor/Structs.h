@@ -34,6 +34,16 @@
 
 class MapTool;
 
+enum class MouseActionType : unsigned {
+	AddInfantry = 1,
+	AddStructure = 2,
+	AddAircraft = 3,
+	AddVehicle = 4,
+	AddTerrain = 5,
+	ManageOverlay = 6,
+	ChangeOwner = 7,
+	AddSmudge = 8,
+};
 
 enum class TheaterChar : char
 {

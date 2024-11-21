@@ -2472,14 +2472,14 @@ void CMapData::GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const
 
 }
 
-void CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
+CString CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
 {
 	auto const& section = m_mapfile.GetSection("Units");
 	if (dwIndex >= section.Size()) {
-		return;
+		return {};
 	}
 
-	auto const& data = section.Nth(dwIndex).second;
+	auto const& [id, data] = section.Nth(dwIndex);
 
 	lpUnit->house = GetParam(data, 0);
 	lpUnit->type = GetParam(data, 1);
@@ -2495,16 +2495,18 @@ void CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
 	lpUnit->flag4 = GetParam(data, 11);
 	lpUnit->flag5 = GetParam(data, 12);
 	lpUnit->flag6 = GetParam(data, 13);
+
+	return id;
 }
 
-void CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
+CString CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
 {
 	auto const& section = m_mapfile.GetSection("Aircraft");
 	if (dwIndex >= section.Size()) {
-		return;
+		return {};
 	}
 
-	auto const& data = section.Nth(dwIndex).second;
+	auto const& [id, data] = section.Nth(dwIndex);
 
 	lpAircraft->house = GetParam(data, 0);
 	lpAircraft->type = GetParam(data, 1);
@@ -2518,6 +2520,8 @@ void CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
 	lpAircraft->group = GetParam(data, 9);
 	lpAircraft->flag3 = GetParam(data, 10);
 	lpAircraft->flag4 = GetParam(data, 11);
+
+	return id;
 }
 
 BOOL CMapData::AddCelltag(LPCTSTR lpTag, DWORD dwPos)
@@ -2585,10 +2589,10 @@ BOOL CMapData::AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType, LPCTSTR lpHouse
 		aircraft.flag4 = "0";
 	}
 
-	CString id = GetFree("Aircraft");
+	CString id = suggestedID;
 
-	if (!suggestedID.IsEmpty() && !m_mapfile["Aircraft"].Exists(suggestedID)) {
-		id = suggestedID;
+	if (suggestedID.IsEmpty() || m_mapfile["Aircraft"].Exists(suggestedID)) {
+		id = GetFree("Aircraft");
 	}
 
 	CString value;
@@ -2596,7 +2600,7 @@ BOOL CMapData::AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType, LPCTSTR lpHouse
 		aircraft.x + "," + aircraft.direction + "," + aircraft.action + "," + aircraft.tag + ","
 		+ aircraft.flag1 + "," + aircraft.group + "," + aircraft.flag3 + "," + aircraft.flag4;
 
-	m_mapfile.SetString("Aircraft", id, value);
+	m_mapfile.AddSection("Aircraft").InsertOrAssign(id, value);
 
 	if (!m_noAutoObjectUpdate) {
 		UpdateAircraft(FALSE);
@@ -2633,10 +2637,10 @@ BOOL CMapData::AddUnit(UNIT* lpUnit, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPo
 
 	}
 
-	CString id = GetFree("Units");
+	CString id = suggestedID;
 
-	if (!suggestedID.IsEmpty() && !m_mapfile["Units"].Exists(suggestedID)) {
-		id = suggestedID;
+	if (suggestedID.IsEmpty() || m_mapfile["Units"].Exists(suggestedID)) {
+		id = GetFree("Units");
 	}
 
 	CString value;
@@ -2644,7 +2648,7 @@ BOOL CMapData::AddUnit(UNIT* lpUnit, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPo
 		unit.x + "," + unit.direction + "," + unit.action + "," + unit.tag + ","
 		+ unit.flag1 + "," + unit.group + "," + unit.flag3 + "," + unit.flag4 + "," + unit.flag5 + "," + unit.flag6;
 
-	m_mapfile.SetString("Units", id, value);
+	m_mapfile.AddSection("Units").InsertOrAssign(id, value);
 
 	if (!m_noAutoObjectUpdate) {
 		UpdateUnits(FALSE);

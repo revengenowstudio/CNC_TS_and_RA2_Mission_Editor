@@ -4913,19 +4913,19 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 			t = Map->GetUnitAt(x + y * Map->GetIsoSize());
 			if (t >= 0) {
 				UNIT unit;
-				Map->GetUnitData(t, &unit);
+				auto const id = Map->GetUnitData(t, &unit);
 				Map->DeleteUnit(t);
 				unit.house = AD.data_s;
-				Map->AddUnit(&unit);
+				Map->AddUnit(&unit, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
 			t = Map->GetAirAt(x + y * Map->GetIsoSize());
 			if (t >= 0) {
 				AIRCRAFT aircraft;
-				Map->GetAircraftData(t, &aircraft);
+				auto const id = Map->GetAircraftData(t, &aircraft);
 				Map->DeleteAircraft(t);
 				aircraft.house = AD.data_s;
-				Map->AddAircraft(&aircraft);
+				Map->AddAircraft(&aircraft, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
 			int z;

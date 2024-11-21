@@ -2333,10 +2333,10 @@ BOOL CMapData::AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType, LPCTSTR lpHo
 	}
 
 
-	CString id = GetFree("Structures");
+	CString id = suggestedID;
 
-	if (!suggestedID.IsEmpty() && !m_mapfile["Structures"].Exists(suggestedID)) {
-		id = suggestedID;
+	if (suggestedID.IsEmpty() || m_mapfile["Structures"].Exists(suggestedID)) {
+		id = GetFree("Structures");
 	}
 
 	CString value;

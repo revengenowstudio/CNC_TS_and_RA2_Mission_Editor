@@ -88,6 +88,11 @@ inline CString GetUnitPictureFilename(const CString& artSectionId, DWORD dwPicIn
 	return {};
 }
 
+/**
+* @brief Retrieve a stringified parameter from a serialized string, concated with ','
+* @param data Serialized string input
+* @param param Nth param to retrieve, starts from 0
+*/
 inline CString GetParam(const CString& data, const int param)
 {
 	int paramStrPos = 0;

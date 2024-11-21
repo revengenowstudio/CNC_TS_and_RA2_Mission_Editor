@@ -2345,7 +2345,8 @@ BOOL CMapData::AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType, LPCTSTR lpHo
 		structure.flag2 + "," + structure.energy + "," + structure.upgradecount + "," + structure.spotlight + ","
 		+ structure.upgrade1 + "," + structure.upgrade2 + "," + structure.upgrade3 + "," + structure.flag3 + "," + structure.flag4;
 
-	m_mapfile.SetString("Structures", id, value);
+	auto& section = m_mapfile.AddSection("Structures");
+	section.InsertOrAssign(id, value);
 
 	if (!m_noAutoObjectUpdate) {
 		UpdateStructures(FALSE);

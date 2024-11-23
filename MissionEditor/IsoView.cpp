@@ -4605,7 +4605,220 @@ void CIsoView::ShowAllTileSets()
 	}
 }
 
+void CIsoView::handleMouseActionManageOverlays(int x, int y)
+{
+	// Overlay
+	DWORD dwPos = x + y * Map->GetIsoSize();
 
+	FIELDDATA m = *Map->GetFielddataAt(dwPos);
+	if (m.wGround == 0xFFFF) m.wGround = 0;
+
+	BYTE oldOverlay = Map->GetOverlayAt(dwPos);
+	BYTE oldOverlayData = Map->GetOverlayDataAt(dwPos);
+
+	if (AD.data == 1) // delete overlay
+	{
+		int gx, gy;
+		for (gx = x - AD.data2; gx <= x + AD.data2; gx++) {
+			for (gy = y - AD.data2; gy <= y + AD.data2; gy++) {
+				Map->SetOverlayDataAt(gx + gy * Map->GetIsoSize(), 0xFF);
+				Map->SetOverlayAt(gx + gy * Map->GetIsoSize(), 0xFF);
+
+
+				HandleTrail(gx - 1, gy - 1);
+				HandleTrail(gx + 1, gy - 1);
+				HandleTrail(gx - 1, gy + 1);
+				HandleTrail(gx + 1, gy + 1);
+				HandleTrail(gx - 0, gy - 1);
+				HandleTrail(gx + 0, gy + 1);
+				HandleTrail(gx - 1, gy + 0);
+				HandleTrail(gx + 1, gy + 0);
+			}
+		}
+
+
+	}
+	else if (AD.data == 2) // green tiberium mode
+	{
+
+		{
+			if (AD.data2 == 0) {
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
+						if (curground == 0xFFFF) curground = 0;
+
+						if ((*tiledata)[curground].bAllowTiberium) {
+							//srand( GetTickCount()+i+e*5 );
+							int v1 = ((float)rand() / (float)RAND_MAX) * 8.0f + 0x68;
+							int v2 = ((float)rand() / (float)RAND_MAX) * 8.0f + 1;
+							Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), v1);
+							Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), v2);
+						}
+					}
+				}
+			}
+			else if (AD.data2 == 10) {
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
+						if (curground == 0xFFFF) curground = 0;
+
+						if ((*tiledata)[curground].bAllowTiberium) {
+							Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), 0x70);
+							Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), 0x5);
+						}
+					}
+				}
+			}
+			else if (AD.data2 == 20) {
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
+						if (ovrl > 0x65 && ovrl < 0x72) {
+							if (Map->GetOverlayDataAt(i + e * Map->GetIsoSize() + dwPos) < 9) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) + 1);
+						}
+					}
+				}
+			}
+			else if (AD.data2 == 21) {
+
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
+						if (ovrl > 0x65 && ovrl < 0x72) {
+							if (Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) > 0) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) - 1);
+						}
+					}
+				}
+			}
+		}
+
+	}
+	else if (AD.data == 3) // blue tiberium mode
+	{
+		int o = 0x7f;
+#ifdef RA2_MODE 
+		o = 0x1e;
+#endif
+		//if((*tiledata)[m.wGround].bAllowTiberium)
+		{
+			if (AD.data2 == 0) {
+
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
+						if (curground == 0xFFFF) curground = 0;
+
+						if ((*tiledata)[curground].bAllowTiberium) {
+
+							int v2 = ((float)rand() / (float)RAND_MAX) * 8 + 1;
+							Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), o);
+							Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), v2);
+						}
+					}
+				}
+
+			}
+			else if (AD.data2 == 10) {
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
+						if (curground == 0xFFFF) curground = 0;
+
+						if ((*tiledata)[curground].bAllowTiberium) {
+							Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), o);
+							Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), 0x5);
+						}
+					}
+				}
+			}
+			else if (AD.data2 == 20) {
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
+						if (ovrl == o) {
+							if (Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) < 9) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) + 1);
+						}
+					}
+				}
+			}
+			else if (AD.data2 == 21) {
+				int i, e;
+				for (i = 0; i < m_BrushSize_x; i++) {
+					for (e = 0; e < m_BrushSize_y; e++) {
+						int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
+						if (ovrl == o) {
+							if (Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) > 0) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) - 1);
+						}
+					}
+				}
+			}
+		}
+
+	}
+	else if (AD.data == 4) // veinhole stuff mode
+	{
+		if (AD.data2 == 0) // Set veinhole!
+		{
+			int gx, gy;
+			for (gx = x - 1; gx <= x + 1; gx++) {
+				for (gy = y - 1; gy <= y + 1; gy++) {
+					Map->SetOverlayAt(gx + gy * Map->GetIsoSize(), OVRL_VEINHOLEBORDER);
+					Map->SetOverlayDataAt(gx + gy * Map->GetIsoSize(), 0x0);
+				}
+			}
+			Map->SetOverlayAt(dwPos, OVRL_VEINHOLE);
+			Map->SetOverlayDataAt(dwPos, 0x0);
+			Map->SetHeightAt(dwPos, Map->GetHeightAt(dwPos) - 1);
+		}
+		else if (AD.data2 == 1) // set veins
+		{
+			Map->SetOverlayAt(dwPos, OVRL_VEINS);
+			Map->SetOverlayDataAt(dwPos, 0x30);
+		}
+
+	}
+	else if (AD.data == 30) // any overlay
+	{
+		Map->SetOverlayAt(dwPos, AD.data2);
+		Map->SetOverlayDataAt(dwPos, 0);
+		int i;
+		for (i = 0; i < overlay_count; i++) {
+			if (overlay_number[i] == AD.data2) {
+				if (overlay_trail[i]) {
+					// handle trail stuff!
+					HandleTrail(x, y);
+				}
+			}
+		}
+	}
+	else if (AD.data == 33) {
+		int i, e;
+		for (i = 0; i < m_BrushSize_x; i++) {
+			for (e = 0; e < m_BrushSize_y; e++) {
+				Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), AD.data2);
+				Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), AD.data3);
+			}
+		}
+	}
+
+	else if (AD.data == 31) {
+		Map->SetOverlayAt(dwPos, AD.data2);
+	}
+	else if (AD.data == 32) {
+		Map->SetOverlayDataAt(dwPos, AD.data2);
+	}
+
+	// RedrawWindow(NULL,NULL,RDW_INVALIDATE | RDW_UPDATENOW);
+}
 
 void CIsoView::PlaceCurrentObjectAt(int x, int y)
 {
@@ -4629,328 +4842,128 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 		return;
 	}
 
-	if (AD.type == 1) // ADD INFANTRY
-	{
-		if (Map->GetInfantryCountAt(x + y * Map->GetIsoSize()) >= SUBPOS_COUNT) {
-			return;
-		}
-
-		Map->AddInfantry(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
-		//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-	} else if (AD.type == 2) // add structure
-	{
-		int n = Map->GetStructureAt(x + y * Map->GetIsoSize());
-		if (n >= 0) {
-			STDOBJECTDATA sod;
-			Map->GetStdStructureData(n, &sod);
-			if (strcmp(sod.type, "GAPAVE") != NULL) {
-				//isMoving=FALSE;
+	switch (MouseActionType(AD.type)) {
+		case MouseActionType::AddInfantry: {
+			if (Map->GetInfantryCountAt(x + y * Map->GetIsoSize()) >= SUBPOS_COUNT) {
 				return;
 			}
-		}
 
-
-		Map->AddStructure(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
-		//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-	} else if (AD.type == 3) // add aircraft
-	{
-
-		if (Map->GetAirAt(x + y * Map->GetIsoSize()) >= 0) {
-			return;
-		}
-
-		Map->AddAircraft(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
-
-		//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-	} else if (AD.type == 4) // add vehicle
-	{
-		if (Map->GetUnitAt(x + y * Map->GetIsoSize()) >= 0) {
-			return;
-		}
-
-		Map->AddUnit(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
-
-		//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-	} else if (AD.type == 5) // add terrain
-	{
-		if (Map->GetTerrainAt(x + y * Map->GetIsoSize()) >= 0) {
-			return;
-		}
-
-		Map->AddTerrain(AD.data_s, x + y * Map->GetIsoSize());
-
-		//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-	} else if (AD.type == 6) {
-		// Overlay
-
-
-
-		DWORD dwPos = x + y * Map->GetIsoSize();
-
-		FIELDDATA m = *Map->GetFielddataAt(dwPos);
-		if (m.wGround == 0xFFFF) m.wGround = 0;
-
-		BYTE oldOverlay = Map->GetOverlayAt(dwPos);
-		BYTE oldOverlayData = Map->GetOverlayDataAt(dwPos);
-
-		if (AD.data == 1) // delete overlay
-		{
-			int gx, gy;
-			for (gx = x - AD.data2; gx <= x + AD.data2; gx++) {
-				for (gy = y - AD.data2; gy <= y + AD.data2; gy++) {
-					Map->SetOverlayDataAt(gx + gy * Map->GetIsoSize(), 0xFF);
-					Map->SetOverlayAt(gx + gy * Map->GetIsoSize(), 0xFF);
-
-
-					HandleTrail(gx - 1, gy - 1);
-					HandleTrail(gx + 1, gy - 1);
-					HandleTrail(gx - 1, gy + 1);
-					HandleTrail(gx + 1, gy + 1);
-					HandleTrail(gx - 0, gy - 1);
-					HandleTrail(gx + 0, gy + 1);
-					HandleTrail(gx - 1, gy + 0);
-					HandleTrail(gx + 1, gy + 0);
+			Map->AddInfantry(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		} break;
+		case MouseActionType::AddStructure: {
+			int n = Map->GetStructureAt(x + y * Map->GetIsoSize());
+			if (n >= 0) {
+				STDOBJECTDATA sod;
+				Map->GetStdStructureData(n, &sod);
+				if (strcmp(sod.type, "GAPAVE") != NULL) {
+					//isMoving=FALSE;
+					return;
 				}
 			}
 
 
-		} else if (AD.data == 2) // green tiberium mode
-		{
+			Map->AddStructure(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		} break;
+		case MouseActionType::AddAircraft: {
 
-			{
-				if (AD.data2 == 0) {
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
-							if (curground == 0xFFFF) curground = 0;
-
-							if ((*tiledata)[curground].bAllowTiberium) {
-								//srand( GetTickCount()+i+e*5 );
-								int v1 = ((float)rand() / (float)RAND_MAX) * 8.0f + 0x68;
-								int v2 = ((float)rand() / (float)RAND_MAX) * 8.0f + 1;
-								Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), v1);
-								Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), v2);
-							}
-						}
-					}
-				} else if (AD.data2 == 10) {
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
-							if (curground == 0xFFFF) curground = 0;
-
-							if ((*tiledata)[curground].bAllowTiberium) {
-								Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), 0x70);
-								Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), 0x5);
-							}
-						}
-					}
-				} else if (AD.data2 == 20) {
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
-							if (ovrl > 0x65 && ovrl < 0x72) {
-								if (Map->GetOverlayDataAt(i + e * Map->GetIsoSize() + dwPos) < 9) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) + 1);
-							}
-						}
-					}
-				} else if (AD.data2 == 21) {
-
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
-							if (ovrl > 0x65 && ovrl < 0x72) {
-								if (Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) > 0) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) - 1);
-							}
-						}
-					}
-				}
+			if (Map->GetAirAt(x + y * Map->GetIsoSize()) >= 0) {
+				return;
 			}
 
-		} else if (AD.data == 3) // blue tiberium mode
-		{
-			int o = 0x7f;
-#ifdef RA2_MODE 
-			o = 0x1e;
-#endif
-			//if((*tiledata)[m.wGround].bAllowTiberium)
-			{
-				if (AD.data2 == 0) {
+			Map->AddAircraft(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
 
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
-							if (curground == 0xFFFF) curground = 0;
-
-							if ((*tiledata)[curground].bAllowTiberium) {
-
-								int v2 = ((float)rand() / (float)RAND_MAX) * 8 + 1;
-								Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), o);
-								Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), v2);
-							}
-						}
-					}
-
-				} else if (AD.data2 == 10) {
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int curground = Map->GetFielddataAt(dwPos + i + e * Map->GetIsoSize())->wGround;
-							if (curground == 0xFFFF) curground = 0;
-
-							if ((*tiledata)[curground].bAllowTiberium) {
-								Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), o);
-								Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), 0x5);
-							}
-						}
-					}
-				} else if (AD.data2 == 20) {
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
-							if (ovrl == o) {
-								if (Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) < 9) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) + 1);
-							}
-						}
-					}
-				} else if (AD.data2 == 21) {
-					int i, e;
-					for (i = 0; i < m_BrushSize_x; i++) {
-						for (e = 0; e < m_BrushSize_y; e++) {
-							int ovrl = Map->GetOverlayAt(dwPos + i + e * Map->GetIsoSize());
-							if (ovrl == o) {
-								if (Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) > 0) Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), Map->GetOverlayDataAt(dwPos + i + e * Map->GetIsoSize()) - 1);
-							}
-						}
-					}
-				}
+			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		} break;
+		case MouseActionType::AddVehicle: {
+			if (Map->GetUnitAt(x + y * Map->GetIsoSize()) >= 0) {
+				return;
 			}
 
-		} else if (AD.data == 4) // veinhole stuff mode
-		{
-			if (AD.data2 == 0) // Set veinhole!
-			{
-				int gx, gy;
-				for (gx = x - 1; gx <= x + 1; gx++) {
-					for (gy = y - 1; gy <= y + 1; gy++) {
-						Map->SetOverlayAt(gx + gy * Map->GetIsoSize(), OVRL_VEINHOLEBORDER);
-						Map->SetOverlayDataAt(gx + gy * Map->GetIsoSize(), 0x0);
-					}
-				}
-				Map->SetOverlayAt(dwPos, OVRL_VEINHOLE);
-				Map->SetOverlayDataAt(dwPos, 0x0);
-				Map->SetHeightAt(dwPos, Map->GetHeightAt(dwPos) - 1);
-			} else if (AD.data2 == 1) // set veins
-			{
-				Map->SetOverlayAt(dwPos, OVRL_VEINS);
-				Map->SetOverlayDataAt(dwPos, 0x30);
+			Map->AddUnit(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+
+			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		} break;
+		case MouseActionType::AddTerrain: {
+			if (Map->GetTerrainAt(x + y * Map->GetIsoSize()) >= 0) {
+				return;
 			}
 
-		} else if (AD.data == 30) // any overlay
-		{
-			Map->SetOverlayAt(dwPos, AD.data2);
-			Map->SetOverlayDataAt(dwPos, 0);
-			int i;
-			for (i = 0; i < overlay_count; i++) {
-				if (overlay_number[i] == AD.data2) {
-					if (overlay_trail[i]) {
-						// handle trail stuff!
-						HandleTrail(x, y);
-					}
-				}
-			}
-		} else if (AD.data == 33) {
-			int i, e;
-			for (i = 0; i < m_BrushSize_x; i++) {
-				for (e = 0; e < m_BrushSize_y; e++) {
-					Map->SetOverlayAt(dwPos + i + e * Map->GetIsoSize(), AD.data2);
-					Map->SetOverlayDataAt(dwPos + i + e * Map->GetIsoSize(), AD.data3);
-				}
-			}
-		}
+			Map->AddTerrain(AD.data_s, x + y * Map->GetIsoSize());
 
-		else if (AD.data == 31) {
-			Map->SetOverlayAt(dwPos, AD.data2);
-		} else if (AD.data == 32) {
-			Map->SetOverlayDataAt(dwPos, AD.data2);
-		}
+			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		} break;
+		case MouseActionType::ManageOverlay:
+			this->handleMouseActionManageOverlays(x, y);
+			break;
+		case MouseActionType::ChangeOwner: {
+			// set owner!
+			BOOL bchanged = FALSE;
 
-		// RedrawWindow(NULL,NULL,RDW_INVALIDATE | RDW_UPDATENOW);
-	} else if (AD.type == 7) {
-		// set owner!
-		BOOL bchanged = FALSE;
-
-		int t = Map->GetStructureAt(x + y * Map->GetIsoSize());
-		if (t >= 0) {
-			STRUCTURE structure;
-			Map->GetStructureData(t, &structure);
-			Map->DeleteStructure(t);
-			structure.house = AD.data_s;
-			Map->AddStructure(&structure);
-			bchanged = TRUE;
-		}
-		t = Map->GetUnitAt(x + y * Map->GetIsoSize());
-		if (t >= 0) {
-			UNIT unit;
-			Map->GetUnitData(t, &unit);
-			Map->DeleteUnit(t);
-			unit.house = AD.data_s;
-			Map->AddUnit(&unit);
-			bchanged = TRUE;
-		}
-		t = Map->GetAirAt(x + y * Map->GetIsoSize());
-		if (t >= 0) {
-			AIRCRAFT aircraft;
-			Map->GetAircraftData(t, &aircraft);
-			Map->DeleteAircraft(t);
-			aircraft.house = AD.data_s;
-			Map->AddAircraft(&aircraft);
-			bchanged = TRUE;
-		}
-		int z;
-		for (z = 0; z < SUBPOS_COUNT; z++) {
-			t = Map->GetInfantryAt(x + y * Map->GetIsoSize(), z);
+			int t = Map->GetStructureAt(x + y * Map->GetIsoSize());
 			if (t >= 0) {
-				INFANTRY infantry;
-				Map->GetInfantryData(t, &infantry);
-				Map->DeleteInfantry(t);
-				infantry.house = AD.data_s;
-				Map->AddInfantry(&infantry);
+				STRUCTURE structure;
+				auto const id = Map->GetStructureData(t, &structure);
+				Map->DeleteStructure(t);
+				structure.house = AD.data_s;
+				Map->AddStructure(&structure, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
-		}
+			t = Map->GetUnitAt(x + y * Map->GetIsoSize());
+			if (t >= 0) {
+				UNIT unit;
+				auto const id = Map->GetUnitData(t, &unit);
+				Map->DeleteUnit(t);
+				unit.house = AD.data_s;
+				Map->AddUnit(&unit, nullptr, nullptr, 0, std::move(id));
+				bchanged = TRUE;
+			}
+			t = Map->GetAirAt(x + y * Map->GetIsoSize());
+			if (t >= 0) {
+				AIRCRAFT aircraft;
+				auto const id = Map->GetAircraftData(t, &aircraft);
+				Map->DeleteAircraft(t);
+				aircraft.house = AD.data_s;
+				Map->AddAircraft(&aircraft, nullptr, nullptr, 0, std::move(id));
+				bchanged = TRUE;
+			}
+			int z;
+			for (z = 0; z < SUBPOS_COUNT; z++) {
+				t = Map->GetInfantryAt(x + y * Map->GetIsoSize(), z);
+				if (t >= 0) {
+					INFANTRY infantry;
+					Map->GetInfantryData(t, &infantry);
+					Map->DeleteInfantry(t);
+					infantry.house = AD.data_s;
+					Map->AddInfantry(&infantry);
+					bchanged = TRUE;
+				}
+			}
 
-		if (bchanged) {
-			//RedrawWindow(NULL,NULL,RDW_INVALIDATE | RDW_UPDATENOW);
-		}
+			if (bchanged) {
+				//RedrawWindow(NULL,NULL,RDW_INVALIDATE | RDW_UPDATENOW);
+			}
+		} break;
+	#ifdef SMUDGE_SUPP		
+		case MouseActionType::AddSmudge: {
+			if (Map->GetFielddataAt(x + y * Map->GetIsoSize())->smudge >= 0) {
+				return;
+			}
 
+			SMUDGE s;
+			s.type = AD.data_s;
+			s.x = x;
+			s.y = y;
+			s.deleted = 0;
+			Map->AddSmudge(&s);
 
+			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		} break;
+	#endif
+		default:
+			break;
 	}
-#ifdef SMUDGE_SUPP		
-	else if (AD.type == 8) // add smudge
-	{
-
-		if (Map->GetFielddataAt(x + y * Map->GetIsoSize())->smudge >= 0) {
-			return;
-		}
-
-		SMUDGE s;
-		s.type = AD.data_s;
-		s.x = x;
-		s.y = y;
-		s.deleted = 0;
-		Map->AddSmudge(&s);
-
-		//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-	}
-#endif
-
 }
 
 void CIsoView::OnTimer(UINT_PTR nIDEvent)

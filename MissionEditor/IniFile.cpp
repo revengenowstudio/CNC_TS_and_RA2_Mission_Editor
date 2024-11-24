@@ -28,7 +28,8 @@
 #include <string>
 #include <algorithm>
 #include <stdexcept>
-
+#include <set>
+#include <unordered_set>
 
 
 #ifdef _DEBUG
@@ -93,6 +94,20 @@ CIniFileSection::~CIniFileSection()
 	value_pairs.clear();
 };
 
+bool isSectionRegistry(const CString& secName)
+{
+	static std::unordered_set<std::string_view> registryNames = {
+		"BuildingTypes",
+		"InfantryTypes",
+		"AircraftTypes",
+		"VehicleTypes",
+		"Animations",
+	};
+
+	auto const nameView = std::string_view(secName.GetString(), secName.GetLength());
+	return registryNames.find(nameView) != registryNames.end();
+}
+
 WORD CIniFile::InsertFile(const CString& filename, const char* Section, BOOL bNoSpaces)
 {
 	return InsertFile(std::string(filename.GetString()), Section, bNoSpaces);
@@ -100,15 +115,16 @@ WORD CIniFile::InsertFile(const CString& filename, const char* Section, BOOL bNo
 
 WORD CIniFile::InsertFile(const std::string& filename, const char* pSectionSpecified, BOOL bNoSpaces)
 {
-	if (filename.size() == 0)
+	if (filename.size() == 0) {
 		return 1;
+	}
 
 	fstream file;
 
 	file.open(filename, ios::in);
-	if (!file.good())
+	if (!file.good()) {
 		return 2;
-
+	}
 
 	//char cSec[256];
 	//char cLine[4096];
@@ -120,6 +136,10 @@ WORD CIniFile::InsertFile(const std::string& filename, const char* pSectionSpeci
 
 	const auto npos = std::string::npos;
 
+#if 0
+	std::map<CString, std::list<std::pair<CString, CString>>> registryMap;
+#endif
+	std::set<CString> registryValues;
 
 	while (!file.eof()) {
 		std::getline(file, curLineParsed);
@@ -133,11 +153,11 @@ WORD CIniFile::InsertFile(const std::string& filename, const char* pSectionSpeci
 
 		if (openBracketPos != npos && closeBracketPos != npos && openBracketPos < closeBracketPos && (equalPos == npos || equalPos > openBracketPos)) {
 			if ((pSectionSpecified != nullptr) && curSecParsed == pSectionSpecified) {
-				return 0; // the section we want to insert is finished
+				break; // the section we want to insert is finished
 			}
 
 			curSecParsed = curLineParsed.substr(openBracketPos + 1, closeBracketPos - openBracketPos - 1).c_str();
-
+			registryValues.clear();
 			continue;
 		}
 		
@@ -153,6 +173,22 @@ WORD CIniFile::InsertFile(const std::string& filename, const char* pSectionSpeci
 					value.Trim();
 				}
 
+				if (isSectionRegistry(keyName) && IsNumeric(keyName)) {
+					auto const [_, inserted] = registryValues.insert(value);
+					// WW's duplicated record, skip
+					if (!inserted) {
+						continue;
+					}
+				}
+
+				// this is a duplicated number, and already added
+				// so we will append in the end of the list later
+#if 0
+				if (IsNumeric(keyName) && curSectionMap.Exists(keyName)) {
+					registryMap[curSecParsed].push_back({ keyName, value });
+				}
+#endif
+
 				// special handling for +=
 				if (keyName == '+') {
 					keyName += value;
@@ -164,6 +200,15 @@ WORD CIniFile::InsertFile(const std::string& filename, const char* pSectionSpeci
 
 	}
 
+	// now we append all items to the list
+#if 0
+	for (auto const& [secName, registry] : registryMap) {
+		auto& secMap = sections[secName];
+		for (auto const& [key, value] : registry) {
+			secMap.SetString("auto" + key, value);
+		}
+	}
+#endif
 
 
 	file.close();

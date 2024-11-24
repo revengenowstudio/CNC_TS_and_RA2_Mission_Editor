@@ -28,14 +28,14 @@ inline bool IsNumeric(const CString& str) {
 }
 
 // HSV -> RGB
-inline bool HSVToRGB(const float h, const float s, const float v, float& r, float& g, float& b)
+inline bool HSVToRGB(const double h, const double s, const double v, double& r, double& g, double& b)
 {
 	if (h < 0.0 || h >= 360.0 || s < 0.0 || s > 1.0 || v < 0.0 || v > 1.0)
 		return false;
-	auto const const  h_ = static_cast<int>(floor(h / 60.0));
-	const float c = s * v;
-	const float x = c * (1 - fabs(fmod(h / 60.0, 2.0) - 1));
-	const float m = v - c;
+	auto const  h_ = static_cast<int>(floor(h / 60.0));
+	auto const c = s * v;
+	auto const x = static_cast<float>(c * (1 - fabs(fmod(h / 60.0, 2.0) - 1)));
+	auto const m = v - c;
 	switch (h_) {
 	case 0:
 		r = c, g = x, b = 0.0;
@@ -64,19 +64,23 @@ inline bool HSVToRGB(const float h, const float s, const float v, float& r, floa
 
 inline void HSVToRGB(const unsigned char hsv[3], unsigned char rgb[3])
 {
-	float frgb[3];
+	double frgb[3];
 	HSVToRGB(hsv[0] * 360.0 / 255.0, hsv[1] / 255.0, hsv[2] / 255.0, frgb[0], frgb[1], frgb[2]);
-	for (int i = 0; i < 3; ++i)
-		rgb[i] = (frgb[i] < 0.0 ? 0.0 : (frgb[i] > 1.0 ? 1.0 : frgb[i])) * 255.0;
+	for (int i = 0; i < 3; ++i) {
+		auto const rgbVal = (frgb[i] < 0.0 ? 0.0 : (frgb[i] > 1.0 ? 1.0 : frgb[i])) * 255.0;
+		rgb[i] = static_cast<unsigned char>(rgbVal);
+	}
 }
 
 inline std::array<unsigned char, 3> HSVToRGB(const float h, const float s, const float v)
 {
-	std::array<float, 3> frgb;
+	std::array<double, 3> frgb;
 	HSVToRGB(h, s, v, frgb[0], frgb[1], frgb[2]);
 	std::array<unsigned char, 3> ret;
-	for (int i = 0; i < 3; ++i)
-		ret[i] = (frgb[i] < 0.0 ? 0.0 : (frgb[i] > 1.0 ? 1.0 : frgb[i])) * 255.0;
+	for (int i = 0; i < 3; ++i) {
+		auto const rgbVal = (frgb[i] < 0.0 ? 0.0 : (frgb[i] > 1.0 ? 1.0 : frgb[i])) * 255.0;
+		ret[i] = static_cast<unsigned char>(rgbVal);
+	}
 	return ret;
 }
 

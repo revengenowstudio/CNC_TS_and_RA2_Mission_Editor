@@ -1925,10 +1925,6 @@ void CLoading::SetImageData(unsigned char* pBuffer, const CString& NameInDict, i
 	ASSERT(!NameInDict.IsEmpty());
 	auto& data = pics[NameInDict];
 
-	if (NameInDict.Find("CNST") >= 0) {
-		printf("");
-	}
-
 	SetImageData(pBuffer, data, FullWidth, FullHeight, pPal, forceNoRemap);
 }
 

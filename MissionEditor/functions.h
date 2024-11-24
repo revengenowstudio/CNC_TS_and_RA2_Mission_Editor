@@ -24,6 +24,7 @@
 #include <afx.h>
 #include <memory>
 #include <array>
+#include "Helpers.h"
 
 using std::string;
 
@@ -45,17 +46,6 @@ void ShowOptionsDialog(CIniFile& optIni);
 
 // repairs a trigger (sets flags correctly)
 bool RepairTrigger(CString& triggerdata);
-
-// coordinate functions
-void PosToXY(const char* pos, int* X, int* Y);
-
-// check whether is string is all made of digit numbers
-bool IsNumeric(const CString& str);
-
-// HSV -> RGB
-void HSVToRGB(const unsigned char hsv[3], unsigned char rgb[3]);
-std::array<unsigned char, 3> HSVToRGB(float h, float s, float v);
-std::array<unsigned char, 3> HSVToRGB(const unsigned char hsv[3]);
 
 void GetDrawBorder(const BYTE* data, int width, int line, int& left, int& right, unsigned int flags, BOOL* TranspInside = NULL);
 

@@ -435,9 +435,13 @@ void CTriggerEventsDlg::OnSelchangeParameter()
 	int original_cuparam = curparam;
 #ifdef RA2_MODE
 	CString Param1 = GetParam(g_data["EventsRA2"][GetParam(EventData, startpos)], 1);
+	// 3rd position control code
 	CString Code = GetParam(g_data["ParamTypes"][Param1], 2);
-	//MessageBox(Param1, Code);
-	if (atoi(Code) != 0) curparam--;
+
+	// means there are parameters taken up 2 slots, even if only 1 is meaningful
+	if (atoi(Code) == 2) {
+		curparam--;
+	}
 #endif
 	// END FIx
 

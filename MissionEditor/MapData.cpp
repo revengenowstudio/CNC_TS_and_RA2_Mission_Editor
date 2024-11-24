@@ -1837,7 +1837,9 @@ void CMapData::DeleteInfantry(DWORD dwIndex)
 {
 	//if(dwIndex>=m_infantry.size()) MessageBox(0,"CMapData::DeleteInfantry(): Out of range error", "Error", 0);
 
-	if (dwIndex >= m_infantry.size()) return;
+	if (dwIndex >= m_infantry.size()) {
+		return;
+	}
 
 	// BUG TRACING HERE, FOR THE COPY INSTEAD MOVE INFANTRY BUG!
 	// SOLUTION WAS IN ADDINFANTRY();
@@ -1845,11 +1847,9 @@ void CMapData::DeleteInfantry(DWORD dwIndex)
 		//MessageBox(0,"CMapData::DeleteInfantry() called for infantry that already got deleted!", "Error",0);
 		errstream << "CMapData::DeleteInfantry() called for infantry that already got deleted! Index: " << dwIndex << endl;
 		errstream.flush();
+
+		return;
 	}
-
-	if (m_infantry[dwIndex].deleted) return;
-
-
 
 	m_infantry[dwIndex].deleted = 1;
 
@@ -1857,9 +1857,13 @@ void CMapData::DeleteInfantry(DWORD dwIndex)
 	int y = atoi(m_infantry[dwIndex].y);
 	int pos = atoi(m_infantry[dwIndex].pos);
 
-	if (pos > 0) pos--;
+	if (pos > 0) {
+		pos--;
+	}
 
-	if (x + y * m_IsoSize < fielddata_size) fielddata[x + y * m_IsoSize].infantry[pos] = -1;
+	if (x + y * m_IsoSize < fielddata_size) {
+		fielddata[x + y * m_IsoSize].infantry[pos] = -1;
+	}
 
 	Mini_UpdatePos(x, y, IsMultiplayer());
 
@@ -1919,7 +1923,9 @@ void CMapData::DeleteCelltag(DWORD dwIndex)
 
 void CMapData::DeleteUnit(DWORD dwIndex)
 {
-	if (dwIndex >= GetUnitCount()) return;
+	if (dwIndex >= GetUnitCount()) {
+		return;
+	}
 
 	auto const& pSec = m_mapfile.TryGetSection("Units");
 	ASSERT(pSec != nullptr);
@@ -2074,14 +2080,14 @@ BOOL CMapData::AddWaypoint(CString id, DWORD dwPos)
 
 
 
-void CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
+CString CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
 {
 	auto const& section = m_mapfile.GetSection("Structures");
 	if (dwIndex >= section.Size()) {
-		return;
+		return {};
 	}
 
-	auto const& data = section.Nth(dwIndex).second;
+	auto const& [id, data] = section.Nth(dwIndex);
 
 	lpStructure->house = GetParam(data, 0);
 	lpStructure->type = GetParam(data, 1);
@@ -2101,6 +2107,7 @@ void CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
 	lpStructure->flag3 = GetParam(data, 15);
 	lpStructure->flag4 = GetParam(data, 16);
 
+	return id;
 }
 
 void CMapData::GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const
@@ -2164,8 +2171,9 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType, LPCTSTR lpHouse
 		dwPos = atoi(infantry.x) + atoi(infantry.y) * Map->GetIsoSize();
 
 		// MW Bugfix: not checking if infantry.pos does already exist caused crashes with user scripts!
-		if (GetInfantryAt(dwPos, atoi(infantry.pos)) >= 0)
+		if (GetInfantryAt(dwPos, atoi(infantry.pos)) >= 0) {
 			infantry.pos = "-1";
+		}
 	} else {
 		char cx[10], cy[10];
 		itoa(dwPos % Map->GetIsoSize(), cx, 10);
@@ -2195,9 +2203,9 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType, LPCTSTR lpHouse
 		int subpos = -1;
 		int i;
 
-		if (GetInfantryCountAt(dwPos) == 0)
+		if (GetInfantryCountAt(dwPos) == 0) {
 			subpos = 0;
-		else {
+		} else {
 			int oldInf = GetInfantryAt(dwPos, 0);
 			if (oldInf > -1) {
 				INFANTRY inf;
@@ -2229,7 +2237,9 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType, LPCTSTR lpHouse
 			}
 		}
 
-		if (subpos < 0) return FALSE;
+		if (subpos < 0) {
+			return FALSE;
+		}
 		char c[50];
 		itoa(subpos, c, 10);
 
@@ -2267,35 +2277,42 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType, LPCTSTR lpHouse
 	// below code should be much more compatible to the very old code (the direct ini one)
 
 	int sp = atoi(infantry.pos);
-	if (sp > 0) sp--;
+	if (sp > 0) {
+		sp--;
+	}
 
 	int i;
 	BOOL bFound = FALSE;
 	if (suggestedIndex >= 0 && suggestedIndex < m_infantry.size()) {
+		// reuse slot
 		if (m_infantry[suggestedIndex].deleted) {
 			m_infantry[suggestedIndex] = infantry;
-			if (dwPos < fielddata_size) fielddata[dwPos].infantry[sp] = suggestedIndex;
+			if (dwPos < fielddata_size) {
+				fielddata[dwPos].infantry[sp] = suggestedIndex;
+			}
 			bFound = TRUE;
 
 		}
 	}
 
-	if (!bFound)
+	if (!bFound) {
 		for (i = 0; i < m_infantry.size(); i++) {
-			if (m_infantry[i].deleted) // yep, found one, replace it
-			{
+			// yep, found one, replace it
+			if (m_infantry[i].deleted) {
 				m_infantry[i] = infantry;
-				if (dwPos < fielddata_size) fielddata[dwPos].infantry[sp] = i;
+				if (dwPos < fielddata_size) {
+					fielddata[dwPos].infantry[sp] = i;
+				}
 				bFound = TRUE;
 				break;
 			}
 		}
 
-	if (!bFound) {
 		m_infantry.push_back(infantry);
-		if (dwPos < fielddata_size) fielddata[dwPos].infantry[sp] = m_infantry.size() - 1;
+		if (dwPos < fielddata_size) {
+			fielddata[dwPos].infantry[sp] = m_infantry.size() - 1;
+		}
 	}
-
 
 	return TRUE;
 }
@@ -2332,10 +2349,10 @@ BOOL CMapData::AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType, LPCTSTR lpHo
 	}
 
 
-	CString id = GetFree("Structures");
+	CString id = suggestedID;
 
-	if (!suggestedID.IsEmpty() && !m_mapfile["Structures"].Exists(suggestedID)) {
-		id = suggestedID;
+	if (suggestedID.IsEmpty() || m_mapfile["Structures"].Exists(suggestedID)) {
+		id = GetFree("Structures");
 	}
 
 	CString value;
@@ -2344,7 +2361,8 @@ BOOL CMapData::AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType, LPCTSTR lpHo
 		structure.flag2 + "," + structure.energy + "," + structure.upgradecount + "," + structure.spotlight + ","
 		+ structure.upgrade1 + "," + structure.upgrade2 + "," + structure.upgrade3 + "," + structure.flag3 + "," + structure.flag4;
 
-	m_mapfile.SetString("Structures", id, value);
+	auto& section = m_mapfile.AddSection("Structures");
+	section.InsertOrAssign(id, value);
 
 	if (!m_noAutoObjectUpdate) {
 		UpdateStructures(FALSE);
@@ -2425,7 +2443,9 @@ void CMapData::GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const
 {
 	ASSERT(dwIndex < m_infantry.size());
 
-	if (dwIndex >= m_infantry.size()) return;
+	if (dwIndex >= m_infantry.size()) {
+		return;
+	}
 
 	/*lpInfantry->house=m_infantry.house;
 	lpInfantry->type=m_infantry.;
@@ -2441,7 +2461,7 @@ void CMapData::GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const
 	lpInfantry->flag3=m_infantry.;
 	lpInfantry->flag4=m_infantry.;
 	lpInfantry->flag5=m_infantry.;*/
-	* lpInfantry = m_infantry[dwIndex];
+	*lpInfantry = m_infantry[dwIndex];
 
 	//memcpy(lpInfantry, &m_infantry[dwIndex], sizeof(INFANTRY));
 
@@ -2470,14 +2490,14 @@ void CMapData::GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const
 
 }
 
-void CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
+CString CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
 {
 	auto const& section = m_mapfile.GetSection("Units");
 	if (dwIndex >= section.Size()) {
-		return;
+		return {};
 	}
 
-	auto const& data = section.Nth(dwIndex).second;
+	auto const& [id, data] = section.Nth(dwIndex);
 
 	lpUnit->house = GetParam(data, 0);
 	lpUnit->type = GetParam(data, 1);
@@ -2493,16 +2513,18 @@ void CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
 	lpUnit->flag4 = GetParam(data, 11);
 	lpUnit->flag5 = GetParam(data, 12);
 	lpUnit->flag6 = GetParam(data, 13);
+
+	return id;
 }
 
-void CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
+CString CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
 {
 	auto const& section = m_mapfile.GetSection("Aircraft");
 	if (dwIndex >= section.Size()) {
-		return;
+		return {};
 	}
 
-	auto const& data = section.Nth(dwIndex).second;
+	auto const& [id, data] = section.Nth(dwIndex);
 
 	lpAircraft->house = GetParam(data, 0);
 	lpAircraft->type = GetParam(data, 1);
@@ -2516,6 +2538,8 @@ void CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
 	lpAircraft->group = GetParam(data, 9);
 	lpAircraft->flag3 = GetParam(data, 10);
 	lpAircraft->flag4 = GetParam(data, 11);
+
+	return id;
 }
 
 BOOL CMapData::AddCelltag(LPCTSTR lpTag, DWORD dwPos)
@@ -2583,10 +2607,10 @@ BOOL CMapData::AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType, LPCTSTR lpHouse
 		aircraft.flag4 = "0";
 	}
 
-	CString id = GetFree("Aircraft");
+	CString id = suggestedID;
 
-	if (!suggestedID.IsEmpty() && !m_mapfile["Aircraft"].Exists(suggestedID)) {
-		id = suggestedID;
+	if (suggestedID.IsEmpty() || m_mapfile["Aircraft"].Exists(suggestedID)) {
+		id = GetFree("Aircraft");
 	}
 
 	CString value;
@@ -2594,7 +2618,7 @@ BOOL CMapData::AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType, LPCTSTR lpHouse
 		aircraft.x + "," + aircraft.direction + "," + aircraft.action + "," + aircraft.tag + ","
 		+ aircraft.flag1 + "," + aircraft.group + "," + aircraft.flag3 + "," + aircraft.flag4;
 
-	m_mapfile.SetString("Aircraft", id, value);
+	m_mapfile.AddSection("Aircraft").InsertOrAssign(id, value);
 
 	if (!m_noAutoObjectUpdate) {
 		UpdateAircraft(FALSE);
@@ -2631,10 +2655,10 @@ BOOL CMapData::AddUnit(UNIT* lpUnit, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPo
 
 	}
 
-	CString id = GetFree("Units");
+	CString id = suggestedID;
 
-	if (!suggestedID.IsEmpty() && !m_mapfile["Units"].Exists(suggestedID)) {
-		id = suggestedID;
+	if (suggestedID.IsEmpty() || m_mapfile["Units"].Exists(suggestedID)) {
+		id = GetFree("Units");
 	}
 
 	CString value;
@@ -2642,7 +2666,7 @@ BOOL CMapData::AddUnit(UNIT* lpUnit, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPo
 		unit.x + "," + unit.direction + "," + unit.action + "," + unit.tag + ","
 		+ unit.flag1 + "," + unit.group + "," + unit.flag3 + "," + unit.flag4 + "," + unit.flag5 + "," + unit.flag6;
 
-	m_mapfile.SetString("Units", id, value);
+	m_mapfile.AddSection("Units").InsertOrAssign(id, value);
 
 	if (!m_noAutoObjectUpdate) {
 		UpdateUnits(FALSE);

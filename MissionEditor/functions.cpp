@@ -399,12 +399,12 @@ CString ToACP(const CString& utf8)
 CString TranslateStringVariables(int n, const char* originaltext, const char* inserttext)
 {
 	char c[50];
-	itoa(n, c, 10);
+	_itoa_s(n, c, 10);
 
 	char seekedstring[50];
 	seekedstring[0] = '%';
 	seekedstring[1] = 0;
-	strcat(seekedstring, c);
+	strcat_s(seekedstring, c);
 
 	CString orig = originaltext;
 	if (orig.Find(seekedstring) < 0) {
@@ -530,7 +530,7 @@ CString GetText(CSliderCtrl* wnd)
 {
 	int v = wnd->GetPos();
 	char c[150];
-	itoa(v, c, 10);
+	_itoa_s(v, c, 10);
 	return(c);
 }
 
@@ -651,87 +651,6 @@ void StructureInfo(const char* data, string& house, string& type, int& strength,
 	u10 = atoi(GetParam(data, 16));
 }
 
-void PosToXY(const char* pos, int* X, int* Y)
-{
-	int Posleng;
-	//int XX, YY;
-	char Pos[100];
-	strcpy(Pos, pos);
-	char XS[10], YS[10];
-	Posleng = strlen(Pos);
-	strcpy(YS, Pos + Posleng - 3);
-	Pos[Posleng - 3] = 0;
-	strcpy(XS, Pos);
-
-	*X = atoi(XS);
-	*Y = atoi(YS);
-
-}
-
-bool IsNumeric(const CString& str) {
-	return std::all_of(str.operator LPCSTR(), str.operator LPCSTR() + str.GetLength(), [](char c) {
-		return std::isdigit(c);
-		});
-}
-
-bool HSVToRGB(const float h, const float s, const float v, float& r, float& g, float& b)
-{
-	if (h < 0.0 || h >= 360.0 || s < 0.0 || s > 1.0 || v < 0.0 || v > 1.0)
-		return false;
-	const int h_ = floor(h / 60.0);
-	const float c = s * v;
-	const float x = c * (1 - fabs(fmod(h / 60.0, 2.0) - 1));
-	const float m = v - c;
-	switch (h_) {
-		case 0:
-			r = c, g = x, b = 0.0;
-			break;
-		case 1:
-			r = x, g = c, b = 0.0;
-			break;
-		case 2:
-			r = 0.0, g = c, b = x;
-			break;
-		case 3:
-			r = 0.0, g = x, b = c;
-			break;
-		case 4:
-			r = x, g = 0.0, b = c;
-			break;
-		case 5:
-			r = c, g = 0.0, b = x;
-			break;
-	}
-	r += m;
-	g += m;
-	b += m;
-	return true;
-}
-
-void HSVToRGB(const unsigned char hsv[3], unsigned char rgb[3])
-{
-	float frgb[3];
-	HSVToRGB(hsv[0] * 360.0 / 255.0, hsv[1] / 255.0, hsv[2] / 255.0, frgb[0], frgb[1], frgb[2]);
-	for (int i = 0; i < 3; ++i)
-		rgb[i] = (frgb[i] < 0.0 ? 0.0 : (frgb[i] > 1.0 ? 1.0 : frgb[i])) * 255.0;
-}
-
-std::array<unsigned char, 3> HSVToRGB(const float h, const float s, const float v)
-{
-	std::array<float, 3> frgb;
-	HSVToRGB(h, s, v, frgb[0], frgb[1], frgb[2]);
-	std::array<unsigned char, 3> ret;
-	for (int i = 0; i < 3; ++i)
-		ret[i] = (frgb[i] < 0.0 ? 0.0 : (frgb[i] > 1.0 ? 1.0 : frgb[i])) * 255.0;
-	return ret;
-}
-
-std::array<unsigned char, 3> HSVToRGB(const unsigned char hsv[3])
-{
-	std::array<unsigned char, 3> ret;
-	HSVToRGB(hsv, ret.data());
-	return ret;
-}
 
 void listSpecifcTechnoTypes(CComboBox& cb, const CString& sectionName, bool clear = true, bool useIniName = false)
 {
@@ -741,7 +660,7 @@ void listSpecifcTechnoTypes(CComboBox& cb, const CString& sectionName, bool clea
 	auto const& sec = rules.GetSection(sectionName);
 	for (auto idx = 0; idx < sec.Size(); ++idx) {
 		char idxNum[50];
-		itoa(idx, idxNum, 10);
+		_itoa_s(idx, idxNum, 10);
 		CString record = idxNum;
 
 		auto const& kvPair = sec.Nth(idx);
@@ -771,7 +690,7 @@ void listSpecifcTypesWithSequence(CComboBox& cb, const CString& sectionName, boo
 	auto const& sec = rules.GetSection(sectionName);
 	for (auto idx = 0; idx < sec.Size(); ++idx) {
 		char idxNum[50];
-		itoa(idx, idxNum, 10);
+		_itoa_s(idx, idxNum, 10);
 		auto const& kvPair = sec.Nth(idx);
 		CString record = idxNum;
 		record += " ";
@@ -989,7 +908,7 @@ void ListMovies(CComboBox& cb, BOOL bListNone, BOOL bListParam)
 		if (i < atoi(g_data.GetString("MovieList", "Start"))) {
 			continue;
 		}
-		itoa(i, idxStr, 10);
+		_itoa_s(i, idxStr, 10);
 		CString desc(idxStr);
 		desc += " ";
 		desc += movieList.Nth(i).second;
@@ -1114,7 +1033,7 @@ void ListHouses(CComboBox& cb, BOOL bNumbers, BOOL bCountries, BOOL bPlayers)
 
 			if (bNumbers) {
 				char idxStr[50];
-				itoa(i, idxStr, 10);
+				_itoa_s(i, idxStr, 10);
 #ifdef RA2_MODE
 				if (bCountries) {
 					int preexisting = 0;
@@ -1128,9 +1047,9 @@ void ListHouses(CComboBox& cb, BOOL bNumbers, BOOL bCountries, BOOL bPlayers)
 					if (rulesMapList.HasValue(mapHouseList->Nth(i).second)) {
 						auto const& mapHouseID = mapHouseList->Nth(i).second;
 						auto const& idxInRules = rulesMapList.FindValue(mapHouseID);
-						itoa(idxInRules, idxStr, 10);
+						_itoa_s(idxInRules, idxStr, 10);
 					} else {
-						itoa(i + crulesh - preexisting, idxStr, 10);
+						_itoa_s(i + crulesh - preexisting, idxStr, 10);
 					}
 				}
 #endif
@@ -1175,10 +1094,10 @@ void ListHouses(CComboBox& cb, BOOL bNumbers, BOOL bCountries, BOOL bPlayers)
 #endif
 					CString j;
 					char c[50];
-					itoa(k, c, 10);
+					_itoa_s(k, c, 10);
 					j += c;
 					j += " Multi-Player ";
-					itoa(i, c, 10);
+					_itoa_s(i, c, 10);
 					j += c;
 					cb.AddString(j);
 				}
@@ -1390,7 +1309,7 @@ CString GetFreeID()
 	for (;;) {
 		char p[50];
 		p[0] = '0';
-		itoa(n, p + 1, 10);
+		_itoa_s(n, p + 1, sizeof(p) - 1, 10);
 
 		if (!isIDInUse(p)) {
 			return p;
@@ -1405,17 +1324,17 @@ void GetNodeName(CString& name, int n)
 	char c[5];
 	char p[6];
 	memset(p, 0, 6);
-	itoa(n, c, 10);
-	strcpy(p, c);
+	_itoa_s(n, c, 10);
+	strcpy_s(p, c);
 
 	if (strlen(c) == 1) {
 		memcpy(c, "00", 2);
-		strcpy(c + 2, p);
+		strcpy_s(c + 2, sizeof(c) - 2, p);
 	} else if (strlen(c) == 2) {
 		memcpy(c, "0", 1);
-		strcpy(c + 1, p);
+		strcpy_s(c + 1, sizeof(c) - 1, p);
 	} else if (strlen(c) == 3) {
-		strcpy(c, p);
+		strcpy_s(c, p);
 	}
 
 	name = c;

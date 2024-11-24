@@ -251,8 +251,8 @@ public:
 	BOOL AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");
 	void GetCelltagData(DWORD dwIndex, CString* lpTag, DWORD* lpdwPos) const;
 	BOOL AddCelltag(LPCTSTR lpTag, DWORD dwPos);
-	void GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const;
-	void GetUnitData(DWORD dwIndex, UNIT* lpUnit) const;
+	CString GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const;
+	CString GetUnitData(DWORD dwIndex, UNIT* lpUnit) const;
 	void GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const;
 	void GetStdInfantryData(DWORD dwIndex, STDOBJECTDATA* lpStdInfantry) const;
 	INT GetUnitTypeID(LPCTSTR lpType);
@@ -261,7 +261,7 @@ public:
 	BOOL AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, int suggestedIndex = -1);
 	BOOL AddNode(NODE* lpNode, WORD dwPos);
 	void GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const;
-	void GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
+	CString GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
 	BOOL AddWaypoint(CString lpID, DWORD dwPos);
 
 	void DeleteNode(LPCTSTR lpHouse, DWORD dwIndex);
@@ -663,7 +663,8 @@ inline MapCoords CMapData::ToMapCoords(ProjectedCoords xy) const
 
 inline MapCoords CMapData::ToMapCoords3d(ProjectedCoords xy, int mapZ) const
 {
-	float cx = xy.x, cy = xy.y + mapZ * f_y / 2;
+	auto const cx = static_cast<float>(xy.x);
+	auto const cy = static_cast<float>(xy.y + mapZ * f_y / 2);
 	return MapCoords(
 		cy / (float)f_y - cx / (float)f_x + (float)(m_IsoSize - 2) / 2 + (float)0.5,
 		cy / (float)f_y + cx / (float)f_x - (float)(m_IsoSize - 2) / 2.0f - (float)0.5

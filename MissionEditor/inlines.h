@@ -50,7 +50,7 @@ inline BOOL isFalse(CString expr)
 
 
 // retrieve the picture filename of a unit (as it is saved in the pics map). The returned file may not exist in the pics map (you need to do a check!).
-inline CString GetUnitPictureFilename(const CString& lpUnitName, DWORD dwPicIndex)
+inline CString GetUnitPictureFilename(const CString& artSectionId, DWORD dwPicIndex)
 {
 	CIniFile& ini = Map->GetIniFile();
 
@@ -59,14 +59,11 @@ inline CString GetUnitPictureFilename(const CString& lpUnitName, DWORD dwPicInde
 
 	// store differently for each type even they shares same image,
 	// because they can have different components, e.g. turret image
-	if (pics.find(lpUnitName + n) != pics.end()) {
-		return lpUnitName + n;
+	if (pics.find(artSectionId + n) != pics.end()) {
+		return artSectionId + n;
 	}
-	
-	auto artname = rules.GetStringOr(lpUnitName, "Image", lpUnitName);
-	artname = ini.GetStringOr(lpUnitName, "Image", artname);
-
-	auto const& shapeName = art.GetString(artname, "Image");
+	auto artname = artSectionId;
+	auto const& shapeName = art.GetString(artSectionId, "Image");
 
 	if (!shapeName.IsEmpty()) {
 		if (!g_data.GetBool("IgnoreArtImage", artname)) {
@@ -91,6 +88,11 @@ inline CString GetUnitPictureFilename(const CString& lpUnitName, DWORD dwPicInde
 	return {};
 }
 
+/**
+* @brief Retrieve a stringified parameter from a serialized string, concated with ','
+* @param data Serialized string input
+* @param param Nth param to retrieve, starts from 0
+*/
 inline CString GetParam(const CString& data, const int param)
 {
 	int paramStrPos = 0;

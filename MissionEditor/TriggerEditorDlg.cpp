@@ -359,11 +359,8 @@ void CTriggerEditorDlg::OnClone()
 
 	ini.SetString("Triggers", newId, SetParam(ini["Triggers"][newId], 2, GetParam(ini["Triggers"][newId], 2) + " Clone"));
 
-	{
-		CString newTagId = GetFreeID();
-		ini.SetString("Tags", newTagId, "0," + GetParam(ini["Triggers"][newId], 2) + ",");
-		ini.SetString("Tags", newTagId, newId);
-	}
+	CString newTagId = GetFreeID();
+	ini.SetString("Tags", newTagId, "0," + GetParam(ini["Triggers"][newId], 2) + "," + newId);
 
 	((CFinalSunDlg*)theApp.m_pMainWnd)->UpdateDialogs(TRUE);
 

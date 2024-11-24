@@ -615,6 +615,7 @@
     <ClInclude Include="CliffModifier.h" />
     <ClInclude Include="ComboUInputDlg.h" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="Helpers.h" />
     <ClInclude Include="IniHelper.h" />
     <ClInclude Include="IniMega.h" />
     <ClInclude Include="INIMeta.h" />

@@ -24,6 +24,7 @@
 
 #include "stdafx.h"
 #include "IniFile.h"
+#include "Helpers.h"
 #include <string>
 #include <algorithm>
 #include <stdexcept>
@@ -97,7 +98,7 @@ WORD CIniFile::InsertFile(const CString& filename, const char* Section, BOOL bNo
 	return InsertFile(std::string(filename.GetString()), Section, bNoSpaces);
 }
 
-WORD CIniFile::InsertFile(const std::string& filename, const char* Section, BOOL bNoSpaces)
+WORD CIniFile::InsertFile(const std::string& filename, const char* pSectionSpecified, BOOL bNoSpaces)
 {
 	if (filename.size() == 0)
 		return 1;
@@ -114,37 +115,50 @@ WORD CIniFile::InsertFile(const std::string& filename, const char* Section, BOOL
 
 	//memset(cSec, 0, 256);
 	//memset(cLine, 0, 4096);
-	CString cSec;
-	std::string cLine;
+	CString curSecParsed;
+	std::string curLineParsed;
 
 	const auto npos = std::string::npos;
 
+
 	while (!file.eof()) {
-		std::getline(file, cLine);
+		std::getline(file, curLineParsed);
 
 		// strip to left side of newline or comment
-		cLine.erase(std::find_if(cLine.begin(), cLine.end(), [](const char c) { return c == '\r' || c == '\n' || c == ';'; }), cLine.end());
+		curLineParsed.erase(std::find_if(curLineParsed.begin(), curLineParsed.end(), [](const char c) { return c == '\r' || c == '\n' || c == ';'; }), curLineParsed.end());
 
-		const auto openBracket = cLine.find('[');
-		const auto closeBracket = cLine.find(']');
-		const auto equals = cLine.find('=');
+		const auto openBracketPos = curLineParsed.find('[');
+		const auto closeBracketPos = curLineParsed.find(']');
+		const auto equalPos = curLineParsed.find('=');
 
-		if (openBracket != npos && closeBracket != npos && openBracket < closeBracket && (equals == npos || equals > openBracket)) {
-			if ((Section != nullptr) && cSec == Section)
+		if (openBracketPos != npos && closeBracketPos != npos && openBracketPos < closeBracketPos && (equalPos == npos || equalPos > openBracketPos)) {
+			if ((pSectionSpecified != nullptr) && curSecParsed == pSectionSpecified) {
 				return 0; // the section we want to insert is finished
+			}
 
-			cSec = cLine.substr(openBracket + 1, closeBracket - openBracket - 1).c_str();
-		} else if (equals != npos && !cSec.IsEmpty()) {
-			if (Section == NULL || cSec == Section) {
+			curSecParsed = curLineParsed.substr(openBracketPos + 1, closeBracketPos - openBracketPos - 1).c_str();
+
+			continue;
+		}
+		
+		if (equalPos != npos && !curSecParsed.IsEmpty()) {
+			if (pSectionSpecified == NULL || curSecParsed == pSectionSpecified) {
 				// a value is set and we have a valid current section!
-				CString name = cLine.substr(0, equals).c_str();
-				CString value = cLine.substr(equals + 1, cLine.size() - equals - 1).c_str();
+				CString keyName = curLineParsed.substr(0, equalPos).c_str();
+				CString value = curLineParsed.substr(equalPos + 1, curLineParsed.size() - equalPos - 1).c_str();
+				auto& curSectionMap = sections[curSecParsed];
 
 				if (bNoSpaces) {
-					name.Trim();
+					keyName.Trim();
 					value.Trim();
 				}
-				sections[cSec].SetString(name, value);
+
+				// special handling for +=
+				if (keyName == '+') {
+					keyName += value;
+				}
+
+				curSectionMap.SetString(keyName, value);
 			}
 		}
 
@@ -183,7 +197,12 @@ BOOL CIniFile::SaveFile(const std::string& Filename) const
 	for (auto const& sec : sections) {
 		file << "[" << sec.first << "]" << endl;
 		for (auto const& pair : sec.second) {
-			file << pair.first << "=" << pair.second << endl;
+			auto keyName = pair.first;
+			// restore +=
+			if (keyName[0] == '+') {
+				keyName = '+';
+			}
+			file << keyName << "=" << pair.second << endl;
 		}
 		file << endl;
 	}

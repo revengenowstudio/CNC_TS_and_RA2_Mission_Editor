@@ -3626,12 +3626,24 @@ void CLoading::FreeAll()
 
 	// MW fix: We need to set tiledata and tiledata_count to the old pointers again
 	int t = 0;
-	if (tiledata == &t_tiledata) t = 0;
-	if (tiledata == &s_tiledata) t = 1;
-	if (tiledata == &u_tiledata) t = 2;
-	if (tiledata == &un_tiledata) t = 3;
-	if (tiledata == &l_tiledata) t = 4;
-	if (tiledata == &d_tiledata) t = 4;
+	if (tiledata == &t_tiledata) {
+		t = 0;
+	}
+	if (tiledata == &s_tiledata) {
+		t = 1;
+	}
+	if (tiledata == &u_tiledata) {
+		t = 2;
+	}
+	if (tiledata == &un_tiledata) {
+		t = 3;
+	}
+	if (tiledata == &l_tiledata) {
+		t = 4;
+	}
+	if (tiledata == &d_tiledata) {
+		t = 4;
+	}
 
 	//try{
 	tiledata = &t_tiledata;
@@ -3661,12 +3673,30 @@ void CLoading::FreeAll()
 	}*/
 
 	// MW Reset tiledata & tiledata_count
-	if (t == 0) { tiledata = &t_tiledata; tiledata_count = &t_tiledata_count; }
-	if (t == 1) { tiledata = &s_tiledata; tiledata_count = &s_tiledata_count; }
-	if (t == 2) { tiledata = &u_tiledata; tiledata_count = &u_tiledata_count; }
-	if (t == 3) { tiledata = &un_tiledata; tiledata_count = &un_tiledata_count; }
-	if (t == 4) { tiledata = &l_tiledata; tiledata_count = &l_tiledata_count; }
-	if (t == 5) { tiledata = &d_tiledata; tiledata_count = &d_tiledata_count; }
+	if (t == 0) {
+		tiledata = &t_tiledata;
+		tiledata_count = &t_tiledata_count;
+	}
+	if (t == 1) {
+		tiledata = &s_tiledata;
+		tiledata_count = &s_tiledata_count;
+	}
+	if (t == 2) {
+		tiledata = &u_tiledata;
+		tiledata_count = &u_tiledata_count;
+	}
+	if (t == 3) {
+		tiledata = &un_tiledata;
+		tiledata_count = &un_tiledata_count;
+	}
+	if (t == 4) {
+		tiledata = &l_tiledata;
+		tiledata_count = &l_tiledata_count;
+	}
+	if (t == 5) {
+		tiledata = &d_tiledata;
+		tiledata_count = &d_tiledata_count;
+	}
 
 	map<CString, PICDATA>::iterator i = pics.begin();
 	for (int e = 0; e < pics.size(); e++) {

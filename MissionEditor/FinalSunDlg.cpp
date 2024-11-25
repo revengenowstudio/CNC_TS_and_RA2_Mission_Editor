@@ -2179,39 +2179,35 @@ void CFinalSunDlg::OnHelpTipoftheday()
 void CFinalSunDlg::UnloadAll()
 {
 	int iQuit = MessageBox(GetLanguageStringACP("MainDialogExitQuestion"), GetLanguageStringACP("MainDialogExitQuestionCap"), MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2);
-	if (iQuit == IDNO) return;
-	else {
-		try {
-
-			CShutDownDlg dlg(this);
-			dlg.ShowWindow(SW_SHOW);
-			dlg.UpdateWindow();
-
-			tiledata = 0;
-
-			theApp.m_loading->FreeAll();
-
-			rules.Clear();
-			ai.Clear();
-			art.Clear();
-			tiles_t.Clear();
-			tiles_s.Clear();
-			tiles_u.Clear();
-			Map->GetIniFile().Clear();
-			sound.Clear();
-			tutorial.Clear();
-			g_data.Clear();
-			language.Clear();
-
-
-
-			DestroyWindow();
-		} catch (...) {
-			DestroyWindow();
-		}
+	if (iQuit == IDNO) {
+		return;
 	}
+	try {
 
+		CShutDownDlg dlg(this);
+		dlg.ShowWindow(SW_SHOW);
+		dlg.UpdateWindow();
 
+		tiledata = nullptr;
+
+		theApp.m_loading->FreeAll();
+
+		rules.Clear();
+		ai.Clear();
+		art.Clear();
+		tiles_t.Clear();
+		tiles_s.Clear();
+		tiles_u.Clear();
+		Map->GetIniFile().Clear();
+		sound.Clear();
+		tutorial.Clear();
+		g_data.Clear();
+		language.Clear();
+
+		DestroyWindow();
+	} catch (...) {
+		DestroyWindow();
+	}
 }
 
 void CFinalSunDlg::OnOptionsSimpleview()

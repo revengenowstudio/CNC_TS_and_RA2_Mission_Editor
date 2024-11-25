@@ -428,7 +428,7 @@ CString CMapData::GetAITriggerTypeID(DWORD dwAITriggerType)
 
 CIniFile& CMapData::GetIniFile()
 {
-	UpdateIniFile();
+	UpdateIniFile(MAPDATA_UPDATE_TO_INI);
 	return m_mapfile;
 }
 
@@ -450,8 +450,9 @@ in order to do this.
 void CMapData::UpdateIniFile(DWORD dwFlags)
 {
 	BOOL bSave = TRUE;
-	if (dwFlags == MAPDATA_UPDATE_FROM_INI)
+	if (dwFlags == MAPDATA_UPDATE_FROM_INI) {
 		bSave = FALSE;
+	}
 
 	if (dwFlags == MAPDATA_UPDATE_FROM_INI) {
 		CalcMapRect();
@@ -505,17 +506,31 @@ void CMapData::UpdateIniFile(DWORD dwFlags)
 		return;
 	}
 
-	if (!bSave) UpdateAircraft(bSave);
+	if (!bSave) {
+		UpdateAircraft(false);
+	}
 	UpdateCelltags(bSave);
-	if (!bSave) UpdateInfantry(bSave);
+	if (!bSave) {
+		UpdateInfantry(false);
+	}
 	UpdateNodes(bSave);
-	if (!bSave) UpdateOverlay(bSave);
-	if (!bSave) UpdateStructures(bSave);
-	if (!bSave) UpdateTerrain(bSave);
+	if (!bSave) {
+		UpdateOverlay(false);
+	}
+	if (!bSave) {
+		UpdateStructures(false);
+	}
+	if (!bSave) {
+		UpdateTerrain(false);
+	}
 #ifdef SMUDGE_SUPP
-	if (!bSave) UpdateSmudges(bSave);
+	if (!bSave) {
+		UpdateSmudges(false);
+	}
 #endif
-	if (!bSave) UpdateUnits(bSave);
+	if (!bSave) {
+		UpdateUnits(false);
+	}
 	UpdateWaypoints(bSave);
 	UpdateTubes(bSave);
 
@@ -526,9 +541,11 @@ void CMapData::LoadMap(const std::string& file)
 	errstream << "LoadMap() frees memory\n";
 	errstream.flush();
 
-	if (fielddata != NULL) delete[] fielddata;
-	int i;
-	for (i = 0; i < dwSnapShotCount; i++) {
+	if (fielddata != NULL) {
+		delete[] fielddata;
+	}
+
+	for (auto i = 0; i < dwSnapShotCount; i++) {
 		delete[] m_snapshots[i].bHeight;
 		delete[] m_snapshots[i].bMapData;
 		delete[] m_snapshots[i].bSubTile;
@@ -2413,10 +2430,16 @@ void CMapData::InitializeUnitTypes()
 INT CMapData::GetUnitTypeID(LPCTSTR lpType)
 {
 	// we only support building types, terrain types and smudge types at the moment
-	if (buildingid.find(lpType) != buildingid.end()) return buildingid[lpType];
-	if (terrainid.find(lpType) != terrainid.end()) return terrainid[lpType];
+	if (buildingid.find(lpType) != buildingid.end()) {
+		return buildingid[lpType];
+	}
+	if (terrainid.find(lpType) != terrainid.end()) {
+		return terrainid[lpType];
+	}
 #ifdef SMUDGE_SUPP
-	if (smudgeid.find(lpType) != smudgeid.end()) return smudgeid[lpType];
+	if (smudgeid.find(lpType) != smudgeid.end()) {
+		return smudgeid[lpType];
+	}
 #endif
 	return 0;
 }

@@ -4085,12 +4085,24 @@ void CLoading::PrepareUnitGraphic(const CString& lpUnittype)
 	auto const bPowerUp = !rules.GetString(lpUnittype, "PowersUpBuilding").IsEmpty();
 
 	HTSPALETTE hPalette;
-	if (theat == 'T') hPalette = m_palettes.m_hPalIsoTemp;
-	if (theat == 'A') hPalette = m_palettes.m_hPalIsoSnow;
-	if (theat == 'U') hPalette = m_palettes.m_hPalIsoUrb;
-	if (theat == 'L') hPalette = m_palettes.m_hPalIsoLun;
-	if (theat == 'D') hPalette = m_palettes.m_hPalIsoDes;
-	if (theat == 'N') hPalette = m_palettes.m_hPalIsoUbn;
+	if (theat == 'T') { 
+		hPalette = m_palettes.m_hPalIsoTemp; 
+	}
+	if (theat == 'A') { 
+		hPalette = m_palettes.m_hPalIsoSnow; 
+	}
+	if (theat == 'U') { 
+		hPalette = m_palettes.m_hPalIsoUrb; 
+	}
+	if (theat == 'L') { 
+		hPalette = m_palettes.m_hPalIsoLun; 
+	}
+	if (theat == 'D') { 
+		hPalette = m_palettes.m_hPalIsoDes; 
+	}
+	if (theat == 'N') { 
+		hPalette = m_palettes.m_hPalIsoUbn; 
+	}
 
 	CIsoView& v = *((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview;
 

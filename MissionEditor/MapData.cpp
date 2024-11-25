@@ -1091,8 +1091,8 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 	BYTE* hexpacked = NULL; // must be freed!
 
 
-	errstream << "Values allocated. Pointer: " << std::hex << values << endl;
-	errstream.flush();
+	//errstream << "Values allocated. Pointer: " << std::hex << values << endl;
+	//errstream.flush();
 
 
 	errstream << "Packing overlay" << endl;

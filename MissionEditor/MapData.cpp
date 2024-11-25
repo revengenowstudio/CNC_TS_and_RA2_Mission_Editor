@@ -32,6 +32,7 @@
 #include "progressdlg.h"
 #include "Structs.h"
 #include "Tube.h"
+#include "IniMega.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -3525,15 +3526,15 @@ BuildingFoundation getBuildingFoundation(const CString& artId) {
 // TODO: simplify this function, remove duplicated codes
 void CMapData::UpdateBuildingInfo(const CString* lpUnitType)
 {
-	CIniFile& ini = GetIniFile();
+	auto const& rulesGroup = IniMegaFile::GetRules();
 
 	if (!lpUnitType) {
 		memset(buildinginfo, 0, buildingInfoCapacity * sizeof(BUILDING_INFO));
 
-		for (auto const& [seq, id] : rules.GetSection("BuildingTypes")) {
+		for (auto const& [seq, id] : rulesGroup.GetSection("BuildingTypes")) {
 			auto const& type = id;
-			auto artname = rules.GetStringOr(type, "Image", type);
-			artname = ini.GetStringOr(type, "Image", artname);
+			auto artname = rulesGroup.GetStringOr(type, "Image", type);
+			artname = rulesGroup.GetStringOr(type, "Image", artname);
 
 			auto const foundation = getBuildingFoundation(artname);
 
@@ -3588,9 +3589,9 @@ void CMapData::UpdateBuildingInfo(const CString* lpUnitType)
 
 		}
 
-		for (auto const& [seq, id] : rules.GetSection("BuildingTypes")) {
+		for (auto const& [seq, id] : rulesGroup.GetSection("BuildingTypes")) {
 			auto const& type = id;
-			auto artname = ini.GetStringOr(type, "Image", type);
+			auto artname = rulesGroup.GetStringOr(type, "Image", type);
 
 			auto const foundation = getBuildingFoundation(artname);
 
@@ -3624,8 +3625,8 @@ void CMapData::UpdateBuildingInfo(const CString* lpUnitType)
 
 	// only for specific building -> faster
 	auto const& type = *lpUnitType;
-	auto artname = rules.GetStringOr(type, "Image", type);
-	artname = ini.GetStringOr(type, "Image", artname);
+	auto artname = rulesGroup.GetStringOr(type, "Image", type);
+	artname = rulesGroup.GetStringOr(type, "Image", artname);
 
 	auto const foundation = getBuildingFoundation(artname);
 

@@ -129,6 +129,15 @@ public:
 		return Iterator(m_section, m_source.end(), m_source.end(), secItEnd, secItEnd);
 	}
 
+	bool HasValue(const CString& expected) const {
+		for (auto const& [_, val] : *this) {
+			if (val == expected) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 private:
 	// attention: beginning iter 
 	static std::pair< KvIter, KvIter> acquireNextKvGroup(const CString& section, GroupIter& beg, const GroupIter end) {

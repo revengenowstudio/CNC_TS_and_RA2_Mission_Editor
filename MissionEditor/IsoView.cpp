@@ -2141,7 +2141,7 @@ void CIsoView::OnRButtonUp(UINT nFlags, CPoint point)
 			AD.reset();
 
 			CMyViewFrame& frame = *((CMyViewFrame*)owner);
-			frame.m_objectview->GetTreeCtrl().Select(frame.m_objectview->GetTreeCtrl().GetRootItem(), TVGN_CARET);
+			frame.m_objectview->GetTreeCtrl().Select(NULL, TVGN_CARET);
 		}
 		return;
 	}

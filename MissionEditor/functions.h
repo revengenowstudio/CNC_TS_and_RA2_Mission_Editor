@@ -96,7 +96,7 @@ void ListCrateTypes(CComboBox& cb);
 void ListSpeechBubbleTypes(CComboBox& cb);
 void ListMapVariables(CComboBox& cb);
 void ListRulesGlobals(CComboBox& cb);
-void ListTechtypes(CComboBox& cb);
+void ListTechtypes(CComboBox& cb, bool numberic = false);
 
 
 // some easy-to-use functions

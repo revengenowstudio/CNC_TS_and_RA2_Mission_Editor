@@ -311,6 +311,8 @@ void HandleParamList(CComboBox& cb, int type)
 		case PARAMTYPE_TECHTYPES:
 			ListTechtypes(cb);
 			break;
+		case PRAMTYPE_TECHNOTYPES_NUM:
+			ListTechtypes(cb, true);
 	}
 }
 
@@ -719,13 +721,14 @@ void ListAircraft(CComboBox& cb)
 	listSpecifcTechnoTypes(cb, "AircraftTypes");
 }
 
-void ListTechtypes(CComboBox& cb)
+void ListTechtypes(CComboBox& cb, bool numberic)
 {
+	auto const useId = !numberic;
 	while (cb.DeleteString(0) != CB_ERR);
-	listSpecifcTechnoTypes(cb, "AircraftTypes", false, true);
-	listSpecifcTechnoTypes(cb, "InfantryTypes", false, true);
-	listSpecifcTechnoTypes(cb, "VehicleTypes", false, true);
-	listSpecifcTechnoTypes(cb, "BuildingTypes", false, true);
+	listSpecifcTechnoTypes(cb, "AircraftTypes", false, useId);
+	listSpecifcTechnoTypes(cb, "InfantryTypes", false, useId);
+	listSpecifcTechnoTypes(cb, "VehicleTypes", false, useId);
+	listSpecifcTechnoTypes(cb, "BuildingTypes", false, useId);
 }
 
 void listLocalVariables(CComboBox& cb, const CIniFile& ini)

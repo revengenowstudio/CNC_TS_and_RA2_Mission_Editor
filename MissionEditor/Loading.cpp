@@ -731,52 +731,69 @@ void CLoading::InitPics(CProgressCtrl* prog)
 	try {
 		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_SCROLLCURSOR)).Detach();
 		// This is really dangerous to store a dangling ComPtr
-		pics["SCROLLCURSOR"].pic = pPic;
+		auto& scrollCursorSlot = pics["SCROLLCURSOR"];
+		auto pOldPic = std::exchange(scrollCursorSlot.pic, pPic);
+		if (pOldPic) {
+			reinterpret_cast<IDirectDrawSurface4*>(pOldPic)->Release();
+		}
 		if (!pPic) {
 			throw new BitmapNotFound();
 		}
-		FSunPackLib::SetColorKey((LPDIRECTDRAWSURFACE4)pPic, -1);
+		FSunPackLib::SetColorKey(pPic, -1);
 		::memset(&desc, 0, sizeof(DDSURFACEDESC2));
 		desc.dwSize = sizeof(DDSURFACEDESC2);
 		desc.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
-		((LPDIRECTDRAWSURFACE4)pPic)->GetSurfaceDesc(&desc);
-		pics["SCROLLCURSOR"].wHeight = desc.dwHeight;
-		pics["SCROLLCURSOR"].wWidth = desc.dwWidth;
-		pics["SCROLLCURSOR"].bType = PICDATA_TYPE_BMP;
+		pPic->GetSurfaceDesc(&desc);
+		scrollCursorSlot.wHeight = desc.dwHeight;
+		scrollCursorSlot.wWidth = desc.dwWidth;
+		scrollCursorSlot.bType = PICDATA_TYPE_BMP;
 	} catch (const BitmapNotFound&) {
+		errstream << "scroll cursor BMP image not found" << std::endl;
 	}
 
 	try {
-		pics["CELLTAG"].pic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_CELLTAG)).Detach();
-		FSunPackLib::SetColorKey((LPDIRECTDRAWSURFACE4)pics["CELLTAG"].pic, CLR_INVALID);
+		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_CELLTAG)).Detach();
+		auto& cellTagSlot = pics["CELLTAG"];
+		auto pOldPic = std::exchange(cellTagSlot.pic, pPic);
+		if (pOldPic) {
+			reinterpret_cast<IDirectDrawSurface4*>(pOldPic)->Release();
+		}
+		FSunPackLib::SetColorKey(pPic, CLR_INVALID);
 		::memset(&desc, 0, sizeof(DDSURFACEDESC2));
 		desc.dwSize = sizeof(DDSURFACEDESC2);
 		desc.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
-		((LPDIRECTDRAWSURFACE4)pics["CELLTAG"].pic)->GetSurfaceDesc(&desc);
-		pics["CELLTAG"].wHeight = desc.dwHeight;
-		pics["CELLTAG"].wWidth = desc.dwWidth;
+		pPic->GetSurfaceDesc(&desc);
+		cellTagSlot.wHeight = desc.dwHeight;
+		cellTagSlot.wWidth = desc.dwWidth;
 #ifdef RA2_MODE
-		pics["CELLTAG"].x = -1;
-		pics["CELLTAG"].y = 0;
+		cellTagSlot.x = -1;
+		cellTagSlot.y = 0;
 #else
-		pics["CELLTAG"].x = -1;
-		pics["CELLTAG"].y = -1;
+		cellTagSlot.x = -1;
+		cellTagSlot.y = -1;
 #endif
-		pics["CELLTAG"].bType = PICDATA_TYPE_BMP;
+		cellTagSlot.bType = PICDATA_TYPE_BMP;
 	} catch (const BitmapNotFound&) {
+		errstream << "cell tag BMP image not found" << std::endl;
 	}
 
 	try {
-		pics["FLAG"].pic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_FLAG)).Detach();
-		FSunPackLib::SetColorKey((LPDIRECTDRAWSURFACE4)pics["FLAG"].pic, -1);
+		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_FLAG)).Detach();
+		auto& flagSlot = pics["FLAG"];
+		auto pOldPic = std::exchange(flagSlot.pic, pPic);
+		if (pOldPic) {
+			reinterpret_cast<IDirectDrawSurface4*>(pOldPic)->Release();
+		}
+		FSunPackLib::SetColorKey(pPic, -1);
 		::memset(&desc, 0, sizeof(DDSURFACEDESC2));
 		desc.dwSize = sizeof(DDSURFACEDESC2);
 		desc.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
-		((LPDIRECTDRAWSURFACE4)pics["FLAG"].pic)->GetSurfaceDesc(&desc);
-		pics["FLAG"].wHeight = desc.dwHeight;
-		pics["FLAG"].wWidth = desc.dwWidth;
-		pics["FLAG"].bType = PICDATA_TYPE_BMP;
+		pPic->GetSurfaceDesc(&desc);
+		flagSlot.wHeight = desc.dwHeight;
+		flagSlot.wWidth = desc.dwWidth;
+		flagSlot.bType = PICDATA_TYPE_BMP;
 	} catch (const BitmapNotFound&) {
+		errstream << "flag BMP image not found" << std::endl;
 	}
 
 
@@ -792,12 +809,17 @@ void CLoading::InitPics(CProgressCtrl* prog)
 	ddsd.dwHeight = f_y;
 
 	LPDIRECTDRAWSURFACE4 srf = NULL;
+	//auto ddptr = 
 	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd->CreateSurface(&ddsd, &srf, 0);
 
-	pics["HTILE"].pic = srf;
-	pics["HTILE"].wHeight = ddsd.dwHeight;
-	pics["HTILE"].wWidth = ddsd.dwWidth;
-	pics["HTILE"].bType = PICDATA_TYPE_BMP;
+	auto& htileSlot = pics["HTILE"];
+	auto const pOldHtSurf = reinterpret_cast<LPDIRECTDRAWSURFACE4>(std::exchange(htileSlot.pic, srf));
+	if (pOldHtSurf) {
+		pOldHtSurf->Release();
+	}
+	htileSlot.wHeight = ddsd.dwHeight;
+	htileSlot.wWidth = ddsd.dwWidth;
+	htileSlot.bType = PICDATA_TYPE_BMP;
 
 	HDC hDC;
 	srf->GetDC(&hDC);
@@ -834,7 +856,6 @@ void CLoading::InitPics(CProgressCtrl* prog)
 	// new: Prepare building terrain information:
 	for (auto const& [seq, id] : rules.GetSection("BuildingTypes")) {
 		PrepareUnitGraphic(id);
-
 	}
 	ms.dwLength = sizeof(MEMORYSTATUS);
 	GlobalMemoryStatusEx(&ms);
@@ -4149,69 +4170,65 @@ void CLoading::PrepareUnitGraphic(const CString& lpUnittype)
 	const auto& artSection = art[image];
 
 	// is it a shp graphic?
-	if (!artSection.GetBool("Voxel")) {
-		try {
-			auto shp = FindUnitShp(image, cur_theat, artSection);
-			if (!shp) {
-				return;
-			}
-
-			filename = shp->filename;
-			hPalette = shp->palette;
-
-			auto limited_to_theater = artSection.GetBool("TerrainPalette") ? shp->mixfile_theater : TheaterChar::None;
-
-			if (filename == "tibtre01.tem" || filename == "tibtre02.tem" || filename == "tibtre03.tem" || filename == "veinhole.tem") {
-				hPalette = m_palettes.m_hPalUnitTemp;
-			}
-
-			if (shp->mixfile > 0) {
-
-				BOOL bSuccess = FSunPackLib::SetCurrentSHP(filename, shp->mixfile);
-				if (!bSuccess) {
-					filename = image + ".sno";
-					if (cur_theat == 'T' || cur_theat == 'U') hPalette = m_palettes.m_hPalIsoTemp;
-					HMIXFILE hShpMix = FindFileInMix(filename);
-					bSuccess = FSunPackLib::SetCurrentSHP(filename, hShpMix);
-
-					if (!bSuccess) {
-						return;
-					}
-				}
-
-				if (bSuccess) {
-
-
-					char ic[50];
-					int i = 0;
-					itoa(i, ic, 10);
-
-					// just fill in a stub entry - Final* will automatically retry loading once the graphic really must be loaded
-					PICDATA p;
-					p.pic = NULL;
-					p.x = 0;
-					p.y = 0;
-					p.wHeight = 0;
-					p.wWidth = 0;
-					p.wMaxWidth = 0;
-					p.wMaxHeight = 0;
-					p.bType = PICDATA_TYPE_SHP;
-					p.bTerrain = limited_to_theater;
-
-
-					pics[image + ic] = p;
-
-
-				}
-
-			}
-
-		} catch (...) {
-			errstream << " exception " << endl;
-			errstream.flush();
+	if (artSection.GetBool("Voxel")) {
+		return;
+	}
+	try {
+		auto shp = FindUnitShp(image, cur_theat, artSection);
+		if (!shp) {
+			return;
 		}
 
+		filename = shp->filename;
+		hPalette = shp->palette;
 
+		auto limited_to_theater = artSection.GetBool("TerrainPalette") ? shp->mixfile_theater : TheaterChar::None;
+
+		if (filename == "tibtre01.tem" || filename == "tibtre02.tem" || filename == "tibtre03.tem" || filename == "veinhole.tem") {
+			hPalette = m_palettes.m_hPalUnitTemp;
+		}
+
+		if (shp->mixfile == NULL) {
+			return;
+		}
+
+		BOOL bSuccess = FSunPackLib::SetCurrentSHP(filename, shp->mixfile);
+		if (!bSuccess) {
+			filename = image + ".sno";
+			if (cur_theat == 'T' || cur_theat == 'U') hPalette = m_palettes.m_hPalIsoTemp;
+			HMIXFILE hShpMix = FindFileInMix(filename);
+			bSuccess = FSunPackLib::SetCurrentSHP(filename, hShpMix);
+
+			if (!bSuccess) {
+				return;
+			}
+		}
+
+		if (bSuccess) {
+			char ic[50];
+			int i = 0;
+			itoa(i, ic, 10);
+
+			// just fill in a stub entry - Final* will automatically retry loading once the graphic really must be loaded
+			PICDATA p;
+			p.pic = NULL;
+			p.x = 0;
+			p.y = 0;
+			p.wHeight = 0;
+			p.wWidth = 0;
+			p.wMaxWidth = 0;
+			p.wMaxHeight = 0;
+			p.bType = PICDATA_TYPE_SHP;
+			p.bTerrain = limited_to_theater;
+
+			auto const oldPicData = std::exchange(pics[image + ic], p);
+			if (oldPicData.pic) {
+				delete oldPicData.pic;
+			}
+		}
 	}
-
+	catch (...) {
+		errstream << " exception " << endl;
+		errstream.flush();
+	}
 }

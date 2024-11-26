@@ -201,6 +201,14 @@ CIsoView::~CIsoView()
 	bNoThreadDraw = TRUE;
 }
 
+template<typename TDD>
+void releaseIfExists(TDD& surf)
+{
+	if (auto const pdd = std::exchange(surf, nullptr)) {
+		pdd->Release();
+	}
+}
+
 BOOL CIsoView::RecreateSurfaces()
 {
 	last_succeeded_operation = 7;
@@ -209,6 +217,9 @@ BOOL CIsoView::RecreateSurfaces()
 	errstream.flush();
 
 	CIsoView& isoView = *this;
+	
+	releaseIfExists(isoView.dd_1);
+	
 	if (DirectDrawCreate(NULL, &isoView.dd_1, NULL) != DD_OK) {
 		errstream << "DirectDrawCreate() failed\n";
 		errstream.flush();
@@ -224,6 +235,8 @@ BOOL CIsoView::RecreateSurfaces()
 
 	errstream << "Now querying the DirectX 7 or 6 interface\n";
 	errstream.flush();
+
+	releaseIfExists(isoView.dd);
 
 	if (isoView.dd_1->QueryInterface(IID_IDirectDraw7, (void**)&isoView.dd) != DD_OK) {
 		errstream << "QueryInterface() failed -> Using DirectX 6.0\n";
@@ -267,7 +280,7 @@ BOOL CIsoView::RecreateSurfaces()
 	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
 	ddsd.dwFlags = DDSD_CAPS;
 
-
+	releaseIfExists(isoView.lpds);
 
 	int res = 0;
 	int trycount = 0;
@@ -332,7 +345,7 @@ BOOL CIsoView::RecreateSurfaces()
 
 	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 
-
+	releaseIfExists(isoView.lpdsBack);
 	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBack, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
 		errstream.flush();
@@ -346,6 +359,7 @@ BOOL CIsoView::RecreateSurfaces()
 
 		return FALSE;
 	}
+	releaseIfExists(isoView.lpdsBackHighRes);
 	if (theApp.m_Options.bHighResUI && isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBackHighRes, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
 		errstream.flush();
@@ -361,6 +375,7 @@ BOOL CIsoView::RecreateSurfaces()
 
 		return FALSE;
 	}
+	releaseIfExists(isoView.lpdsTemp);
 	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsTemp, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
 		errstream.flush();
@@ -3541,7 +3556,10 @@ void CIsoView::ReInitializeDDraw()
 	dlg.ShowWindow(SW_SHOW);
 	dlg.UpdateWindow();
 
-	dd->RestoreAllSurfaces();
+	auto const hr = dd->RestoreAllSurfaces();
+	if (FAILED(hr)) {
+		errstream << "could not restore surfaces, got hr: " << hr << std::endl;
+	}
 
 	updateFontScaled();
 

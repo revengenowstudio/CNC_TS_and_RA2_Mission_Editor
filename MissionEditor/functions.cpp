@@ -680,8 +680,8 @@ void listSpecifcTechnoTypes(CComboBox& cb, const CString& sectionName, bool clea
 			record += translated;
 			cb.AddString(record);
 		}
+		++idx;
 	}
-	++idx;
 }
 
 void listSpecifcTypesWithSequence(CComboBox& cb, const CString& sectionName, bool clear = true) {

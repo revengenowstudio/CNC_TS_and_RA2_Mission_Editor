@@ -6505,8 +6505,8 @@ void CIsoView::Zoom(CPoint& pt, float f)
 
 	auto oldViewScaleControl = m_viewScaleControl;
 	m_viewScaleControl *= (1.0f - f * theApp.m_Options.viewScaleSpeed);
-	if (m_viewScaleControl > 1.0f)
-		m_viewScaleControl = 1.0f;
+	if (m_viewScaleControl > 1.5f)
+		m_viewScaleControl = 1.5f;
 	if (m_viewScaleControl < 0.1f)
 		m_viewScaleControl = 0.1f;
 

@@ -278,6 +278,10 @@ public:
 
 		RECT r;
 		GetDesktopWindow()->GetWindowRect(&r);
+
+		r.right *= m_viewOffset.x;
+		r.bottom *= m_viewOffset.y;
+		
 		//GetWindowRect(&r);
 
 		if (width == -1 || height == -1) {

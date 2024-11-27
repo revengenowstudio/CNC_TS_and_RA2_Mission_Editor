@@ -90,3 +90,47 @@ inline std::array<unsigned char, 3> HSVToRGB(const unsigned char hsv[3])
 	HSVToRGB(hsv, ret.data());
 	return ret;
 }
+
+inline int letter2number(char let) {
+	int reply = let - 'A';
+	return reply;
+
+}
+
+inline char number2letter(int let) {
+	int reply = let + 'A';
+	return reply;
+
+}
+
+inline int StringToWaypoint(const CString& str)
+{
+	if (str.IsEmpty()) {
+		return -1;
+	}
+	int num = 0;
+	for (auto idx = 0; idx < str.GetLength(); ++idx) {
+		auto const ch = str[idx];
+		num = (num + idx) * 26 + letter2number(ch);
+	}
+	return num;
+}
+
+// Serialize waypoint, will be renamed later
+inline CString WaypointToString(int num)
+{
+	if (num < 0) {
+		return {};
+	}
+	char secondChar = number2letter(num % 26);
+	char carry = num / 26;
+	if (!carry) {
+		return secondChar;
+	}
+
+	char firstChar = number2letter(carry - 1);
+	CString ret;
+	ret += firstChar;
+	ret += secondChar;
+	return ret;
+}

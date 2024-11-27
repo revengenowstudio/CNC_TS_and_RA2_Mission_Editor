@@ -28,9 +28,7 @@
 #include "variables.h"
 #include "functions.h"
 #include "inlines.h"
-
-CString GetWaypoint(int n);
-int GetWaypoint(const char* c);
+#include "Helpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -249,7 +247,7 @@ void CTriggerActionsDlg::OnEditchangeActiontype()
 		GetParam(ini["Actions"][m_currentTrigger], pos + 1 + 6)
 	)
 		&& bNoWP) {
-		int number = GetWaypoint(GetParam(ini["Actions"][m_currentTrigger], pos + 1 + 6));
+		int number = StringToWaypoint(GetParam(ini["Actions"][m_currentTrigger], pos + 1 + 6));
 		char c[50];
 		itoa(number, c, 10);
 		ini.SetString("Actions", m_currentTrigger, SetParam(ini["Actions"][m_currentTrigger], pos + 1 + 6, c));
@@ -258,7 +256,7 @@ void CTriggerActionsDlg::OnEditchangeActiontype()
 	)
 		&& !bNoWP) {
 		int wp = atoi(GetParam(ini["Actions"][m_currentTrigger], pos + 1 + 6));
-		CString s = GetWaypoint(wp);
+		CString s = WaypointToString(wp);
 		ini.SetString("Actions", m_currentTrigger, SetParam(ini["Actions"][m_currentTrigger], pos + 1 + 6, s));
 	};
 
@@ -365,7 +363,7 @@ void CTriggerActionsDlg::OnSelchangeParameter()
 		char wayp[50];
 		if (!bNoWP) {
 			ListWaypoints(m_ParamValue);
-			int iWayp = GetWaypoint(GetParam(ActionData, startpos + 1 + 6));
+			int iWayp = StringToWaypoint(GetParam(ActionData, startpos + 1 + 6));
 
 			itoa(iWayp, wayp, 10);
 		} else {
@@ -426,7 +424,7 @@ void CTriggerActionsDlg::OnEditchangeParamvalue()
 		CString waypoint = newVal;
 
 		if (!bNoWP) {
-			waypoint = GetWaypoint(atoi(newVal));
+			waypoint = WaypointToString(atoi(newVal));
 		}
 
 		ini.SetString("Actions", m_currentTrigger, SetParam(ini["Actions"][m_currentTrigger], pos, (LPCTSTR)waypoint));

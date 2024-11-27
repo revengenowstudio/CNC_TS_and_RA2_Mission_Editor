@@ -1,6 +1,7 @@
 #pragma once
 #include <afx.h>
 #include <algorithm>
+#include <array>
 
 // coordinate functions
 inline void PosToXY(const char* pos, int* X, int* Y)

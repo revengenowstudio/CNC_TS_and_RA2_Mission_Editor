@@ -29,6 +29,7 @@
 #include "variables.h"
 #include "functions.h"
 #include "inlines.h"
+#include "Helpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -332,63 +333,6 @@ CString btos(BOOL b)
 	return s;
 }
 
-int letter2number(char let) {
-	int reply = let - 'A';
-	return reply;
-
-}
-
-char number2letter(int let) {
-	int reply = let + 'A';
-	return reply;
-
-}
-
-int GetWaypoint(const char* c)
-{
-	if (strlen(c) == 0) {
-		return -1;
-	}
-	int i;
-	int res = 0;
-	for (i = 0; i < strlen(c); i++) {
-		int addval = letter2number(c[i]);
-		res += addval + (res + 1) * (i * 25) + i;
-	}
-	return res;
-}
-
-// Serialize waypoint, will be renamed later
-CString GetWaypoint(int n)
-{
-	if (n == -1) {
-		return "";
-	}
-	for (int i = -1; i < 26; i++) {
-		for (int e = 0; e < 26; e++) {
-			char c[50];
-			CString p;
-			if (i == -1) {
-				c[0] = number2letter(e);
-				c[1] = 0;
-				if (GetWaypoint(c) == n) {
-					return c;
-				}
-			} else {
-				c[0] = number2letter(i);
-				c[1] = number2letter(e);
-				c[2] = 0;
-				if (GetWaypoint(c) == n) {
-					return c;
-				}
-			}
-
-		}
-	}
-	return "";
-}
-
-
 /////////////////////////////////////////////////////////////////////////////
 // Behandlungsroutinen für Nachrichten CTeamTypes 
 void CTeamTypes::UpdateDialog()
@@ -616,7 +560,7 @@ void CTeamTypes::OnSelchangeTeamtypes()
 	}
 
 
-	int w = GetWaypoint(sec["Waypoint"]);
+	int w = StringToWaypoint(sec["Waypoint"]);
 	char c[50];
 	itoa(w, c, 10);
 	if (w != -1)
@@ -626,7 +570,7 @@ void CTeamTypes::OnSelchangeTeamtypes()
 
 #ifdef RA2_MODE
 	if (sec.GetBool("UseTransportOrigin")) {
-		int w = GetWaypoint(sec["TransportWaypoint"]);
+		int w = StringToWaypoint(sec["TransportWaypoint"]);
 		char c[50];
 		itoa(w, c, 10);
 		if (w != -1)
@@ -807,7 +751,7 @@ void CTeamTypes::OnEditchangeWaypoint()
 	if (strlen(m_Waypoint) == 0) {
 		sec->SetString("Waypoint", "");
 	} else {
-		sec->SetString("Waypoint", GetWaypoint(atoi(m_Waypoint)));
+		sec->SetString("Waypoint", WaypointToString(atoi(m_Waypoint)));
 	}
 }
 
@@ -1443,7 +1387,7 @@ void CTeamTypes::OnEditchangeTransportwaypoint()
 		sec->SetBool("UseTransportOrigin", false);
 		return;
 	}
-	sec->SetString("TransportWaypoint", GetWaypoint(atoi(m_TransportWaypoint)));
+	sec->SetString("TransportWaypoint", WaypointToString(atoi(m_TransportWaypoint)));
 	sec->SetBool("UseTransportOrigin", true);
 }
 

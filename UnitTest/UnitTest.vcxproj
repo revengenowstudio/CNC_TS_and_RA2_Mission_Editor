@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>RA2_MODE;NOMINMAX;_CONSOLE;_AFXDLL;%(PreprocessorDefinitions);_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)googletest\x64\include;$(SolutionDir)MissionEditorPackLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)googletest\x64\include;$(SolutionDir)MissionEditorPackLib;$(SolutionDir)MissionEditor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>RA2_MODE;NOMINMAX;_CONSOLE;_AFXDLL;%(PreprocessorDefinitions);NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)googletest\x64\include;$(SolutionDir)MissionEditorPackLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)googletest\x64\include;$(SolutionDir)MissionEditorPackLib;$(SolutionDir)MissionEditor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -143,6 +143,7 @@
     <ClCompile Include="CIni_Test.cpp" />
     <ClCompile Include="Serde_Test.cpp" />
     <ClCompile Include="UnitTest.cpp" />
+    <ClCompile Include="Waypoint_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\MissionEditor\IniFile.h" />

@@ -276,11 +276,8 @@ public:
 		y += 1;
 		//y-=f_y;
 
-		RECT r;
-		GetDesktopWindow()->GetWindowRect(&r);
-
-		r.right *= m_viewOffset.x;
-		r.bottom *= m_viewOffset.y;
+		RECT r = GetScaledDisplayRect();
+		//GetDesktopWindow()->GetWindowRect(&r);
 		
 		//GetWindowRect(&r);
 

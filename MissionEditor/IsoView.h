@@ -123,6 +123,7 @@ protected:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 	std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> getDDDesc(bool recreated);
+	DDSURFACEDESC2 getDDDescBasic(bool recreated);
 
 	// generated message maps
 	//{{AFX_MSG(CIsoView)

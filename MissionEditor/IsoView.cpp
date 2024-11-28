@@ -5417,16 +5417,8 @@ void CIsoView::DrawMap()
 	mapwidth = Map->GetWidth();
 	mapheight = Map->GetHeight();
 
-	DDSURFACEDESC2 ddsd;
-	ZeroMemory(&ddsd, sizeof(ddsd));
-	ddsd.dwSize = sizeof(DDSURFACEDESC2);
-	ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT;
-
-	lpdsBack->GetSurfaceDesc(&ddsd);
-
-
-#ifdef NOSURFACES				
-	lpdsBack->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+#ifdef NOSURFACES
+	auto ddsd = getDDDescBasic(false);
 #endif
 
 	// we render texts and waypoints last as they should be always visible anyway and because text rendering is currently done using GDI -> getting a DC for every text is too slow nowadays
@@ -6190,7 +6182,7 @@ void CIsoView::DrawMap()
 				Blit((LPDIRECTDRAWSURFACE4)pics["CELLTAG"].pic, drawCoords.x - 1, drawCoords.y - 1);
 
 #ifdef NOSURFACES				
-				lpdsBack->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+				auto ddsd = getDDDesc(false);
 #endif
 			}
 
@@ -6230,7 +6222,7 @@ void CIsoView::DrawMap()
 				m_waypoints_to_render.push_back({ waypointImageCoords.x, waypointImageCoords.y });
 				m_texts_to_render.push_back({ ID.GetString(), waypointTextCoords.x, waypointTextCoords.y, RGB(0,0,255), false, useFont9, true });
 #ifdef NOSURFACES				
-				lpdsBack->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+				ddsd = getDDDescBasic(false);
 #endif
 			}
 
@@ -6320,6 +6312,25 @@ std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> CIsoView::getDDDesc(bool 
 	ASSERT(ddsd.lpSurface != nullptr);
 
 	return { ddsd, dds, useHighRes };
+}
+
+DDSURFACEDESC2 CIsoView::getDDDescBasic(bool recreated)
+{
+	DDSURFACEDESC2 ddsd;
+	ZeroMemory(&ddsd, sizeof(ddsd));
+	ddsd.dwSize = sizeof(DDSURFACEDESC2);
+	ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT;
+
+	lpdsBack->GetSurfaceDesc(&ddsd);
+
+	auto const lockRet = lpdsBack->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+	if (lockRet == DDERR_SURFACELOST && !recreated) {
+		ReInitializeDDraw();
+		return getDDDescBasic(true);
+	}
+	ASSERT(lockRet == S_OK);
+	ASSERT(ddsd.lpSurface != nullptr);
+	return ddsd;
 }
 
 void CIsoView::RenderUIOverlay()

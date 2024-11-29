@@ -6182,7 +6182,7 @@ void CIsoView::DrawMap()
 				Blit((LPDIRECTDRAWSURFACE4)pics["CELLTAG"].pic, drawCoords.x - 1, drawCoords.y - 1);
 
 #ifdef NOSURFACES				
-				auto ddsd = getDDDesc(false);
+				auto ddsd = getDDDescBasic(false);
 #endif
 			}
 

@@ -173,7 +173,7 @@ WORD CIniFile::InsertFile(const std::string& filename, const char* pSectionSpeci
 					value.Trim();
 				}
 
-				if (isSectionRegistry(keyName) && IsNumeric(keyName)) {
+				if (isSectionRegistry(curSecParsed) && IsNumeric(keyName)) {
 					auto const [_, inserted] = registryValues.insert(value);
 					// WW's duplicated record, skip
 					if (!inserted) {

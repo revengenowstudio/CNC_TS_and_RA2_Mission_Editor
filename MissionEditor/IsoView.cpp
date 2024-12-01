@@ -3015,7 +3015,7 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 					Map->DeleteInfantry(m_id);
 				}
 
-				Map->AddInfantry(&infantry);
+				Map->AddInfantry(&infantry, nullptr, nullptr, 0, m_id);
 
 				break;
 			}

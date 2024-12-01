@@ -854,7 +854,8 @@ void CLoading::InitPics(CProgressCtrl* prog)
 
 
 	// new: Prepare building terrain information:
-	for (auto const& [seq, id] : rules.GetSection("BuildingTypes")) {
+	auto const& rulesGroup = IniMegaFile::GetRules();
+	for (auto const& [seq, id] : rulesGroup.GetSection("BuildingTypes")) {
 		PrepareUnitGraphic(id);
 	}
 	ms.dwLength = sizeof(MEMORYSTATUS);
@@ -1082,9 +1083,10 @@ void CLoading::InitSHPs(CProgressCtrl* prog)
 
 
 	if (!theApp.m_Options.bDoNotLoadBuildingGraphics) {
-		auto const& sec = rules.GetSection("BuildingTypes");
-		for (i = 0; i < sec.Size(); i++) {
-			LoadUnitGraphic(sec.Nth(i).second);
+		auto const& rulesGroup = IniMegaFile::GetRules();
+		auto const& sec = rulesGroup.GetSection("BuildingTypes");
+		for (auto const& [_, id] : sec) {
+			LoadUnitGraphic(id);
 		}
 	}
 
@@ -4127,7 +4129,11 @@ void CLoading::PrepareUnitGraphic(const CString& lpUnittype)
 	WORD wStep = 1; // step is 1 for infantry, buildings, etc, and for shp vehicles it specifies the step rate between every direction
 	WORD wStartWalkFrame = 0; // for examply cyborg reaper has another walk starting frame
 	int iTurretOffset = 0; // used for centering y pos of turret (if existing)
-	BOOL bStructure = rules["BuildingTypes"].HasValue(lpUnittype); // is this a structure?
+
+	auto const& rules = IniMegaFile::GetRules();
+
+
+	BOOL bStructure = rules.GetSection("BuildingTypes").HasValue(lpUnittype); // is this a structure?
 
 	 // make sure we only use it for buildings now
 	if (!bStructure) {
@@ -4166,7 +4172,7 @@ void CLoading::PrepareUnitGraphic(const CString& lpUnittype)
 	}
 
 	const CString& image = _art_image;
-	const auto& rulesSection = rules[lpUnittype];
+	const auto& rulesSection = rules.GetSection(lpUnittype);
 	const auto& artSection = art[image];
 
 	// is it a shp graphic?

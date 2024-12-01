@@ -27,6 +27,7 @@
 #include "mapdata.h"
 #include "variables.h"
 #include "inlines.h"
+#include "IniMega.h"
 
 
 #ifdef _DEBUG
@@ -157,7 +158,8 @@ BOOL CBuilding::OnInitDialog()
 
 	if (upgradecount > 0) {
 		auto updatePowerupItems = [=](const CIniFile& ini) {
-			for (auto const& [seq, unitname] : ini["BuildingTypes"]) {
+			auto const& rules = IniMegaFile::GetRules();
+			for (auto const& [seq, unitname] : rules.GetSection("BuildingTypes")) {
 				auto const& targetBldID = ini.GetString(unitname, "PowersUpBuilding");
 				if (targetBldID == m_type) {
 					auto const desc = unitname + " (" + GetName(unitname) + ")";

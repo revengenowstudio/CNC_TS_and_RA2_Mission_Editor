@@ -657,29 +657,30 @@ void listSpecifcTechnoTypes(CComboBox& cb, const CString& sectionName, bool clea
 	if (clear) {
 		while (cb.DeleteString(0) != CB_ERR);
 	}
+	auto const& rules = IniMegaFile::GetRules();
 	auto const& sec = rules.GetSection(sectionName);
-	for (auto idx = 0; idx < sec.Size(); ++idx) {
-		char idxNum[50];
-		_itoa_s(idx, idxNum, 10);
-		CString record = idxNum;
-
-		auto const& kvPair = sec.Nth(idx);
+	auto idx = 0;
+	for (auto& [_, id] : sec) {
+		CString record;
 
 		if (useIniName) {
-			record = kvPair.second;
-		}
-		else {
+			record = id;
+		} else {
+			char idxNum[50];
+			_itoa_s(idx, idxNum, 10);
+			record = idxNum;
 			record += ' ';
-			record += kvPair.second;
+			record += id;
 		}
 		record += " ";
 
-		CString translated = Map->GetUnitName(kvPair.second);
+		CString translated = Map->GetUnitName(id);
 		//if(t!="MISSING")
 		{
 			record += translated;
 			cb.AddString(record);
 		}
+		++idx;
 	}
 }
 

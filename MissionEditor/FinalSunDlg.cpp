@@ -1281,7 +1281,8 @@ void CFinalSunDlg::SaveMap(CString FileName_)
 		char c[50];
 		for (auto e = 0; e < sec.Size(); e++) {
 			auto const& [key, value] = sec.Nth(e);
-			fi = key;
+			// restore += format
+			fi = key[0] != '+' ? key : '+';
 			fi += "=";
 			fi += value;
 			fi += "\n";

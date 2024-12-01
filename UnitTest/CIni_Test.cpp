@@ -276,3 +276,33 @@ TEST(CIniFileClass, IniLowerBoundInsertTest) {
 	EXPECT_EQ("987654", file["Waypoints"].Nth(pSec->Size() - 1).second);
 	EXPECT_EQ("159356", file["Waypoints"].Nth(pSec->Size() - 2).second);
 }
+
+
+TEST(CIniFileClass, IniRegistryTest) {
+	auto const fileName = "test.ini";
+	IniTestHelper helper(fileName, R"(
+[BuildingTypes]
+0=GAPOWR
+1=NAPOWR
+2=GACNST
+5=NACNST
+6=GAPOWR
+6=NAFAKE
+
+
+)");
+
+	CIniFile file;
+	ASSERT_EQ(file.LoadFile(std::string(fileName)), 0);
+
+	EXPECT_EQ("NAFAKE", file.GetString("BuildingTypes", "6"));
+
+	auto const& sec = file.GetSection("BuildingTypes");
+	EXPECT_EQ(5, sec.Size());
+
+	EXPECT_EQ("GAPOWR", sec.Nth(0).second);
+	EXPECT_EQ("NAPOWR", sec.Nth(1).second);
+	EXPECT_EQ("GACNST", sec.Nth(2).second);
+	EXPECT_EQ("NACNST", sec.Nth(3).second);
+	EXPECT_EQ("NAFAKE", sec.Nth(4).second);
+}

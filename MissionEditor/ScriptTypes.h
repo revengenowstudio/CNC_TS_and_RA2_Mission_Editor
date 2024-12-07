@@ -40,11 +40,12 @@ enum /*class*/ ParameterType
 {
 	PRM_None = 0,
 	PRM_BuildingType = 16,
+	PRM_Custom = -1,
 };
 
 enum class ExtraParameterType
 {
-	None = 0,
+	None = -1,
 	ScanType,
 	Counter,
 };
@@ -97,6 +98,8 @@ class CScriptTypes : public CDialog
 	struct CScriptTypeParam {
 		ParameterType Type{};//!< internal predefined paramter type
 		CString Label{};//!< the string displayed for such parameter type
+		CString ParseFromSection{};
+		ExtraParameterType ExtraValueType{ ExtraParameterType::None };
 	};
 
 
@@ -125,7 +128,9 @@ protected:
 	const CScriptTypeAction& getActionData(int actionCbIndex) const;
 	const CScriptTypeParam& getParamData(int paramIndex) const;
 	ParameterType getParameterType(int actionCbIndex) const;
-	void updateExtraValue(ParameterType paramType, CString* paramNumStr);
+	ExtraParameterType getExtraParamType(ParameterType paramType) const;
+	void updateExtraValue(const CScriptTypes::CScriptTypeParam& paramDef, CString* paramNumStr);
+	void updateDefaultParams(const ParameterType type);
 	void UpdateParams(int actionIndex, CString* paramNumStr = nullptr);
 
 	// Implementierung
@@ -171,6 +176,7 @@ protected:
 
 	ActionDefinitionMap m_actionDefinitions;
 	std::map<int, CScriptTypeParam> m_paramDefinitions;
+	std::vector<std::vector<CString>> m_extraValueDefinitions;
 	std::vector<ScriptTemplate> m_scriptTemplates;
 
 

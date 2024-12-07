@@ -54,15 +54,6 @@ int scriptTypeIndexToComboBoxIndex(CComboBox& comboBox, int scriptTypeIndex)
 
 	return 0;
 }
-ExtraParameterType getExtraParamType(ParameterType paramType)
-{
-	switch (paramType) {
-		default:
-			return ExtraParameterType::None;
-		case PRM_BuildingType:
-			return ExtraParameterType::ScanType;
-	}
-}
 
 std::vector<CString> ScriptTemplate::parse(const CString& content)
 {
@@ -407,8 +398,9 @@ int CScriptTypes::getExtraValue()
 {
 	auto const curActionSel = this->m_ActionType.GetCurSel();
 	const int actionData = this->m_ActionType.GetItemData(curActionSel);
-	auto const paramType = getParameterType(actionData);
-	auto const extParamType = getExtraParamType(paramType);
+	//auto const& paramDef =  getParamData(getActionData(actionData).ParamTypeIndex);
+	//auto const paramType = paramDef.Type;
+	//auto const extParamType = paramDef.ExtraValueType;
 	CString curExtParamContent;
 	m_ParamExt.GetWindowText(curExtParamContent);
 	//errstream << " curExtParamContent = " << curExtParamContent;
@@ -669,8 +661,29 @@ BOOL CScriptTypes::OnInitDialog()
 
 	while (m_ActionType.DeleteString(0) != CB_ERR);
 
+	m_extraValueDefinitions.reserve(g_data["ScriptExtras"].Size());
+	m_extraValueDefinitions.push_back({
+			TranslateStringACP("0 - Least threat"),
+			TranslateStringACP("1 - Most threat"),
+			TranslateStringACP("2 - Least distant"),
+			TranslateStringACP("3 - Most distant"),
+		});
+	for (auto const& [idxStr, extraSecId] : g_data["ScriptExtras"]) {
+		// starts from 0
+		auto const idx = atoi(idxStr);
+		std::vector<CString> defs;
+		for (auto const&[_, val] : g_data[extraSecId]) {
+			defs.emplace_back(val);
+		}
 
-	char* pParseBuffer[2];
+		if (idx >= m_extraValueDefinitions.size()) {
+			// parse extra section
+			m_extraValueDefinitions.push_back(std::move(defs));
+		} else {
+			m_extraValueDefinitions[idx] = std::move(defs);
+		}
+	}
+
 	for (auto& [idStr, content] : g_data["ScriptParams"]) {
 		int id = atoi(idStr);
 		if (id < 0) {
@@ -681,10 +694,20 @@ BOOL CScriptTypes::OnInitDialog()
 		if (param1.IsEmpty()) {
 			continue;
 		}
-		m_paramDefinitions[id].Label = param1;
+		auto& paramDef = m_paramDefinitions[id];
+		paramDef.Label = param1;
 		auto const param2 = GetParam(content, 1);
 		if (!param2.IsEmpty()) {
-			m_paramDefinitions[id].Type = ParameterType(atoi(param2));
+			if (IsNumeric(param2)) {
+				paramDef.Type = ParameterType(atoi(param2));
+				if (paramDef.Type == PRM_BuildingType) {
+					paramDef.ExtraValueType = ExtraParameterType::ScanType;
+				}
+			} else {// parse detailed param type definition
+				paramDef.Type = PRM_Custom;
+				paramDef.ParseFromSection = g_data[param2]["ParseFromSection"];
+				paramDef.ExtraValueType = ExtraParameterType(g_data.GetInteger(param2, "ExtraValueType", 0));
+			}
 		}
 	}
 
@@ -766,6 +789,24 @@ void CScriptTypes::updateExtraParamComboBox(ExtraParameterType type, int value)
 {
 	//LogDebug(" type = %d", type);
 	HWND text = ::GetDlgItem(this->m_hWnd, IDC_SCRIPT_EXDESC);
+
+	if (static_cast<size_t>(type) < m_extraValueDefinitions.size()) {
+		auto const& defs = m_extraValueDefinitions[static_cast<size_t>(type)];
+		if (!defs.empty()) {
+			::EnableWindow(text, TRUE);
+			ComboBoxHelper::Clear(m_ParamExt);
+			m_ParamExt.EnableWindow(true);
+			for (auto const& val : defs) {
+				m_ParamExt.AddString(val);
+			}
+			m_ParamExt.SetCurSel(value);
+			char buffer[0x20];
+			_itoa_s(value, buffer, 10);
+			m_ParamExt.SetWindowTextA(buffer);
+			return;
+		}
+	}
+
 	switch (type) {
 		default:
 		case ExtraParameterType::None:
@@ -817,18 +858,32 @@ ParameterType CScriptTypes::getParameterType(int actionCbIndex) const
 	return getParamData(getActionData(actionCbIndex).ParamTypeIndex).Type;
 }
 
-void CScriptTypes::updateExtraValue(ParameterType paramType, CString* paramNumStr)
+ExtraParameterType CScriptTypes::getExtraParamType(ParameterType paramType) const
+{
+	auto const& def = m_paramDefinitions.find(paramType);
+	if (def != m_paramDefinitions.end()) {
+		return def->second.ExtraValueType;
+	}
+	switch (paramType) {
+	default:
+		return ExtraParameterType::None;
+	case PRM_BuildingType:
+		return ExtraParameterType::ScanType;
+	}
+}
+
+void CScriptTypes::updateExtraValue(const CScriptTypes::CScriptTypeParam& paramDef, CString* paramNumStr)
 {
 	int extraValue = 0;
-	if (paramType == PRM_BuildingType) {
+	if (paramDef.Type == PRM_BuildingType || paramDef.Type == PRM_Custom) {
 		if (paramNumStr) {
 			DWORD rawNum = atoi(*paramNumStr);
 			paramNumStr->Format("%d", LOWORD(rawNum));
 			extraValue = HIWORD(rawNum);
 		}
 	}
-	errstream << "paramType " << paramType << std::endl;
-	updateExtraParamComboBox(getExtraParamType(paramType), extraValue);
+	errstream << "paramType " << paramDef.Type << std::endl;
+	updateExtraParamComboBox(paramDef.ExtraValueType, extraValue);
 }
 
 static void ListSplitGroup(CComboBox& comboBox)
@@ -922,6 +977,81 @@ static void listTalkBubble(CComboBox& comboBox)
 	comboBox.InsertString(3, TranslateStringACP("3 - Exclamation mark(!)"));
 }
 
+void CScriptTypes::updateDefaultParams(const ParameterType type)
+{
+	switch (type) {
+	default:
+	case PRM_None:
+		while (this->m_Param.DeleteString(0) != -1);
+		break;
+	case 1:
+		ListTargets(this->m_Param);
+		break;
+	case 2:
+		ListWaypoints(this->m_Param);
+		break;
+	case 3:
+		ListScriptLine(
+			m_actionDefinitions,
+			this->m_Param,
+			this->m_ScriptType,
+			this->m_Actions
+		);
+		break;
+	case 4:
+		ListSplitGroup(this->m_Param);
+		break;
+	case 5:
+		ListRulesGlobals(this->m_Param);
+		break;
+	case 6:
+		listScriptTypes(this->m_Param);
+		break;
+	case 7:
+		listTeamTypes(this->m_Param);
+		break;
+	case 8:
+		ListHouses(this->m_Param, true, true, true);
+		break;
+	case 9:
+		ListSpeeches(this->m_Param);
+		break;
+	case 10:
+		ListSounds(this->m_Param);
+		break;
+	case 11:
+		ListMovies(this->m_Param, true);
+		break;
+	case 12:
+		ListThemes(this->m_Param);
+		break;
+	case 13:
+		ListHouses(this->m_Param, true, true, false);
+		break;
+	case 14:
+		ListMapVariables(this->m_Param);
+		break;
+	case 15:
+		listFacing(this->m_Param);
+		break;
+	case PRM_BuildingType:
+		ListBuildings(this->m_Param);
+		break;
+	case 17:
+		ListAnimations(this->m_Param);
+		break;
+	case 18:
+		listTalkBubble(this->m_Param);
+		break;
+	case 19:
+		ListBehaviours(this->m_Param);
+		break;
+	case 20:
+		ComboBoxHelper::ListBoolean(this->m_Param);
+		break;
+	}
+}
+
 void CScriptTypes::UpdateParams(int actionIndex, CString* paramNumStr)
 {
 	static int LastActionID = -1;
@@ -936,82 +1066,25 @@ void CScriptTypes::UpdateParams(int actionIndex, CString* paramNumStr)
 	//	" paramType = " + std::to_string(paramType)
 	//);
 	// This should be done always
-	updateExtraValue(paramType, paramNumStr);
+	updateExtraValue(paramDefinition, paramNumStr);
 
 	// only update dialog when action changes
 	if (lastActionID == actionIndex) {
 		return;
 	}
-	switch (paramType) {
-		default:
-		case PRM_None:
-			while (this->m_Param.DeleteString(0) != -1);
-			break;
-		case 1:
-			ListTargets(this->m_Param);
-			break;
-		case 2:
-			ListWaypoints(this->m_Param);
-			break;
-		case 3:
-			ListScriptLine(
-				m_actionDefinitions,
-				this->m_Param,
-				this->m_ScriptType,
-				this->m_Actions
-			);
-			break;
-		case 4:
-			ListSplitGroup(this->m_Param);
-			break;
-		case 5:
-			ListRulesGlobals(this->m_Param);
-			break;
-		case 6:
-			listScriptTypes(this->m_Param);
-			break;
-		case 7:
-			listTeamTypes(this->m_Param);
-			break;
-		case 8:
-			ListHouses(this->m_Param, true, true, true);
-			break;
-		case 9:
-			ListSpeeches(this->m_Param);
-			break;
-		case 10:
-			ListSounds(this->m_Param);
-			break;
-		case 11:
-			ListMovies(this->m_Param, true);
-			break;
-		case 12:
-			ListThemes(this->m_Param);
-			break;
-		case 13:
-			ListHouses(this->m_Param, true, true, false);
-			break;
-		case 14:
-			ListMapVariables(this->m_Param);
-			break;
-		case 15:
-			listFacing(this->m_Param);
-			break;
-		case PRM_BuildingType:
-			ListBuildings(this->m_Param);
-			break;
-		case 17:
-			ListAnimations(this->m_Param);
-			break;
-		case 18:
-			listTalkBubble(this->m_Param);
-			break;
-		case 19:
-			ListBehaviours(this->m_Param);
-			break;
-		case 20:
-			ComboBoxHelper::ListBoolean(this->m_Param);
-			break;
+	if (paramType != PRM_Custom) {
+		updateDefaultParams(paramType);
+	} else {
+		if (!paramDefinition.ParseFromSection.IsEmpty()) {
+			auto const& sec = rules.GetSection(paramDefinition.ParseFromSection);
+			auto idx = 0;
+			CString value;
+			while (this->m_Param.DeleteString(0) != CB_ERR);
+			for (auto const& [_, id] : sec) {
+				value.Format("%d %s", idx++, id);
+				this->m_Param.AddString(value);
+			}
+		}
 	}
 	HWND paramDesc = ::GetDlgItem(this->m_hWnd, IDC_PDESC);
 	::SetWindowText(paramDesc, paramDefinition.Label);

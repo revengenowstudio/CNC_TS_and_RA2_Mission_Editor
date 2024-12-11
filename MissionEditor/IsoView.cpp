@@ -2259,7 +2259,7 @@ void CIsoView::HandleProperties(int n, int type)
 
 
 			Map->DeleteInfantry(n);
-			Map->AddInfantry(&data);
+			Map->AddInfantry(&data, nullptr, nullptr, 0, n);
 
 			RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 			break;

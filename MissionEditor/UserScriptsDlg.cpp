@@ -2277,7 +2277,9 @@ void CUserScriptsDlg::OnOK()
 			if (index >= 0 && index < Map->GetInfantryCount()) {
 				INFANTRY id;
 				Map->GetInfantryData(index, &id);
-				if (id.deleted == 0) deleted = "0";
+				if (id.deleted == 0) {
+					deleted = "0";
+				}
 			}
 
 			variables[params[0]] = deleted;

@@ -2182,6 +2182,9 @@ BOOL CMapData::AddNode(NODE* lpNode, WORD dwPos)
 
 BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPos)
 {
+	if (dwPos >= fielddata_size) {
+		return FALSE;
+	}
 
 	INFANTRY infantry;
 	if (lpInfantry != NULL) {
@@ -2219,35 +2222,38 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpT
 
 	if (infantry.pos == "-1") {
 		int subpos = -1;
-		int i;
 
 		if (GetInfantryCountAt(dwPos) == 0) {
 			subpos = 0;
 		} else {
+		// TODO: do not take pos 0, but always use 1~3
+#if 0
 			int oldInf = GetInfantryAt(dwPos, 0);
-			if (oldInf > -1) {
-				INFANTRY inf;
-				GetInfantryData(oldInf, &inf);
+			if (oldInf >= 0) {
+				INFANTRY infExisitingData;
+				GetInfantryData(oldInf, &infExisitingData);
 
-				if (inf.pos == "0")
-					for (i = 1; i < SUBPOS_COUNT; i++) {
-						if (GetInfantryAt(dwPos, i) == -1) {
+				if (infExisitingData.pos == "0")
+					for (auto i = 1; i < SUBPOS_COUNT; i++) {
+						// not taken, move existing infantry to the sub position
+						if (GetInfantryAt(dwPos, i) < 0) {
 							//subpos=i+1;
 
 							char c[50];
 							itoa(i, c, 10);
-							inf.pos = c;
+							infExisitingData.pos = c;
 							DeleteInfantry(oldInf);
-							AddInfantry(&inf, oldInf);
+							AddInfantry(&infExisitingData, oldInf);
 							break;
 						}
 
 					}
 			}
+#endif
 
 			// if(GetInfantryAt(dwPos, 0)==oldInf) return FALSE;
 
-			for (i = 0; i < SUBPOS_COUNT; i++) {
+			for (auto i = 0; i < SUBPOS_COUNT; i++) {
 				if (GetInfantryAt(dwPos, i) == -1) {
 					subpos = i + 1;
 					break;
@@ -2258,10 +2264,8 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpT
 		if (subpos < 0) {
 			return FALSE;
 		}
-		char c[50];
-		itoa(subpos, c, 10);
 
-		infantry.pos = c;
+		infantry.pos.Format("%d", subpos);
 	}
 
 
@@ -2305,9 +2309,7 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpT
 		// reuse slot
 		if (m_infantry[suggestedIndex].deleted) {
 			m_infantry[suggestedIndex] = infantry;
-			if (dwPos < fielddata_size) {
-				fielddata[dwPos].infantry[sp] = suggestedIndex;
-			}
+			fielddata[dwPos].infantry[sp] = suggestedIndex;
 			bFound = TRUE;
 
 		}
@@ -2318,18 +2320,15 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpT
 			// yep, found one, replace it
 			if (m_infantry[i].deleted) {
 				m_infantry[i] = infantry;
-				if (dwPos < fielddata_size) {
-					fielddata[dwPos].infantry[sp] = i;
-				}
+				fielddata[dwPos].infantry[sp] = i;
 				bFound = TRUE;
 				break;
 			}
 		}
-
+	}
+	if (!bFound) {
 		m_infantry.push_back(infantry);
-		if (dwPos < fielddata_size) {
-			fielddata[dwPos].infantry[sp] = m_infantry.size() - 1;
-		}
+		fielddata[dwPos].infantry[sp] = m_infantry.size() - 1;
 	}
 
 	return TRUE;

@@ -164,7 +164,8 @@ public:
 	void AutoLevel();
 	void FillArea(DWORD dwX, DWORD dwY, DWORD dwID, BYTE bSubTile);
 	BOOL m_NoMove;
-	void PlaceCurrentObjectAt(int x, int y);
+	// returns position value
+	DWORD PlaceCurrentObjectAt(int x, int y);
 	void PlaceTile(const int x, const int y, const UINT nMouseFlags);
 	void ShowAllTileSets();
 	void HideTileSet(DWORD dwTileSet);

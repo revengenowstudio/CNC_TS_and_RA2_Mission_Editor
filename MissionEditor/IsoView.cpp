@@ -1511,37 +1511,39 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 		} else if ((AD.mode == ACTIONMODE_PLACE || AD.mode == ACTIONMODE_RANDOMTERRAIN) && (nFlags & ~MK_CONTROL) == 0 && AD.type != 7 && (AD.type != 6 || (AD.type == 6 && ((AD.data >= 30 && AD.data <= 33) || AD.data == 2 || AD.data == 3)))) // everything placing but not overlay!
 		{
 			FIELDDATA oldData[32][32];
-			INFANTRY infData[SUBPOS_COUNT][32][32];
-			int i, e;
+			//INFANTRY infData[SUBPOS_COUNT][32][32];
 
 			//if(AD.type!=1 || Map->GetInfantryCountAt(x+y*Map->GetIsoSize())==0)
 			{
-				for (i = 0; i < 32; i++) {
-					for (e = 0; e < 32; e++) {
+				for (auto i = 0; i < 32; i++) {
+					for (auto e = 0; e < 32; e++) {
 						oldData[i][e] = *Map->GetFielddataAt(i + x + (e + y) * Map->GetIsoSize());
-						int z;
-						for (z = 0; z < SUBPOS_COUNT; z++)
-							if (oldData[i][e].infantry[z] > -1)
-								Map->GetInfantryData(oldData[i][e].infantry[z], &infData[z][i][e]);
+						//for (auto subPos = 0; subPos < SUBPOS_COUNT; subPos++) {
+						//	if (oldData[i][e].infantry[subPos] > -1) {
+						//		Map->GetInfantryData(oldData[i][e].infantry[subPos], &infData[subPos][i][e]);
+						//	}
+						//}
 					}
 				}
 
 				PlaceCurrentObjectAt(x, y);
 				RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
-				for (i = 0; i < 32; i++) {
-					for (e = 0; e < 32; e++) {
+				for (auto i = 0; i < 32; i++) {
+					for (auto e = 0; e < 32; e++) {
 						DWORD dwPos = i + x + (e + y) * Map->GetIsoSize();
 						FIELDDATA cur_field;
 						cur_field = *Map->GetFielddataAt(dwPos);
 
-						if (cur_field.aircraft != oldData[i][e].aircraft)
+						if (cur_field.aircraft != oldData[i][e].aircraft) {
 							Map->DeleteAircraft(cur_field.aircraft);
-						int z;
-						for (z = 0; z < SUBPOS_COUNT; z++)
-							if (cur_field.infantry[z] != oldData[i][e].infantry[z]) {
-								Map->DeleteInfantry(cur_field.infantry[z]);
+						}
+
+						for (auto subPos = 0; subPos < SUBPOS_COUNT; subPos++) {
+							if (cur_field.infantry[subPos] != oldData[i][e].infantry[subPos]) {
+								Map->DeleteInfantry(cur_field.infantry[subPos]);
 							}
+						}
 
 						if (cur_field.node.index != oldData[i][e].node.index) {
 							CString house;
@@ -4838,11 +4840,13 @@ void CIsoView::handleMouseActionManageOverlays(int x, int y)
 	// RedrawWindow(NULL,NULL,RDW_INVALIDATE | RDW_UPDATENOW);
 }
 
-void CIsoView::PlaceCurrentObjectAt(int x, int y)
+DWORD CIsoView::PlaceCurrentObjectAt(int x, int y)
 {
+	auto constexpr infinitePos = std::numeric_limits<DWORD>::max();
+	auto const expectingPos = x + y * Map->GetIsoSize();
 	if (AD.mode == ACTIONMODE_RANDOMTERRAIN) {
-		if (Map->GetTerrainAt(x + y * Map->GetIsoSize()) >= 0) {
-			return;
+		if (Map->GetTerrainAt(expectingPos) >= 0) {
+			return infinitePos;
 		}
 
 		CString s;
@@ -4850,65 +4854,69 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 		int n = rand() * rndterrainsrc.size() / RAND_MAX;
 
 		// safety checks...
-		if (n >= rndterrainsrc.size()) n = rndterrainsrc.size() - 1;
-		if (n < 0) n = 0;
+		if (n >= rndterrainsrc.size()) {
+			n = rndterrainsrc.size() - 1;
+		}
+		if (n < 0) {
+			n = 0;
+		}
 
 		s = rndterrainsrc[n];
 
-		Map->AddTerrain(s, x + y * Map->GetIsoSize());
+		Map->AddTerrain(s, expectingPos);
 
-		return;
+		return expectingPos;
 	}
 
 	switch (MouseActionType(AD.type)) {
 		case MouseActionType::AddInfantry: {
-			if (Map->GetInfantryCountAt(x + y * Map->GetIsoSize()) >= SUBPOS_COUNT) {
-				return;
+			if (Map->GetInfantryCountAt(expectingPos) >= SUBPOS_COUNT) {
+				return infinitePos;
 			}
 
-			Map->AddInfantry(NULL, -1, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+			Map->AddInfantry(NULL, -1, AD.data_s, currentOwner, expectingPos);
 			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		} break;
 		case MouseActionType::AddStructure: {
-			int n = Map->GetStructureAt(x + y * Map->GetIsoSize());
+			int n = Map->GetStructureAt(expectingPos);
 			if (n >= 0) {
 				STDOBJECTDATA sod;
 				Map->GetStdStructureData(n, &sod);
 				if (strcmp(sod.type, "GAPAVE") != NULL) {
 					//isMoving=FALSE;
-					return;
+					return infinitePos;
 				}
 			}
 
 
-			Map->AddStructure(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+			Map->AddStructure(NULL, AD.data_s, currentOwner, expectingPos);
 			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		} break;
 		case MouseActionType::AddAircraft: {
 
-			if (Map->GetAirAt(x + y * Map->GetIsoSize()) >= 0) {
-				return;
+			if (Map->GetAirAt(expectingPos) >= 0) {
+				return infinitePos;
 			}
 
-			Map->AddAircraft(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+			Map->AddAircraft(NULL, AD.data_s, currentOwner, expectingPos);
 
 			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		} break;
 		case MouseActionType::AddVehicle: {
-			if (Map->GetUnitAt(x + y * Map->GetIsoSize()) >= 0) {
-				return;
+			if (Map->GetUnitAt(expectingPos) >= 0) {
+				return infinitePos;
 			}
 
-			Map->AddUnit(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+			Map->AddUnit(NULL, AD.data_s, currentOwner, expectingPos);
 
 			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		} break;
 		case MouseActionType::AddTerrain: {
-			if (Map->GetTerrainAt(x + y * Map->GetIsoSize()) >= 0) {
-				return;
+			if (Map->GetTerrainAt(expectingPos) >= 0) {
+				return infinitePos;
 			}
 
-			Map->AddTerrain(AD.data_s, x + y * Map->GetIsoSize());
+			Map->AddTerrain(AD.data_s, expectingPos);
 
 			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		} break;
@@ -4919,7 +4927,7 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 			// set owner!
 			BOOL bchanged = FALSE;
 
-			int t = Map->GetStructureAt(x + y * Map->GetIsoSize());
+			int t = Map->GetStructureAt(expectingPos);
 			if (t >= 0) {
 				STRUCTURE structure;
 				auto const id = Map->GetStructureData(t, &structure);
@@ -4928,7 +4936,7 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 				Map->AddStructure(&structure, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
-			t = Map->GetUnitAt(x + y * Map->GetIsoSize());
+			t = Map->GetUnitAt(expectingPos);
 			if (t >= 0) {
 				UNIT unit;
 				auto const id = Map->GetUnitData(t, &unit);
@@ -4937,7 +4945,7 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 				Map->AddUnit(&unit, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
-			t = Map->GetAirAt(x + y * Map->GetIsoSize());
+			t = Map->GetAirAt(expectingPos);
 			if (t >= 0) {
 				AIRCRAFT aircraft;
 				auto const id = Map->GetAircraftData(t, &aircraft);
@@ -4948,7 +4956,7 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 			}
 			int z;
 			for (z = 0; z < SUBPOS_COUNT; z++) {
-				t = Map->GetInfantryAt(x + y * Map->GetIsoSize(), z);
+				t = Map->GetInfantryAt(expectingPos, z);
 				if (t >= 0) {
 					INFANTRY infantry;
 					Map->GetInfantryData(t, &infantry);
@@ -4962,11 +4970,12 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 			if (bchanged) {
 				//RedrawWindow(NULL,NULL,RDW_INVALIDATE | RDW_UPDATENOW);
 			}
+			return infinitePos;
 		} break;
 	#ifdef SMUDGE_SUPP		
 		case MouseActionType::AddSmudge: {
-			if (Map->GetFielddataAt(x + y * Map->GetIsoSize())->smudge >= 0) {
-				return;
+			if (Map->GetFielddataAt(expectingPos)->smudge >= 0) {
+				return infinitePos;
 			}
 
 			SMUDGE s;
@@ -4982,6 +4991,7 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 		default:
 			break;
 	}
+	return expectingPos;
 }
 
 void CIsoView::OnTimer(UINT_PTR nIDEvent)

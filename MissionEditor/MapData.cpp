@@ -2180,7 +2180,7 @@ BOOL CMapData::AddNode(NODE* lpNode, WORD dwPos)
 	return TRUE;
 }
 
-BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPos, int suggestedIndex)
+BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPos)
 {
 
 	INFANTRY infantry;
@@ -2238,7 +2238,7 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType, LPCTSTR lpHouse
 							itoa(i, c, 10);
 							inf.pos = c;
 							DeleteInfantry(oldInf);
-							AddInfantry(&inf);
+							AddInfantry(&inf, oldInf);
 							break;
 						}
 
@@ -6337,7 +6337,9 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		int y = atoi(obj.y);
 
 
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) {
+			continue;
+		}
 
 		AddInfantry(&obj);
 

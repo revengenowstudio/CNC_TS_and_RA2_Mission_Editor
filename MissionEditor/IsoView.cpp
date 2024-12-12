@@ -2259,7 +2259,7 @@ void CIsoView::HandleProperties(int n, int type)
 
 
 			Map->DeleteInfantry(n);
-			Map->AddInfantry(&data, nullptr, nullptr, 0, n);
+			Map->AddInfantry(&data, n);
 
 			RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 			break;
@@ -3015,7 +3015,7 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 					Map->DeleteInfantry(m_id);
 				}
 
-				Map->AddInfantry(&infantry, nullptr, nullptr, 0, m_id);
+				Map->AddInfantry(&infantry, m_id);
 
 				break;
 			}
@@ -4866,7 +4866,7 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 				return;
 			}
 
-			Map->AddInfantry(NULL, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
+			Map->AddInfantry(NULL, -1, AD.data_s, currentOwner, x + y * Map->GetIsoSize());
 			//RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		} break;
 		case MouseActionType::AddStructure: {
@@ -4954,7 +4954,7 @@ void CIsoView::PlaceCurrentObjectAt(int x, int y)
 					Map->GetInfantryData(t, &infantry);
 					Map->DeleteInfantry(t);
 					infantry.house = AD.data_s;
-					Map->AddInfantry(&infantry);
+					Map->AddInfantry(&infantry, t);
 					bchanged = TRUE;
 				}
 			}

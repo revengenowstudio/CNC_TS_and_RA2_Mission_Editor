@@ -2350,7 +2350,7 @@ void CUserScriptsDlg::OnOK()
 			id.flag4 = GetParam(data, 12);
 			id.flag5 = GetParam(data, 13);
 
-			if (Map->AddInfantry(&id, NULL, NULL, NULL, lastInfantryDeleted) == FALSE) {
+			if (Map->AddInfantry(&id, lastInfantryDeleted, NULL, NULL, NULL) == FALSE) {
 				report += "AddInfantry failed\r\n";
 			} else {
 				report += "Infantry added\r\n";

@@ -258,7 +258,7 @@ public:
 	INT GetUnitTypeID(LPCTSTR lpType);
 	void InitializeUnitTypes();
 	BOOL AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");
-	BOOL AddInfantry(INFANTRY* lpInfantry, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, int suggestedIndex = -1);
+	BOOL AddInfantry(INFANTRY* lpInfantry, int suggestedIndex = -1, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0);
 	BOOL AddNode(NODE* lpNode, WORD dwPos);
 	void GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const;
 	CString GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;

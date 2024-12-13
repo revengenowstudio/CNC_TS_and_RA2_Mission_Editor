@@ -693,7 +693,7 @@ void CFinalSunDlg::UpdateDialogs(BOOL bOnlyMissionControl, BOOL bNoRepos)
 
 		m_view.m_isoview->UpdateDialog(!bNoRepos);
 		m_view.m_objectview->UpdateDialog();
-		m_view.m_minimap.UpdateView();
+		m_view.m_minimap->UpdateView();
 
 		if (tiles != NULL && tiledata != NULL && tiledata_count != NULL) {
 			m_view.m_browser->m_bar.Update();
@@ -2008,7 +2008,7 @@ void CFinalSunDlg::OnFileNew()
 	//	MessageBox("Repaired houses");
 
 	m_view.m_isoview->UpdateDialog(TRUE);
-	m_view.m_minimap.RedrawWindow();
+	m_view.m_minimap->RedrawWindow();
 	UpdateDialogs();
 
 	last_succeeded_operation = 11002;
@@ -2204,7 +2204,7 @@ void CFinalSunDlg::UnloadAll()
 		tutorial.Clear();
 		g_data.Clear();
 		language.Clear();
-
+		m_view.m_minimap.reset();
 		DestroyWindow();
 	} catch (...) {
 		DestroyWindow();
@@ -2247,7 +2247,7 @@ void CFinalSunDlg::OnOptionsSimpleview()
 void CFinalSunDlg::OnOptionsShowminimap()
 {
 	bMiniMapClosedByUser = FALSE;
-	this->m_view.m_minimap.UpdateView();
+	this->m_view.m_minimap->UpdateView();
 }
 
 void CFinalSunDlg::HideAllDialogs()
@@ -2344,9 +2344,9 @@ void CFinalSunDlg::OnSize(UINT nType, int cx, int cy)
 	CDialog::OnSize(nType, cx, cy);
 
 	if (nType == SIZE_MINIMIZED) {
-		if (!bMiniMapClosedByUser) m_view.m_minimap.ShowWindow(SW_MINIMIZE);
+		if (!bMiniMapClosedByUser) m_view.m_minimap->ShowWindow(SW_MINIMIZE);
 	} else if (nType == SIZE_MAXIMIZED) {
-		if (!bMiniMapClosedByUser) m_view.m_minimap.ShowWindow(SW_RESTORE);
+		if (!bMiniMapClosedByUser) m_view.m_minimap->ShowWindow(SW_RESTORE);
 	}
 
 	RecalcLayout();

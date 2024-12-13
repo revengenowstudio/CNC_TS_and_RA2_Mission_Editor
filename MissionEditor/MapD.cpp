@@ -162,7 +162,7 @@ void CMapD::OnChange()
 
 
 	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_minimap.UpdateView();
+	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_minimap->UpdateView();
 
 	char c[50];
 	itoa(dlg.m_Width, c, 10);

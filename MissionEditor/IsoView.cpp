@@ -1143,7 +1143,7 @@ void CIsoView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 	CMyViewFrame& dlg = *(CMyViewFrame*)owner;
-	dlg.m_minimap.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+	dlg.m_minimap->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 }
 
 void CIsoView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
@@ -1163,7 +1163,7 @@ void CIsoView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 	CMyViewFrame& dlg = *(CMyViewFrame*)owner;
-	dlg.m_minimap.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+	dlg.m_minimap->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 }
 
 /*
@@ -1233,7 +1233,7 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 			ShowCursor(TRUE);
 
 			CMyViewFrame& dlg = *(CMyViewFrame*)owner;
-			dlg.m_minimap.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+			dlg.m_minimap->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 		} else {
 
@@ -2125,7 +2125,7 @@ void CIsoView::OnRButtonUp(UINT nFlags, CPoint point)
 		KillTimer(11);
 		ShowCursor(TRUE);
 		CMyViewFrame& dlg = *(CMyViewFrame*)owner;
-		dlg.m_minimap.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		dlg.m_minimap->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 	}
 
@@ -3327,7 +3327,7 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 	}
 
 	CFinalSunDlg& dlg = *(CFinalSunDlg*)theApp.m_pMainWnd;
-	dlg.m_view.m_minimap.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+	dlg.m_view.m_minimap->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 	m_moved = FALSE;
 
@@ -3385,7 +3385,7 @@ void CIsoView::OnSize(UINT nType, int cx, int cy)
 	updateFontScaled();
 
 	CMyViewFrame& dlg = *(CMyViewFrame*)owner;
-	dlg.m_minimap.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+	dlg.m_minimap->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 	UpdateScrollRanges();
 
@@ -6513,7 +6513,7 @@ BOOL CIsoView::OnMouseWheel(UINT nFlags, short zDelta, CPoint ptScreen)
 
 	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 	CMyViewFrame& dlg = *(CMyViewFrame*)owner;
-	dlg.m_minimap.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+	dlg.m_minimap->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }

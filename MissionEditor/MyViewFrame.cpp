@@ -96,13 +96,10 @@ BOOL CMyViewFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 
 	// the minimap is not a child window right now, but it is created here though
 	auto miniMapClass = AfxRegisterWndClass(0, m_hArrowCursor, static_cast<HBRUSH>(::GetStockObject(GRAY_BRUSH)));
-	m_minimap.CreateEx(0, miniMapClass, "Minimap", WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE | WS_CHILD, r, this, 0);
-	LONG style = GetWindowLong(m_minimap, GWL_STYLE);
-	style &= ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-	style |= WS_SYSMENU;
-	SetWindowLong(m_minimap, GWL_STYLE, style);
-	//m_minimap.Create(NULL, "Minimap", WS_OVERLAPPED)
-	m_minimap.UpdateView();
+	m_minimap = std::make_unique<CMiniMap>();
+	m_minimap->CreateEx(0, miniMapClass, "Minimap", WS_CAPTION | WS_VISIBLE | WS_CHILD, r, this, 0);
+	m_minimap->ModifyStyle(WS_MINIMIZEBOX | WS_MAXIMIZEBOX, 0);
+	m_minimap->UpdateView();
 
 	if (!m_statbar.CreateEx(this, SBARS_SIZEGRIP | SBT_TOOLTIPS)) return FALSE;
 

@@ -1248,7 +1248,7 @@ void CMapData::Pack(BOOL bCreatePreview, BOOL bCompression)
 		BITMAPINFO biinfo;
 		BYTE* lpDibData;
 		int pitch;
-		((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_minimap.DrawMinimap(&lpDibData, biinfo, pitch);
+		((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_minimap->DrawMinimap(&lpDibData, biinfo, pitch);
 
 		m_mapfile.DeleteSection("PreviewPack");
 		m_mapfile.SetString("Preview", "Size", m_mapfile.GetString("Map", "Size"));

@@ -47,7 +47,7 @@ protected:
 
 	// attributes
 public:
-	CMiniMap m_minimap;
+	std::unique_ptr<CMiniMap> m_minimap;
 	CStatusBar m_statbar;
 	CViewObjects* m_objectview;
 	CIsoView* m_isoview;

@@ -571,7 +571,7 @@ void CHouses::OnKillfocusColor()
 	// and minimap
 	Map->RedrawMinimap();
 	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->RedrawWindow();
-	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_minimap.RedrawWindow();
+	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_minimap->RedrawWindow();
 }
 
 void CHouses::OnKillfocusCredits()

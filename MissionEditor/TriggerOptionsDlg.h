@@ -66,6 +66,8 @@ protected:
 	CToolTipCtrl m_tooltip;
 	virtual BOOL OnInitDialog();
 
+	void OnShowWindow(BOOL bShow, UINT nStatus);
+
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CTriggerOptionsDlg)
 	afx_msg void OnChangeName();

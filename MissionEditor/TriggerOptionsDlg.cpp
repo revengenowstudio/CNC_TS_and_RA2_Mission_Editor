@@ -65,6 +65,7 @@ void CTriggerOptionsDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CTriggerOptionsDlg, CDialog)
 	//{{AFX_MSG_MAP(CTriggerOptionsDlg)
+	ON_WM_SHOWWINDOW()
 	ON_CBN_EDITCHANGE(IDC_HOUSE, OnEditchangeHouse)
 	ON_CBN_EDITCHANGE(IDC_ATTACHEDTRIGGER, OnEditchangeAttachedtrigger)
 	ON_EN_KILLFOCUS(IDC_NAME, OnChangeName)
@@ -237,8 +238,24 @@ void CTriggerOptionsDlg::OnKillfocusName()
 void CTriggerOptionsDlg::OnKillFocus(CWnd* pNewWnd)
 {
 	CDialog::OnKillFocus(pNewWnd);
-
 	((CTriggerEditorDlg*)(this->GetOwner()->GetOwner()))->UpdateDialog();
+}
+
+void CTriggerOptionsDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	if (!bShow) {
+		if (auto pOldFocus = GetFocus()) {
+			switch (pOldFocus->GetDlgCtrlID())
+			{
+			case IDC_NAME: {
+				this->OnChangeName();
+			} break;
+			default:
+				break;
+			}
+		}
+	}
+	CDialog::OnShowWindow(bShow, nStatus);
 }
 
 void CTriggerOptionsDlg::OnEditchangeTriggertype()

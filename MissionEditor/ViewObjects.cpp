@@ -102,21 +102,35 @@ void CViewObjects::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
-CString GetTheaterLanguageString(LPCSTR lpString)
+CString GetTheaterLanguageString(const CString& l10nTag)
 {
-	CString s = lpString;
-	CString t = lpString;
+	CString s = l10nTag;
+	CString t = l10nTag;
 
-	if ((tiledata) == &t_tiledata) t += "TEM";
-	if ((tiledata) == &s_tiledata) t += "SNO";
-	if ((tiledata) == &u_tiledata) t += "URB";
-	if ((tiledata) == &un_tiledata) t += "UBN";
-	if ((tiledata) == &l_tiledata) t += "LUN";
-	if ((tiledata) == &d_tiledata) t += "DES";
+#define TO_ADDR(x) reinterpret_cast<const size_t>(x)
 
+	if (TO_ADDR(tiledata) == TO_ADDR(&t_tiledata)) {
+		t += "TEM";
+	}
+	else if (TO_ADDR(tiledata) == TO_ADDR(&s_tiledata)) {
+		t += "SNO";
+	}
+	else if (TO_ADDR(tiledata) == TO_ADDR(&u_tiledata)) {
+		t += "URB";
+	}
+	else if (TO_ADDR(tiledata) == TO_ADDR(&un_tiledata)) {
+		t += "UBN";
+	}
+	else if (TO_ADDR(tiledata) == TO_ADDR(&l_tiledata)) {
+		t += "LUN";
+	}
+	else if (TO_ADDR(tiledata) == TO_ADDR(&d_tiledata)) {
+		t += "DES";
+	}
 	CString res = GetLanguageStringACP(t);
-	if (res.GetLength() == 0) res = GetLanguageStringACP(s);
-
+	if (res.Left(l10nTag.GetLength()) == l10nTag || res.GetLength() == 0) {
+		res = GetLanguageStringACP(s);
+	}
 	return res;
 }
 

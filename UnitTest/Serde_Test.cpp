@@ -183,4 +183,15 @@ PlayerControl=no
 	ASSERT_EQ(file.GetInteger(houseName, "NodeCount"), 23);
 	ASSERT_EQ(file.GetString(houseName, GetNodeID(0)), "NALASR,89,64");
 	ASSERT_EQ(file.GetString(houseName, GetNodeID(22)), "NALASR,79,24");
+
+	// keep only the first one for test
+	for (auto idx = 22; idx > 0; --idx) {
+		DeleteBuildingNodeFrom(houseName, idx, file);
+	}
+	ASSERT_EQ(file.GetInteger(houseName, "NodeCount"), 1);
+	ASSERT_EQ(file.GetString(houseName, GetNodeID(0)), "NALASR,89,64");
+
+	// now remove the last one
+	DeleteBuildingNodeFrom(houseName, 0, file);
+	ASSERT_EQ(file.GetInteger(houseName, "NodeCount"), 0);
 }

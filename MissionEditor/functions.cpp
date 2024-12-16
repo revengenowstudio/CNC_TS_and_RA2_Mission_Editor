@@ -1320,27 +1320,7 @@ CString GetFreeID()
 	return "";
 }
 
-void GetNodeName(CString& name, int n)
-{
-	char c[5];
-	char p[6];
-	memset(p, 0, 6);
-	_itoa_s(n, c, 10);
-	strcpy_s(p, c);
-
-	if (strlen(c) == 1) {
-		memcpy(c, "00", 2);
-		strcpy_s(c + 2, sizeof(c) - 2, p);
-	} else if (strlen(c) == 2) {
-		memcpy(c, "0", 1);
-		strcpy_s(c + 1, sizeof(c) - 1, p);
-	} else if (strlen(c) == 3) {
-		strcpy_s(c, p);
-	}
-
-	name = c;
-}
-
+// UNUSED
 int GetNodeAt(CString& owner, CString& buildingTypeID, int x, int y)
 {
 	CIniFile& ini = Map->GetIniFile();
@@ -1362,7 +1342,7 @@ int GetNodeAt(CString& owner, CString& buildingTypeID, int x, int y)
 
 		for (auto i = 0; i < nodeCount; i++) {
 			CString nodeName;
-			GetNodeName(nodeName, i);
+			GetNodeID(nodeName, i);
 
 			CString sx, sy;
 			buildingTypeID = GetParam(ownerSection.GetString(nodeName), 0);

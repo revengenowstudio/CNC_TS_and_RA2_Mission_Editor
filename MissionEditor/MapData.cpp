@@ -33,6 +33,7 @@
 #include "Structs.h"
 #include "Tube.h"
 #include "IniMega.h"
+#include "Helpers.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -49,10 +50,6 @@ void DoEvents()
 		DispatchMessage(&msg);
 	}*/
 }
-
-
-void GetNodeName(CString& name, int n);
-
 
 CString GetFree(const char* sectionName)
 {
@@ -1768,7 +1765,7 @@ void CMapData::UpdateNodes(BOOL bSave)
 		int nodeCount = sec.GetInteger("NodeCount");
 		for (auto idx = 0; idx < nodeCount; idx++) {
 			CString nodeName;
-			GetNodeName(nodeName, idx);
+			GetNodeID(nodeName, idx);
 			auto const& nodeVal = sec.GetString(nodeName);
 			CString type, sx, sy;
 			type = GetParam(nodeVal, 0);
@@ -2034,26 +2031,9 @@ void CMapData::DeleteTerrain(DWORD dwIndex)
 
 }
 
-void CMapData::DeleteNode(LPCTSTR lpHouse, DWORD dwIndex)
+void CMapData::DeleteNode(const CString& house, const int dwIndex)
 {
-	CString nodeName; // p is last node
-	auto const nodeCount = m_mapfile.GetInteger(lpHouse, "NodeCount");
-	GetNodeName(nodeName, nodeCount - 1);
-
-	for (auto i = dwIndex; i < nodeCount - 1; i++) {
-		CString prevNodeName, nextNodeName;
-		GetNodeName(prevNodeName, i);
-		GetNodeName(nextNodeName, i + 1);
-		m_mapfile.SetString(lpHouse, prevNodeName, m_mapfile.GetString(lpHouse, nextNodeName));
-	}
-
-	auto const& pSec = m_mapfile.TryGetSection(lpHouse);
-	pSec->RemoveAt(dwIndex);
-
-	char nodeCountStr[50];
-	itoa(nodeCount - 1, nodeCountStr, 10);
-	m_mapfile.SetString(lpHouse, "NodeCount", nodeCountStr);
-
+	DeleteBuildingNodeFrom(house, dwIndex, m_mapfile);
 	UpdateNodes(FALSE);
 }
 
@@ -2168,7 +2148,7 @@ BOOL CMapData::AddNode(NODE* lpNode, WORD dwPos)
 
 	nodeCount--;
 	CString p;
-	GetNodeName(p, nodeCount);
+	GetNodeID(p, nodeCount);
 
 	auto&& nodeRecord = node.type
 		+ "," + node.y + "," + node.x;

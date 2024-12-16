@@ -135,3 +135,14 @@ inline CString WaypointToString(int num)
 	ret += secondChar;
 	return ret;
 }
+
+inline void GetNodeID(CString& name, int n)
+{
+	name.Format("%03d", n);
+}
+inline CString GetNodeID(int n)
+{
+	CString ret;
+	GetNodeID(ret, n);
+	return ret;
+}

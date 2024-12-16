@@ -264,7 +264,7 @@ public:
 	CString GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
 	BOOL AddWaypoint(CString lpID, DWORD dwPos);
 
-	void DeleteNode(LPCTSTR lpHouse, DWORD dwIndex);
+	void DeleteNode(const CString& house, const int index);
 	void DeleteTerrain(DWORD dwIndex);
 	void DeleteAircraft(DWORD dwIndex);
 	void DeleteStructure(DWORD dwIndex);

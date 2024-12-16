@@ -1,6 +1,9 @@
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "MissionEditorPackLib.h"
+#include "IniFile.h"
+#include "functions.h"
+#include "CIni_Test.h"
 
 using std::cout;
 using std::endl;
@@ -109,4 +112,75 @@ TEST(SerdeTest, OverlayDataPackSerde)
 
 	ASSERT_EQ(b64Input.size(), strlen(reinterpret_cast<char*>(encoded.get())));
 	ASSERT_TRUE(0 == memcmp(encoded.get(), b64Input.data(), b64Input.size()));
+}
+
+TEST(SerdeTest, HouseBuildingNodeTest)
+{
+	ASSERT_EQ("000", GetNodeID(0));
+	ASSERT_EQ("005", GetNodeID(5));
+	ASSERT_EQ("010", GetNodeID(10));
+	ASSERT_EQ("123", GetNodeID(123));
+}
+TEST(SerdeTest, HouseBuildingNodeDeleteTest)
+{
+	auto const fileName = "test.ini";
+	IniTestHelper helper(fileName, R"(
+[Russian1 House]
+IQ=5
+000=NALASR,86,63
+001=NALASR,89,64
+002=NALASR,83,64
+003=NARADR,71,48
+004=NAREFN,69,66
+005=NALASR,78,42
+006=NALASR,73,42
+007=NAFLAK,61,34
+008=NAFLAK,61,32
+009=NAFLAK,62,41
+010=TESLA,61,41
+011=NAFLAK,61,40
+012=NAPOWR,91,23
+013=NAFLAK,64,63
+014=NAFLAK,91,63
+015=NAPOWR,62,39
+016=TESLA,71,41
+017=NAHAND,76,57
+018=NAPOWR,65,37
+019=NALASR,83,50
+020=NAWEAP,63,59
+021=NAWEAP,63,54
+022=NALASR,77,24
+023=NAFLAK,81,63
+024=NALASR,79,24
+025=TESLA,81,24
+Edge=North
+Color=DarkRed
+Allies=C2 House,Russian1 House,Russian2 House,CivilianArmy House,Civilian1 House,Other1 House,Civilian2 House
+Country=Russian1
+Credits=600
+NodeCount=26
+TechLevel=5
+PercentBuilt=100
+PlayerControl=no
+
+)");
+
+	CString houseName = "Russian1 House";
+	CIniFile file;
+	ASSERT_EQ(file.LoadFile(std::string(fileName)), 0);
+
+	// remove last
+	DeleteBuildingNodeFrom(houseName, 25, file);
+	ASSERT_EQ(file.GetInteger(houseName, "NodeCount"), 25);
+
+	// remove middle
+	DeleteBuildingNodeFrom(houseName, 23, file);
+	ASSERT_EQ(file.GetInteger(houseName, "NodeCount"), 24);
+	ASSERT_EQ(file.GetString(houseName, GetNodeID(23)), "NALASR,79,24");
+
+	// remove first
+	DeleteBuildingNodeFrom(houseName, 0, file);
+	ASSERT_EQ(file.GetInteger(houseName, "NodeCount"), 23);
+	ASSERT_EQ(file.GetString(houseName, GetNodeID(0)), "NALASR,89,64");
+	ASSERT_EQ(file.GetString(houseName, GetNodeID(22)), "NALASR,79,24");
 }

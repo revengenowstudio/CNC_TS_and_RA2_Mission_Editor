@@ -61,7 +61,6 @@ static char THIS_FILE[] = __FILE__;
 
 /* Externals */
 extern ACTIONDATA AD;
-void GetNodeName(CString& name, int n);
 /* --------- */
 
 /* Overlay picture table (maximum overlay count=0xFF) */

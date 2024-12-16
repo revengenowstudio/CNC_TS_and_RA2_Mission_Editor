@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="..\MissionEditor\IniFile.h" />
     <ClInclude Include="..\MissionEditor\INIMeta.h" />
+    <ClInclude Include="CIni_Test.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

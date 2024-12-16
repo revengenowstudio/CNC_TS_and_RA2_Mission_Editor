@@ -26,6 +26,8 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <afxwin.h> 
+#include <string>
+#include <fstream>
 
 using std::cout;
 using std::endl;

@@ -47,5 +47,8 @@
     <ClInclude Include="..\MissionEditor\INIMeta.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CIni_Test.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

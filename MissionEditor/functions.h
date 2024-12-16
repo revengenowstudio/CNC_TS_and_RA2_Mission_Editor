@@ -26,6 +26,8 @@
 #include <array>
 #include "Helpers.h"
 
+class CIniFile;
+class CSliderCtrl;
 using std::string;
 
 bool deleteFile(const std::string& u8FilePath);
@@ -56,9 +58,28 @@ std::string utf16ToUtf8(const std::wstring& utf16);
 std::string utf16ToACP(const std::wstring& utf16);
 
 // map functions
-int GetNodeAt(string& owner, string& type, int x, int y);
-int SetNodeAt(string owner, string type, int x, int y);
-void ClearNode(int n, string owner);
+inline void DeleteBuildingNodeFrom(const CString& house, const int index, CIniFile& ini)
+{
+	auto const nodeCount = ini.GetInteger(house, "NodeCount");
+	ASSERT(nodeCount > 0);
+	// override value from current ID
+	CString prevNodeName, nextNodeName, lastData;
+	for (auto i = index; i < nodeCount - 1; i++) {
+		GetNodeID(prevNodeName, i);
+		GetNodeID(nextNodeName, i + 1);
+		lastData = ini.GetString(house, nextNodeName);
+		ini.SetString(house, prevNodeName, lastData);
+	}
+	auto const& pSec = ini.TryGetSection(house);
+	ASSERT(pSec != nullptr);
+	if (pSec) {
+		// always remove the last one
+		auto const result = pSec->RemoveByKey(GetNodeID(nodeCount - 1));
+		ASSERT(result == true);
+	}
+	ini.SetInteger(house, "NodeCount", nodeCount - 1);
+}
+
 CString GetFreeID();
 
 

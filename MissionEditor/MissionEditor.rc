@@ -3,6 +3,7 @@
 #pragma code_page(65001)
 
 #include "resource.h"
+#include "Version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -3649,9 +3650,9 @@ END
 STRINGTABLE
 BEGIN
     IDS_BUILTBY             "Matthias Wagner"
-    IDS_VERSIONTEXT         "Version 2.1.0"
-    IDS_VERSION             "2.1.0"
-    IDS_VERSIONTEXTTS       "Version 2.1.0"
+    IDS_VERSIONTEXT         TEXT("Version " PRODUCT_VERSION_STRING)
+    IDS_VERSION             TEXT(PRODUCT_VERSION_STRING)
+    IDS_VERSIONTEXTTS       TEXT("Version " PRODUCT_VERSION_STRING)
 END
 
 STRINGTABLE

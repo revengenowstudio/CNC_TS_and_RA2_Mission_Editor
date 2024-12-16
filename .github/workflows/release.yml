@@ -39,7 +39,7 @@ jobs:
         revNum=$((${{ github.run_number }} - ${{ env.VERSION_REV_OFFSET }}))
         versionNum=${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}.$revNum
         pkgName=RN-Mission-Editor-v$versionNum.zip
-        ./scripts/update_product_version.ps1 -major ${{ env.VERSION_MAJOR }} -minor ${{ env.VERSION_MINOR }} -revision ${{ github.run_number }}
+        ./scripts/update_product_version.ps1 -major ${{ env.VERSION_MAJOR }} -minor ${{ env.VERSION_MINOR }} -revision $revNum
         echo "RELEASE_VER=$versionNum" >> $GITHUB_ENV
         echo "PACKAGE_NAME=$pkgName" >> $GITHUB_ENV
     - name: Restore cache vcpkg

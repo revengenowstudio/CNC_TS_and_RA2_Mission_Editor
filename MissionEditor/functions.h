@@ -62,6 +62,8 @@ inline void DeleteBuildingNodeFrom(const CString& house, const int index, CIniFi
 {
 	auto const nodeCount = ini.GetInteger(house, "NodeCount");
 	ASSERT(nodeCount > 0);
+	ASSERT(index >= 0);
+	ASSERT(index < nodeCount);
 	// override value from current ID
 	CString prevNodeName, nextNodeName, lastData;
 	for (auto i = index; i < nodeCount - 1; i++) {

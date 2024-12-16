@@ -3120,8 +3120,6 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 		m_moved = FALSE;
 		if (AD.type == 6) // Overlay
 		{
-			Map->TakeSnapshot();
-			Map->Undo();
 			if (AD.data == 5) // birdges
 			{
 				if (x == m_mapx && y == m_mapy) return;
@@ -3318,6 +3316,8 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 				//UpdateMap();
 				RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 			}
+			Map->TakeSnapshot();
+			Map->Undo();
 		}
 	}
 

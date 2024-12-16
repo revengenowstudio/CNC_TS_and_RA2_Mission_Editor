@@ -10,7 +10,7 @@ TEST(WaypointTest, SerdeTest)
     ASSERT_EQ(WaypointToString(0), "A");
     ASSERT_EQ(StringToWaypoint("A"), 0);
 
-    for (auto idx = 0ull; idx < 702; ++idx) {
+    for (auto idx = 0; idx < 702; ++idx) {
         cout << "Waypoint " << idx << ": " << WaypointToString(idx) << endl;
     }
 

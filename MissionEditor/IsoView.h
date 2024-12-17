@@ -122,7 +122,7 @@ protected:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-	std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> getDDDesc(bool recreated);
+	std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE7, bool> getDDDesc(bool recreated);
 	DDSURFACEDESC2 getDDDescBasic(bool recreated);
 
 	// generated message maps
@@ -270,9 +270,11 @@ public:
 	CWnd* owner;
 	void ReInitializeDDraw();
 	COLORREF GetColor(const char* house, const char* color = NULL);
-	void Blit(LPDIRECTDRAWSURFACE4 pic, int x, int y, int width = -1, int height = -1)
+	void Blit(LPDIRECTDRAWSURFACE7 pic, int x, int y, int width = -1, int height = -1)
 	{
-		if (pic == NULL) return;
+		if (pic == NULL) {
+			return;
+		}
 
 		x += 1;
 		y += 1;
@@ -337,13 +339,13 @@ public:
 	void updateFontScaled();
 	void TextOut(int x, int y, const char* text, COLORREF col);
 	void TextOut(HDC hDC, int x, int y, const char* text, COLORREF col);
-	LPDIRECTDRAWSURFACE4 lpdsBack;
-	LPDIRECTDRAWSURFACE4 lpdsTemp; // used for saving the isoview when drawing current tile
-	LPDIRECTDRAWSURFACE4 lpdsBackHighRes; // used for rendering text and some lines in high-res
-	LPDIRECTDRAWSURFACE4 lpds;
+	LPDIRECTDRAWSURFACE7 lpdsBack;
+	LPDIRECTDRAWSURFACE7 lpdsTemp; // used for saving the isoview when drawing current tile
+	LPDIRECTDRAWSURFACE7 lpdsBackHighRes; // used for rendering text and some lines in high-res
+	LPDIRECTDRAWSURFACE7 lpds;
 	DDPIXELFORMAT pf;
 	std::unique_ptr<FSunPackLib::ColorConverter> m_color_converter;
-	LPDIRECTDRAW4 dd;
+	LPDIRECTDRAW7 dd;
 	LPDIRECTDRAW dd_1;
 	HGLRC m_hglrc;
 	void HandleProperties(int n, int type);

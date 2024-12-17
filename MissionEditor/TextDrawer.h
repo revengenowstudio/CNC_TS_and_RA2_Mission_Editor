@@ -29,16 +29,16 @@
 class TextDrawer
 {
 public:
-	TextDrawer(IDirectDraw4* pDirectDraw, int fontSizeInPoints, COLORREF col, COLORREF shadowCol = CLR_INVALID);
+	TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF col, COLORREF shadowCol = CLR_INVALID);
 
 	bool isValid() const;
 
-	void RenderText(IDirectDrawSurface4* target, int x, int y, const std::string& text, bool centered = false) const;
+	void RenderText(IDirectDrawSurface7* target, int x, int y, const std::string& text, bool centered = false) const;
 
 	ProjectedVec GetExtent(const std::string& text) const;
 
 private:
-	CComPtr<IDirectDrawSurface4> m_fontSurface;
+	CComPtr<IDirectDrawSurface7> m_fontSurface;
 	ProjectedVec m_charExtent;
 	int m_fontSizeInPoints;
 	int m_fontSizeInPixels;

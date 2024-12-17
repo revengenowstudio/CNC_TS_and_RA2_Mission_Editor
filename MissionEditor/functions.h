@@ -172,7 +172,7 @@ public:
 std::unique_ptr<CBitmap> BitmapFromResource(int resource_id);
 std::unique_ptr<CBitmap> BitmapFromFile(const CString& filepath);
 
-CComPtr<IDirectDrawSurface4> BitmapToSurface(IDirectDraw4* pDD, const CBitmap& bitmap);
+CComPtr<IDirectDrawSurface7> BitmapToSurface(IDirectDraw7* pDD, const CBitmap& bitmap);
 
 class ComboBoxHelper
 {

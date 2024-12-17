@@ -315,7 +315,7 @@ namespace FSunPackLib
 		return DP;
 	}
 
-	std::int32_t GetFirstPixelColor(IDirectDrawSurface4* pDDS)
+	std::int32_t GetFirstPixelColor(IDirectDrawSurface7* pDDS)
 	{
 		std::int32_t color = 0;
 
@@ -337,7 +337,7 @@ namespace FSunPackLib
 
 	}
 
-	HRESULT SetColorKey(IDirectDrawSurface4* pDDS, COLORREF rgb)
+	HRESULT SetColorKey(IDirectDrawSurface7* pDDS, COLORREF rgb)
 	{
 		DDPIXELFORMAT pf = { 0 };
 		pf.dwSize = sizeof(DDPIXELFORMAT);
@@ -714,7 +714,7 @@ namespace FSunPackLib
 	}
 
 
-	BOOL LoadSHPImageInSurface(IDirectDraw4* pdd, HTSPALETTE hPalette, int iImageIndex, int iCount, LPDIRECTDRAWSURFACE4* pdds)
+	BOOL LoadSHPImageInSurface(IDirectDraw7* pdd, HTSPALETTE hPalette, int iImageIndex, int iCount, LPDIRECTDRAWSURFACE7* pdds)
 	{
 		RGBTRIPLE rgb_transp;
 		t_shp_ts_image_header imghead;
@@ -1082,7 +1082,7 @@ namespace FSunPackLib
 	}
 
 
-	BOOL LoadTMPImageInSurface(IDirectDraw4* pdd, int iStart, int iCount, LPDIRECTDRAWSURFACE4* pdds, HTSPALETTE hPalette)
+	BOOL LoadTMPImageInSurface(IDirectDraw7* pdd, int iStart, int iCount, LPDIRECTDRAWSURFACE7* pdds, HTSPALETTE hPalette)
 	{
 		last_succeeded_operation = 2100;
 
@@ -1636,7 +1636,7 @@ namespace FSunPackLib
 	VoxelNormalTable emptyNormalTable;
 
 #if defined(XCC_VXL_DRAW)
-	BOOL LoadVXLImageInSurface(const VoxelNormalTables& normalTables, Vec3f lightDirection, IDirectDraw4* pdd, int iStart, int iCount, const Vec3f rotation, const Vec3f postHVAOffset, LPDIRECTDRAWSURFACE4* pdds, HTSPALETTE hPalette, int* lpXCenter, int* lpYCenter, int ZAdjust, int* lpXCenterZMax, int* lpYCenterZMax, int i3dCenterX, int i3dCenterY)
+	BOOL LoadVXLImageInSurface(const VoxelNormalTables& normalTables, Vec3f lightDirection, IDirectDraw4* pdd, int iStart, int iCount, const Vec3f rotation, const Vec3f postHVAOffset, LPDIRECTDRAWSURFACE7* pdds, HTSPALETTE hPalette, int* lpXCenter, int* lpYCenter, int ZAdjust, int* lpXCenterZMax, int* lpYCenterZMax, int i3dCenterX, int i3dCenterY)
 	{
 		if (hPalette == NULL || hPalette > dwPalCount) return NULL;
 

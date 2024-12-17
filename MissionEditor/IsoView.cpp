@@ -99,7 +99,7 @@ BOOL bDrawStats = TRUE;
 class SurfaceLocker
 {
 public:
-	SurfaceLocker(IDirectDrawSurface4* pDDS, LPRECT rect = nullptr) :
+	SurfaceLocker(IDirectDrawSurface7* pDDS, LPRECT rect = nullptr) :
 		SurfaceLocker()
 	{
 		m_hasRect = rect != nullptr;
@@ -149,7 +149,7 @@ private:
 	SurfaceLocker() = default;
 
 private:
-	IDirectDrawSurface4* m_pDDS = nullptr;
+	IDirectDrawSurface7* m_pDDS = nullptr;
 	DDSURFACEDESC2 m_ddsd = { 0 };
 	RECT m_rect = { 0 };
 	bool m_hasRect = false;
@@ -238,19 +238,11 @@ BOOL CIsoView::RecreateSurfaces()
 	releaseIfExists(isoView.dd);
 
 	if (isoView.dd_1->QueryInterface(IID_IDirectDraw7, (void**)&isoView.dd) != DD_OK) {
-		errstream << "QueryInterface() failed -> Using DirectX 6.0\n";
+		errstream << "QueryInterface() failed\n";
 		errstream.flush();
-		//ShowWindow(SW_HIDE);
-		//MessageBox("You don´t have DirectX 6.0 but an older version. Quitting...");
-		//exit(-1);
-
-		//return FALSE;
-
-		if (isoView.dd_1->QueryInterface(IID_IDirectDraw4, (void**)&isoView.dd) != DD_OK) {
-			MessageBox("You need at least DirectX 6.0 to run this program", "Error");
-			exit(-1);
-			return FALSE;
-		}
+		MessageBox("You need at least DirectX 7.0 to run this program", "Error");
+		exit(-1);
+		return FALSE;
 	}
 
 	errstream << "QueryInterface() successful\n\nNow setting cooperative level\n";
@@ -3572,7 +3564,7 @@ void CIsoView::ReInitializeDDraw()
 	theApp.m_loading->InitPics();
 	theApp.m_loading->InitTMPs(&dlg.m_Progress);
 
-	memset(ovrlpics, 0, max_ovrl_img * 0xFF * sizeof(LPDIRECTDRAWSURFACE4));
+	memset(ovrlpics, 0, max_ovrl_img * 0xFF * sizeof(LPDIRECTDRAWSURFACE7));
 	//UpdateOverlayPictures(-1);
 	//Map->UpdateIniFile(MAPDATA_UPDATE_FROM_INI);
 	Map->UpdateBuildingInfo();
@@ -4210,7 +4202,7 @@ void CIsoView::UpdateStatusBar(int x, int y)
 void CIsoView::UpdateOverlayPictures(int id)
 {
 	if (id < 0) {
-		memset(ovrlpics, 0, max_ovrl_img * 0xFF * sizeof(LPDIRECTDRAWSURFACE4));
+		memset(ovrlpics, 0, max_ovrl_img * 0xFF * sizeof(LPDIRECTDRAWSURFACE7));
 
 		int i, e;
 		for (i = 0; i < 0xFF; i++) {
@@ -6188,7 +6180,7 @@ void CIsoView::DrawMap()
 #ifdef NOSURFACES
 				lpdsBack->Unlock(NULL);
 #endif
-				Blit((LPDIRECTDRAWSURFACE4)pics["CELLTAG"].pic, drawCoords.x - 1, drawCoords.y - 1);
+				Blit((LPDIRECTDRAWSURFACE7)pics["CELLTAG"].pic, drawCoords.x - 1, drawCoords.y - 1);
 
 #ifdef NOSURFACES				
 				auto ddsd = getDDDescBasic(false);
@@ -6249,7 +6241,7 @@ void CIsoView::DrawMap()
 
 	// delayed waypoint rendering
 	for (const auto& wp : m_waypoints_to_render) {
-		Blit((LPDIRECTDRAWSURFACE4)pics["FLAG"].pic, wp.drawx, wp.drawy);
+		Blit((LPDIRECTDRAWSURFACE7)pics["FLAG"].pic, wp.drawx, wp.drawy);
 	}
 
 	// map tool rendering
@@ -6281,7 +6273,7 @@ void CIsoView::DrawMap()
 
 	if (rscroll) {
 		const auto& sc = pics["SCROLLCURSOR"];
-		Blit((LPDIRECTDRAWSURFACE4)sc.pic, rclick_x * m_viewScale.x + r.left - sc.wWidth / 2, rclick_y * m_viewScale.y + r.top - sc.wHeight / 2);
+		Blit((LPDIRECTDRAWSURFACE7)sc.pic, rclick_x * m_viewScale.x + r.left - sc.wWidth / 2, rclick_y * m_viewScale.y + r.top - sc.wHeight / 2);
 	}
 
 	BlitBackbufferToHighRes(); // lpdsBackHighRes contains the same graphic, but scaled to the whole window
@@ -6294,9 +6286,9 @@ void CIsoView::DrawMap()
 
 }
 
-std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE4, bool> CIsoView::getDDDesc(bool recreated)
+std::tuple<DDSURFACEDESC2, LPDIRECTDRAWSURFACE7, bool> CIsoView::getDDDesc(bool recreated)
 {
-	LPDIRECTDRAWSURFACE4 dds = lpdsBack;
+	LPDIRECTDRAWSURFACE7 dds = lpdsBack;
 	bool useHighRes = false;
 	if (m_viewScale != Vec2<CSProjected, float>(1.0f, 1.0f) && lpdsBackHighRes) {
 		dds = lpdsBackHighRes;

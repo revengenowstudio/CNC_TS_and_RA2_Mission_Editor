@@ -25,7 +25,7 @@
 #include "Vec2.h"
 #include "MissionEditorPackLib.h"
 
-TextDrawer::TextDrawer(IDirectDraw4* pDirectDraw, int fontSizeInPoints, COLORREF col, COLORREF shadowCol) : m_fontSizeInPoints(fontSizeInPoints), m_col(col), m_shadowCol(shadowCol)
+TextDrawer::TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF col, COLORREF shadowCol) : m_fontSizeInPoints(fontSizeInPoints), m_col(col), m_shadowCol(shadowCol)
 {
 	auto dc = CDC::FromHandle(::GetDC(NULL));
 	auto fontSizeInPixels = -MulDiv(fontSizeInPoints, dc->GetDeviceCaps(LOGPIXELSY), 72);
@@ -55,7 +55,7 @@ TextDrawer::TextDrawer(IDirectDraw4* pDirectDraw, int fontSizeInPoints, COLORREF
 
 	auto bkcol = col == RGB(10, 10, 10) ? RGB(11, 11, 11) : RGB(10, 10, 10);
 
-	auto pSurface = CComPtr<IDirectDrawSurface4>();
+	auto pSurface = CComPtr<IDirectDrawSurface7>();
 	if (pDirectDraw->CreateSurface(&desc, &pSurface, nullptr) != DD_OK)
 		return;
 
@@ -108,7 +108,7 @@ bool TextDrawer::isValid() const
 	return m_fontSurface != nullptr;
 }
 
-void TextDrawer::RenderText(IDirectDrawSurface4* target, int x, int y, const std::string& text, bool centered) const
+void TextDrawer::RenderText(IDirectDrawSurface7* target, int x, int y, const std::string& text, bool centered) const
 {
 	if (!isValid())
 		return;

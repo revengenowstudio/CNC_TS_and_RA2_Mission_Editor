@@ -466,7 +466,7 @@ void CTileSetBrowserView::SetTileSet(DWORD dwTileSet, BOOL bOnlyRedraw)
 
 	m_tilecount = max;
 
-	m_lpDDS = new(LPDIRECTDRAWSURFACE4[m_tilecount]);
+	m_lpDDS = new(LPDIRECTDRAWSURFACE7[m_tilecount]);
 	for (i = 0; i < m_tilecount; i++) {
 		m_lpDDS[i] = RenderTile(dwStartID + i);
 	}
@@ -589,7 +589,7 @@ __forceinline void BlitTerrainTSB(void* dst, int x, int y, int dleft, int dtop, 
 #endif
 
 
-LPDIRECTDRAWSURFACE4 CTileSetBrowserView::RenderTile(DWORD dwID)
+LPDIRECTDRAWSURFACE7 CTileSetBrowserView::RenderTile(DWORD dwID)
 {
 	if (theApp.m_Options.bMarbleMadness) {
 		if ((*tiledata)[dwID].wMarbleGround != 0xFFFF) {
@@ -597,8 +597,8 @@ LPDIRECTDRAWSURFACE4 CTileSetBrowserView::RenderTile(DWORD dwID)
 		}
 	}
 
-	LPDIRECTDRAWSURFACE4 lpdds = NULL;
-	LPDIRECTDRAW4 lpdd = ((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd;
+	LPDIRECTDRAWSURFACE7 lpdds = NULL;
+	LPDIRECTDRAW7 lpdd = ((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd;
 
 	DDSURFACEDESC2 ddsd;
 	memset(&ddsd, 0, sizeof(DDSURFACEDESC2));
@@ -923,9 +923,9 @@ void CTileSetBrowserView::SetOverlay(DWORD dwID)
 }
 
 #ifdef IGNORETHIS
-LPDIRECTDRAWSURFACE4 CTileSetBrowserView::RenderOverlay(DWORD dwType, DWORD dwData)
+LPDIRECTDRAWSURFACE7 CTileSetBrowserView::RenderOverlay(DWORD dwType, DWORD dwData)
 {
-	LPDIRECTDRAWSURFACE4 lpdds = NULL;
+	LPDIRECTDRAWSURFACE7 lpdds = NULL;
 	LPDIRECTDRAW4 lpdd = ((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd;
 
 	DDSURFACEDESC2 ddsd;

@@ -1445,7 +1445,7 @@ void GetDrawBorder(const BYTE* data, int width, int line, int& left, int& right,
 	}
 }
 
-CComPtr<IDirectDrawSurface4> BitmapToSurface(IDirectDraw4* pDD, const CBitmap& bitmap)
+CComPtr<IDirectDrawSurface7> BitmapToSurface(IDirectDraw7* pDD, const CBitmap& bitmap)
 {
 	BITMAP bm;
 	GetObject(bitmap, sizeof(bm), &bm);
@@ -1458,7 +1458,7 @@ CComPtr<IDirectDrawSurface4> BitmapToSurface(IDirectDraw4* pDD, const CBitmap& b
 	desc.dwWidth = bm.bmWidth;
 	desc.dwHeight = bm.bmHeight;
 
-	auto pSurface = CComPtr<IDirectDrawSurface4>();
+	auto pSurface = CComPtr<IDirectDrawSurface7>();
 	if (pDD->CreateSurface(&desc, &pSurface, nullptr) != DD_OK)
 		return nullptr;
 

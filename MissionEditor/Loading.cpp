@@ -752,7 +752,8 @@ void CLoading::InitPics(CProgressCtrl* prog)
 	}
 
 	try {
-		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_CELLTAG)).Detach();
+		auto const pCellTagBmp = BitmapFromResource(IDB_CELLTAG);
+		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *pCellTagBmp).Detach();
 		auto& cellTagSlot = pics["CELLTAG"];
 		auto pOldPic = std::exchange(cellTagSlot.pic, pPic);
 		if (pOldPic) {
@@ -778,7 +779,8 @@ void CLoading::InitPics(CProgressCtrl* prog)
 	}
 
 	try {
-		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_FLAG)).Detach();
+		auto const pFlagBmp = BitmapFromResource(IDB_FLAG);
+		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *pFlagBmp).Detach();
 		auto& flagSlot = pics["FLAG"];
 		auto pOldPic = std::exchange(flagSlot.pic, pPic);
 		if (pOldPic) {

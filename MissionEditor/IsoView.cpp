@@ -1949,8 +1949,6 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 	} else if ((nFlags & MK_LBUTTON) == MK_LBUTTON && (AD.mode == ACTIONMODE_PLACE || AD.mode == ACTIONMODE_RANDOMTERRAIN)) {
 		// ADD OBJECTS
 
-		if (AD.mode == ACTIONMODE_PLACE && AD.type == 6) Map->TakeSnapshot();
-
 		if (AD.mode == ACTIONMODE_PLACE && AD.type == 6 && AD.data == 5) // bridges		
 		{
 
@@ -2013,14 +2011,6 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 			PlaceCurrentObjectAt(x, y);
 			RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		}
-
-
-		if (AD.mode == ACTIONMODE_PLACE && AD.type == 6) {
-			Map->TakeSnapshot();
-			Map->Undo();
-		}
-
-
 	}
 
 	UpdateStatusBar(x, y);
@@ -2781,6 +2771,10 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 		m_id = Map->GetCelltagAt(m_mapx + m_mapy * Map->GetIsoSize());
 		m_type = 5;
 	} else if ((AD.mode < 3 || AD.mode>4) || (AD.mode == 3 && AD.type == 0) || (AD.mode >= 3 && AD.mode <= 4 && AD.type == 1)) {
+		if (AD.type == 6)
+		{
+			Map->TakeSnapshot();
+		}
 		OnMouseMove(nFlags, point);
 	} else if (AD.mode == 3) {
 		if (AD.type == 2) {
@@ -3314,6 +3308,8 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 				//UpdateMap();
 				RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 			}
+			Map->TakeSnapshot();
+			Map->Undo();
 		}
 	}
 

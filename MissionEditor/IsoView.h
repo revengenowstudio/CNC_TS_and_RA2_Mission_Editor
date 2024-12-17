@@ -294,12 +294,14 @@ public:
 			height = ddsd.dwHeight;
 		}
 
-		if (x + width < 0 || y + height < 0) return;
-		if (x > r.right || y > r.bottom) return;
+		if (x + width < 0 || y + height < 0) {
+			return; 
+		}
+		if (x > r.right || y > r.bottom) {
+			return;
+		}
 
 		if (x < 0 || y < 0 || x + width >= r.right || y + height >= r.bottom) {
-
-
 			RECT blrect;
 			RECT srcRect;
 			srcRect.left = 0;
@@ -333,8 +335,10 @@ public:
 			memset(&fx, 0, sizeof(DDBLTFX));
 			fx.dwSize = sizeof(DDBLTFX);
 			lpdsBack->Blt(&blrect, pic, &srcRect, DDBLT_KEYSRC, &fx);
-		} else
-			lpdsBack->BltFast(x, y, pic, NULL, DDBLTFAST_SRCCOLORKEY);
+			return;
+		}
+
+		lpdsBack->BltFast(x, y, pic, NULL, DDBLTFAST_SRCCOLORKEY);
 	}
 	void updateFontScaled();
 	void TextOut(int x, int y, const char* text, COLORREF col);

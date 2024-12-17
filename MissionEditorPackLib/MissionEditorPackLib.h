@@ -205,10 +205,10 @@ namespace FSunPackLib
 
 
 
-	BOOL LoadTMPImageInSurface(IDirectDraw4* pdd, int iStart, int iCount, LPDIRECTDRAWSURFACE4* pdds, HTSPALETTE hPalette);
+	BOOL LoadTMPImageInSurface(IDirectDraw7* pdd, int iStart, int iCount, LPDIRECTDRAWSURFACE7* pdds, HTSPALETTE hPalette);
 	BOOL LoadTMPImage(int iStart, int iCount, BYTE** lpTileArray);
 
-	BOOL LoadSHPImageInSurface(IDirectDraw4* pdd, HTSPALETTE hPalette, int iImageIndex, int iCount, LPDIRECTDRAWSURFACE4* pdds);
+	BOOL LoadSHPImageInSurface(IDirectDraw7* pdd, HTSPALETTE hPalette, int iImageIndex, int iCount, LPDIRECTDRAWSURFACE7* pdds);
 	// load 'wantedNum' frames at 'startIndex'
 	BOOL LoadSHPImage(int startIndex, int wantedNum, BYTE** lpPics);
 	BOOL LoadSHPImage(int iImageIndex, std::vector<BYTE>& pic);
@@ -229,7 +229,7 @@ namespace FSunPackLib
 	BOOL GetVXLSectionInfo(int section, VoxelNormalClass& normalClass);
 
 #if defined(XCC_VXL_DRAW)
-	BOOL LoadVXLImageInSurface(const VoxelNormalTables& normalTables, Vec3f lightDirection, IDirectDraw4* pdd, int iStart, int iCount, Vec3f rotation, Vec3f modelOffset, LPDIRECTDRAWSURFACE4* pdds, HTSPALETTE hPalette, int* lpXCenter = NULL, int* lpYCenter = NULL, int ZAdjust = 0, int* lpXCenterZMax = NULL, int* lpYCenterZMax = NULL, int i3dCenterX = -1, int i3dCenterY = -1);
+	BOOL LoadVXLImageInSurface(const VoxelNormalTables& normalTables, Vec3f lightDirection, IDirectDraw7* pdd, int iStart, int iCount, Vec3f rotation, Vec3f modelOffset, LPDIRECTDRAWSURFACE7* pdds, HTSPALETTE hPalette, int* lpXCenter = NULL, int* lpYCenter = NULL, int ZAdjust = 0, int* lpXCenterZMax = NULL, int* lpYCenterZMax = NULL, int i3dCenterX = -1, int i3dCenterY = -1);
 #endif
 
 	// modelOffset is applied before VXL/HVA translates and scales and before model-to-world rotation
@@ -251,7 +251,7 @@ namespace FSunPackLib
 
 	BOOL WriteMixFile(LPCTSTR lpMixFile, LPCSTR* lpFiles, DWORD dwFileCount, Game game);
 
-	HRESULT SetColorKey(IDirectDrawSurface4* pDDS, COLORREF rgb);
+	HRESULT SetColorKey(IDirectDrawSurface7* pDDS, COLORREF rgb);
 
 	std::pair<MemoryBuffer, bool> LoadCCFile(LPCTSTR name, HMIXFILE hMix);
 };

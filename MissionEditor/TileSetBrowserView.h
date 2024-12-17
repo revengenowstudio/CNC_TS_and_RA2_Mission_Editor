@@ -58,7 +58,7 @@ public:
 	int GetAddedHeight(DWORD dwID);
 	int m_bottom_needed;
 	void DrawIt();
-	LPDIRECTDRAWSURFACE4* m_lpDDS;
+	LPDIRECTDRAWSURFACE7* m_lpDDS;
 	void SetTileSet(DWORD dwTileSet, BOOL bOnlyRedraw = FALSE);
 	DWORD GetTileID(DWORD dwTileSet, DWORD dwType);
 	int m_currentTileSet;
@@ -76,7 +76,7 @@ public:
 	DECLARE_MESSAGE_MAP()
 protected:
 	int m_CurrentMode;
-	LPDIRECTDRAWSURFACE4 RenderTile(DWORD dwID);
+	LPDIRECTDRAWSURFACE7 RenderTile(DWORD dwID);
 	int m_tilecount;
 	int m_tile_height;
 	int m_tile_width;

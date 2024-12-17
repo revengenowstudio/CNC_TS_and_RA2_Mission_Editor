@@ -712,14 +712,14 @@ void CLoading::InitPics(CProgressCtrl* prog)
 					::memset(&desc, 0, sizeof(DDSURFACEDESC2));
 					desc.dwSize = sizeof(DDSURFACEDESC2);
 					desc.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
-					((LPDIRECTDRAWSURFACE4)pics[(LPCTSTR)ff.GetFileName()].pic)->GetSurfaceDesc(&desc);
+					((LPDIRECTDRAWSURFACE7)pics[(LPCTSTR)ff.GetFileName()].pic)->GetSurfaceDesc(&desc);
 					pics[(LPCTSTR)ff.GetFileName()].wHeight = desc.dwHeight;
 					pics[(LPCTSTR)ff.GetFileName()].wWidth = desc.dwWidth;
 					pics[(LPCTSTR)ff.GetFileName()].wMaxWidth = desc.dwWidth;
 					pics[(LPCTSTR)ff.GetFileName()].wMaxHeight = desc.dwHeight;
 					pics[(LPCTSTR)ff.GetFileName()].bType = PICDATA_TYPE_BMP;
 
-					FSunPackLib::SetColorKey(((LPDIRECTDRAWSURFACE4)(pics[(LPCTSTR)ff.GetFileName()].pic)), -1);
+					FSunPackLib::SetColorKey(((LPDIRECTDRAWSURFACE7)(pics[(LPCTSTR)ff.GetFileName()].pic)), -1);
 				} catch (const BitmapNotFound&) {
 				}
 			}
@@ -734,7 +734,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 		auto& scrollCursorSlot = pics["SCROLLCURSOR"];
 		auto pOldPic = std::exchange(scrollCursorSlot.pic, pPic);
 		if (pOldPic) {
-			reinterpret_cast<IDirectDrawSurface4*>(pOldPic)->Release();
+			reinterpret_cast<IDirectDrawSurface7*>(pOldPic)->Release();
 		}
 		if (!pPic) {
 			throw new BitmapNotFound();
@@ -756,7 +756,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 		auto& cellTagSlot = pics["CELLTAG"];
 		auto pOldPic = std::exchange(cellTagSlot.pic, pPic);
 		if (pOldPic) {
-			reinterpret_cast<IDirectDrawSurface4*>(pOldPic)->Release();
+			reinterpret_cast<IDirectDrawSurface7*>(pOldPic)->Release();
 		}
 		FSunPackLib::SetColorKey(pPic, CLR_INVALID);
 		::memset(&desc, 0, sizeof(DDSURFACEDESC2));
@@ -782,7 +782,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 		auto& flagSlot = pics["FLAG"];
 		auto pOldPic = std::exchange(flagSlot.pic, pPic);
 		if (pOldPic) {
-			reinterpret_cast<IDirectDrawSurface4*>(pOldPic)->Release();
+			reinterpret_cast<IDirectDrawSurface7*>(pOldPic)->Release();
 		}
 		FSunPackLib::SetColorKey(pPic, -1);
 		::memset(&desc, 0, sizeof(DDSURFACEDESC2));
@@ -808,12 +808,12 @@ void CLoading::InitPics(CProgressCtrl* prog)
 	ddsd.dwWidth = f_x;
 	ddsd.dwHeight = f_y;
 
-	LPDIRECTDRAWSURFACE4 srf = NULL;
+	LPDIRECTDRAWSURFACE7 srf = NULL;
 	//auto ddptr = 
 	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd->CreateSurface(&ddsd, &srf, 0);
 
 	auto& htileSlot = pics["HTILE"];
-	auto const pOldHtSurf = reinterpret_cast<LPDIRECTDRAWSURFACE4>(std::exchange(htileSlot.pic, srf));
+	auto const pOldHtSurf = reinterpret_cast<LPDIRECTDRAWSURFACE7>(std::exchange(htileSlot.pic, srf));
 	if (pOldHtSurf) {
 		pOldHtSurf->Release();
 	}
@@ -2046,7 +2046,7 @@ BOOL CLoading::InitMixFiles()
 	MEMORYSTATUS ms;
 	ms.dwLength = sizeof(MEMORYSTATUS);
 	GlobalMemoryStatus(&ms);
-	int cs = ms.dwAvailPhys + ms.dwAvailPageFile;
+	auto cs = ms.dwAvailPhys + ms.dwAvailPageFile;
 
 	errstream << "InitMixFiles() called. Available memory: " << cs << endl;
 	errstream.flush();
@@ -3607,7 +3607,7 @@ void CLoading::FreeTileSet()
 				if (curSur) delete[] curSur;
 				if (rept.tiles[e].vborder) delete[] rept.tiles[e].vborder;
 #else
-				LPDIRECTDRAWSURFACE4 curSur = rept.tiles[e].pic;
+				LPDIRECTDRAWSURFACE7 curSur = rept.tiles[e].pic;
 				if (curSur) curSur->Release();
 #endif
 			}
@@ -3626,7 +3626,7 @@ void CLoading::FreeTileSet()
 			if (curSur) delete[] curSur;
 			if ((*tiledata)[i].tiles[e].vborder) delete[](*tiledata)[i].tiles[e].vborder;
 #else
-			LPDIRECTDRAWSURFACE4 curSur = (*tiledata)[i].tiles[e].pic;
+			LPDIRECTDRAWSURFACE7 curSur = (*tiledata)[i].tiles[e].pic;
 			if (curSur) curSur->Release();
 #endif
 		}
@@ -3727,7 +3727,7 @@ void CLoading::FreeAll()
 #ifdef NOSURFACES_OBJECTS			
 			if (i->second.bType == PICDATA_TYPE_BMP) {
 				if (i->second.pic != NULL) {
-					((LPDIRECTDRAWSURFACE4)i->second.pic)->Release();
+					((LPDIRECTDRAWSURFACE7)i->second.pic)->Release();
 				}
 			} else {
 				if (auto pPic = std::exchange(i->second.pic, nullptr)) {

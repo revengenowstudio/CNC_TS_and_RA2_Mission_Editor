@@ -322,26 +322,51 @@ namespace FSunPackLib
 		DDSURFACEDESC2 desc = { 0 };
 		desc.dwSize = sizeof(DDSURFACEDESC2);
 
-		if (pDDS->Lock(nullptr, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, nullptr) != DD_OK)
-			return color;
-		if (desc.lpSurface == nullptr) {
-			pDDS->Unlock(nullptr);
-			return color;
-		} else {
-			auto bytes_per_pixel = (desc.ddpfPixelFormat.dwRGBBitCount + 7) / 8;
-			memcpy(&color, desc.lpSurface, bytes_per_pixel > 4 ? 4 : bytes_per_pixel);
-			pDDS->Unlock(nullptr);
-
+		HRESULT hr = pDDS->Lock(nullptr, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, nullptr);
+		if (FAILED(hr)) {
 			return color;
 		}
 
+		if (desc.lpSurface == nullptr) {
+			pDDS->Unlock(nullptr);
+			return color;
+		}
+
+		auto bytes_per_pixel = (desc.ddpfPixelFormat.dwRGBBitCount + 7) / 8;
+
+		if (bytes_per_pixel > 4) {
+			bytes_per_pixel = 4;
+		}
+
+		switch (bytes_per_pixel) {
+		case 1: // 8-bits
+			color = *reinterpret_cast<std::uint8_t*>(desc.lpSurface);
+			break;
+		case 2: // 16-bits
+			color = *reinterpret_cast<std::uint16_t*>(desc.lpSurface);
+			break;
+		case 3: // 24-bits
+		{
+			std::uint8_t* pixel = reinterpret_cast<std::uint8_t*>(desc.lpSurface);
+			color = (pixel[0] << 16) | (pixel[1] << 8) | pixel[2];
+		}
+		break;
+		case 4: // 32-bits
+			color = *reinterpret_cast<std::uint32_t*>(desc.lpSurface);
+			break;
+		}
+
+		pDDS->Unlock(nullptr);
+		return color;
 	}
 
 	HRESULT SetColorKey(IDirectDrawSurface7* pDDS, COLORREF rgb)
 	{
 		DDPIXELFORMAT pf = { 0 };
 		pf.dwSize = sizeof(DDPIXELFORMAT);
-		pDDS->GetPixelFormat(&pf);
+		if (auto hresult = pDDS->GetPixelFormat(&pf); hresult != DD_OK) {
+			return hresult;
+		}
 
 		ColorConverter c(pf);
 		auto col = rgb == CLR_INVALID ? GetFirstPixelColor(pDDS) : c.GetColor(rgb);

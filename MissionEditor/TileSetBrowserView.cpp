@@ -663,7 +663,7 @@ LPDIRECTDRAWSURFACE7 CTileSetBrowserView::RenderTile(DWORD dwID)
 		}
 	}
 
-	FSunPackLib::SetColorKey(lpdds, -1);
+	FSunPackLib::SetColorKey(lpdds, CLR_INVALID);
 
 	return lpdds;
 }

@@ -719,7 +719,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 					pics[(LPCTSTR)ff.GetFileName()].wMaxHeight = desc.dwHeight;
 					pics[(LPCTSTR)ff.GetFileName()].bType = PICDATA_TYPE_BMP;
 
-					FSunPackLib::SetColorKey(((LPDIRECTDRAWSURFACE7)(pics[(LPCTSTR)ff.GetFileName()].pic)), -1);
+					FSunPackLib::SetColorKey(((LPDIRECTDRAWSURFACE7)(pics[(LPCTSTR)ff.GetFileName()].pic)), CLR_INVALID);
 				} catch (const BitmapNotFound&) {
 				}
 			}
@@ -739,7 +739,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 		if (!pPic) {
 			throw new BitmapNotFound();
 		}
-		FSunPackLib::SetColorKey(pPic, -1);
+		FSunPackLib::SetColorKey(pPic, CLR_INVALID);
 		::memset(&desc, 0, sizeof(DDSURFACEDESC2));
 		desc.dwSize = sizeof(DDSURFACEDESC2);
 		desc.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
@@ -784,7 +784,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 		if (pOldPic) {
 			reinterpret_cast<IDirectDrawSurface7*>(pOldPic)->Release();
 		}
-		FSunPackLib::SetColorKey(pPic, -1);
+		FSunPackLib::SetColorKey(pPic, CLR_INVALID);
 		::memset(&desc, 0, sizeof(DDSURFACEDESC2));
 		desc.dwSize = sizeof(DDSURFACEDESC2);
 		desc.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;

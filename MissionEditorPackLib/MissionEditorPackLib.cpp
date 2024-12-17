@@ -370,6 +370,7 @@ namespace FSunPackLib
 
 		ColorConverter c(pf);
 		auto col = rgb == CLR_INVALID ? GetFirstPixelColor(pDDS) : c.GetColor(rgb);
+		col = col & 0x7FFFFFFF;
 		DDCOLORKEY color_key = { static_cast<DWORD>(col), static_cast<DWORD>(col) };
 		return pDDS->SetColorKey(DDCKEY_SRCBLT, &color_key);
 	}

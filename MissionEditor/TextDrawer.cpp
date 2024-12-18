@@ -143,7 +143,7 @@ void TextDrawer::RenderText(IDirectDrawSurface7* target, int x, int y, const std
 		if (c >= 32 && c <= 126) {
 			auto i = c - 32;
 
-#if 0
+
 			if (m_shadowCol != CLR_INVALID) {
 				RECT s_shadow{ i * cw, ch, i * cw + cw, ch + ch };
 
@@ -157,7 +157,6 @@ void TextDrawer::RenderText(IDirectDrawSurface7* target, int x, int y, const std
 				target->BltFast(cur.x + 1 * shadowOffset, cur.y - 1 * shadowOffset, m_fontSurface, &s_shadow, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
 				target->BltFast(cur.x - 1 * shadowOffset, cur.y - 1 * shadowOffset, m_fontSurface, &s_shadow, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);
 			}
-#endif
 
 			RECT s{ i * cw, 0, i * cw + cw, ch };
 			target->BltFast(cur.x, cur.y, m_fontSurface, &s, DDBLTFAST_SRCCOLORKEY | DDBLTFAST_WAIT);

@@ -364,7 +364,7 @@ namespace FSunPackLib
 	{
 		DDPIXELFORMAT pf = { 0 };
 		pf.dwSize = sizeof(DDPIXELFORMAT);
-		if (auto hresult = pDDS->GetPixelFormat(&pf); hresult != DD_OK) {
+		if (auto hresult = pDDS->GetPixelFormat(&pf); FAILED(hresult)) {
 			return hresult;
 		}
 

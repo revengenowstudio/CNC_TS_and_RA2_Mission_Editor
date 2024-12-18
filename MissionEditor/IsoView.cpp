@@ -321,6 +321,8 @@ BOOL CIsoView::RecreateSurfaces()
 		return FALSE;
 	}
 	bpp = (pf.dwRGBBitCount + 7) / 8;
+
+	errstream << "dwRGBBitCount: " << pf.dwRGBBitCount << endl;
 #endif
 
 

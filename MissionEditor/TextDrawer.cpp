@@ -27,6 +27,7 @@
 
 TextDrawer::TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF col, COLORREF shadowCol) : m_fontSizeInPoints(fontSizeInPoints), m_col(col), m_shadowCol(shadowCol)
 {
+	HRESULT hret = DD_OK;
 	auto dc = CDC::FromHandle(::GetDC(NULL));
 	auto fontSizeInPixels = -MulDiv(fontSizeInPoints, dc->GetDeviceCaps(LOGPIXELSY), 72);
 	m_fontSizeInPixels = fontSizeInPixels;
@@ -36,8 +37,9 @@ TextDrawer::TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF
 
 	// Build a string that contains all required characters in order
 	std::string s;
-	for (char c = 32; c <= 126; ++c)
+	for (char c = 32; c <= 126; ++c) {
 		s.push_back(c);
+	}
 
 	// get the extent in pixels of all characters
 	dc->SelectObject(f);
@@ -56,48 +58,57 @@ TextDrawer::TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF
 	auto bkcol = col == RGB(10, 10, 10) ? RGB(11, 11, 11) : RGB(10, 10, 10);
 
 	auto pSurface = CComPtr<IDirectDrawSurface7>();
-	if (pDirectDraw->CreateSurface(&desc, &pSurface, nullptr) != DD_OK)
+	hret = pDirectDraw->CreateSurface(&desc, &pSurface, nullptr);
+	if (FAILED(hret)) {
 		return;
+	}
+	ASSERT(SUCCEEDED(hret));
 
 	desc.dwFlags |= DDSD_PIXELFORMAT;
-	pSurface->GetSurfaceDesc(&desc);
-	if (pSurface->Lock(NULL, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL) == DD_OK) {
+	hret = pSurface->GetSurfaceDesc(&desc);
+	ASSERT(SUCCEEDED(hret));
+
+	hret = pSurface->Lock(NULL, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
+	ASSERT(SUCCEEDED(hret));
+
+	if (SUCCEEDED(hret)) {
 		FSunPackLib::ColorConverter c(desc.ddpfPixelFormat);
 		std::int32_t backcolor = c.GetColor(bkcol);
 		auto bytes_per_pixel = (desc.ddpfPixelFormat.dwRGBBitCount + 7) / 8;
 		BYTE* const pImage = static_cast<BYTE*>(desc.lpSurface);
-		for (int i = 0; i < desc.dwWidth; ++i) {
-			for (int e = 0; e < desc.dwHeight; ++e) {
-				memcpy(&pImage[e * desc.lPitch + i * bytes_per_pixel], &backcolor, bytes_per_pixel);
-			}
+		for (int e = 0; e < desc.dwHeight; ++e) {
+			memset(pImage + e * desc.lPitch, backcolor, desc.dwWidth * bytes_per_pixel);
 		}
-		pSurface->Unlock(NULL);
+		hret = pSurface->Unlock(NULL);
+		ASSERT(SUCCEEDED(hret));
 	}
 
-
-
-
 	HDC hDC;
-	if (pSurface->GetDC(&hDC) != DD_OK)
+	if (FAILED(pSurface->GetDC(&hDC))) {
 		return;
+	}
 
 	// Draw the string with all characters onto the surface
 	SelectObject(hDC, f);
 	SetBkMode(hDC, TRANSPARENT);
 	if (shadowCol != CLR_INVALID) {
 		SetTextColor(hDC, shadowCol);
-		if (!TextOutA(hDC, 0, extent.cy, s.c_str(), s.size()))
+		if (!TextOutA(hDC, 0, extent.cy, s.c_str(), s.size())) {
 			return;
+		}
 	}
 	SetTextColor(hDC, col);
-	if (!TextOutA(hDC, 0, 0, s.c_str(), s.size()))
+	if (!TextOutA(hDC, 0, 0, s.c_str(), s.size())) {
 		return;
+	}
 
-	if (pSurface->ReleaseDC(hDC) != DD_OK)
+	if (pSurface->ReleaseDC(hDC) != DD_OK) {
 		return;
+	}
 
 	// set transparency key to top left
-	FSunPackLib::SetColorKey(pSurface, CLR_INVALID);
+	hret = FSunPackLib::SetColorKey(pSurface, CLR_INVALID);
+	ASSERT(SUCCEEDED(hret));
 
 	// Everything fine, pass ownership of surface to m_fontSurface
 	m_fontSurface.Attach(pSurface.Detach());
@@ -127,7 +138,9 @@ void TextDrawer::RenderText(IDirectDrawSurface7* target, int x, int y, const std
 	for (const auto c : text) {
 		if (c == '\n') {
 			cur.set(x, cur.y + ch + lineOffset);
-		} else if (c >= 32 && c <= 126) {
+			continue;
+		}
+		if (c >= 32 && c <= 126) {
 			auto i = c - 32;
 
 

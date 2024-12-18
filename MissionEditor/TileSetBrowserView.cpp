@@ -598,7 +598,7 @@ LPDIRECTDRAWSURFACE7 CTileSetBrowserView::RenderTile(DWORD dwID)
 	}
 
 	LPDIRECTDRAWSURFACE7 lpdds = NULL;
-	LPDIRECTDRAW7 lpdd = ((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd;
+	LPDIRECTDRAW7 lpdd = ((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd7_inst;
 
 	DDSURFACEDESC2 ddsd;
 	memset(&ddsd, 0, sizeof(DDSURFACEDESC2));

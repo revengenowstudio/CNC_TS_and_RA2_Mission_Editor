@@ -349,8 +349,8 @@ public:
 	LPDIRECTDRAWSURFACE7 lpds;
 	DDPIXELFORMAT pf;
 	std::unique_ptr<FSunPackLib::ColorConverter> m_color_converter;
-	LPDIRECTDRAW7 dd;
-	LPDIRECTDRAW dd_1;
+	LPDIRECTDRAW7 dd7_inst;
+	LPDIRECTDRAW dd_inst;
 	HGLRC m_hglrc;
 	void HandleProperties(int n, int type);
 	void UpdateDialog(BOOL bRepos = TRUE);

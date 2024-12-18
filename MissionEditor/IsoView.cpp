@@ -164,8 +164,8 @@ CIsoView::CIsoView()
 	m_NoMove = FALSE;
 	b_IsLoading = FALSE;
 	m_viewOffset = ProjectedVec(0, 0);
-	dd = NULL;
-	dd_1 = NULL;
+	dd7_inst = NULL;
+	dd_inst = NULL;
 	lpds = NULL;
 	lpdsBack = NULL;
 	lpdsBackHighRes = nullptr;
@@ -217,9 +217,9 @@ BOOL CIsoView::RecreateSurfaces()
 
 	CIsoView& isoView = *this;
 	
-	releaseIfExists(isoView.dd_1);
+	releaseIfExists(isoView.dd_inst);
 	
-	if (DirectDrawCreate(NULL, &isoView.dd_1, NULL) != DD_OK) {
+	if (DirectDrawCreate(NULL, &isoView.dd_inst, NULL) != DD_OK) {
 		errstream << "DirectDrawCreate() failed\n";
 		errstream.flush();
 		ShowWindow(SW_HIDE);
@@ -235,9 +235,9 @@ BOOL CIsoView::RecreateSurfaces()
 	errstream << "Now querying the DirectX 7 or 6 interface\n";
 	errstream.flush();
 
-	releaseIfExists(isoView.dd);
+	releaseIfExists(isoView.dd7_inst);
 
-	if (isoView.dd_1->QueryInterface(IID_IDirectDraw7, (void**)&isoView.dd) != DD_OK) {
+	if (isoView.dd_inst->QueryInterface(IID_IDirectDraw7, (void**)&isoView.dd7_inst) != DD_OK) {
 		errstream << "QueryInterface() failed\n";
 		errstream.flush();
 		MessageBox("You need at least DirectX 7.0 to run this program", "Error");
@@ -248,13 +248,13 @@ BOOL CIsoView::RecreateSurfaces()
 	errstream << "QueryInterface() successful\n\nNow setting cooperative level\n";
 	errstream.flush();
 
-	if (isoView.dd->SetCooperativeLevel(isoView.m_hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES) != DD_OK) {
+	if (isoView.dd7_inst->SetCooperativeLevel(isoView.m_hWnd, DDSCL_NORMAL | DDSCL_NOWINDOWCHANGES) != DD_OK) {
 		errstream << "SetCooperativeLevel() failed\n";
 		errstream.flush();
 		ShowWindow(SW_HIDE);
 		MessageBox("Cooperative Level could not be set! Quitting...");
-		isoView.dd->Release();
-		isoView.dd = NULL;
+		isoView.dd7_inst->Release();
+		isoView.dd7_inst = NULL;
 		exit(-2);
 
 		return FALSE;
@@ -276,7 +276,7 @@ BOOL CIsoView::RecreateSurfaces()
 	int res = 0;
 	int trycount = 0;
 	do {
-		res = isoView.dd->CreateSurface(&ddsd, &isoView.lpds, NULL);
+		res = isoView.dd7_inst->CreateSurface(&ddsd, &isoView.lpds, NULL);
 		errstream << "Return code: " << res << endl;
 		errstream.flush();
 
@@ -288,8 +288,8 @@ BOOL CIsoView::RecreateSurfaces()
 			errstream.flush();
 			ShowWindow(SW_HIDE);
 			MessageBox("Primary surface could not be initialized! Quitting...");
-			isoView.dd->Release();
-			isoView.dd = NULL;
+			isoView.dd7_inst->Release();
+			isoView.dd7_inst = NULL;
 			exit(-3);
 
 			return FALSE;
@@ -315,8 +315,8 @@ BOOL CIsoView::RecreateSurfaces()
 
 		isoView.lpds->Release();
 		isoView.lpds = NULL;
-		isoView.dd->Release();
-		isoView.dd = NULL;
+		isoView.dd7_inst->Release();
+		isoView.dd7_inst = NULL;
 		exit(-3);
 		return FALSE;
 	}
@@ -339,21 +339,21 @@ BOOL CIsoView::RecreateSurfaces()
 	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 
 	releaseIfExists(isoView.lpdsBack);
-	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBack, NULL) != DD_OK) {
+	if (isoView.dd7_inst->CreateSurface(&ddsd, &isoView.lpdsBack, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
 		errstream.flush();
 		ShowWindow(SW_HIDE);
 		MessageBox("Backbuffer surface could not be initialized! Quitting...");
 		isoView.lpds->Release();
 		isoView.lpds = NULL;
-		isoView.dd->Release();
-		isoView.dd = NULL;
+		isoView.dd7_inst->Release();
+		isoView.dd7_inst = NULL;
 		exit(-4);
 
 		return FALSE;
 	}
 	releaseIfExists(isoView.lpdsBackHighRes);
-	if (theApp.m_Options.bHighResUI && isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBackHighRes, NULL) != DD_OK) {
+	if (theApp.m_Options.bHighResUI && isoView.dd7_inst->CreateSurface(&ddsd, &isoView.lpdsBackHighRes, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
 		errstream.flush();
 		ShowWindow(SW_HIDE);
@@ -362,14 +362,14 @@ BOOL CIsoView::RecreateSurfaces()
 		isoView.lpdsBack = NULL;
 		isoView.lpds->Release();
 		isoView.lpds = NULL;
-		isoView.dd->Release();
-		isoView.dd = NULL;
+		isoView.dd7_inst->Release();
+		isoView.dd7_inst = NULL;
 		exit(-4);
 
 		return FALSE;
 	}
 	releaseIfExists(isoView.lpdsTemp);
-	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsTemp, NULL) != DD_OK) {
+	if (isoView.dd7_inst->CreateSurface(&ddsd, &isoView.lpdsTemp, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
 		errstream.flush();
 		ShowWindow(SW_HIDE);
@@ -381,8 +381,8 @@ BOOL CIsoView::RecreateSurfaces()
 		isoView.lpdsBackHighRes = nullptr;
 		isoView.lpds->Release();
 		isoView.lpds = NULL;
-		isoView.dd->Release();
-		isoView.dd = NULL;
+		isoView.dd7_inst->Release();
+		isoView.dd7_inst = NULL;
 		exit(-4);
 
 		return FALSE;
@@ -392,7 +392,7 @@ BOOL CIsoView::RecreateSurfaces()
 	errstream.flush();
 
 	LPDIRECTDRAWCLIPPER ddc;
-	if (isoView.dd->CreateClipper(0, &ddc, NULL) != DD_OK) {
+	if (isoView.dd7_inst->CreateClipper(0, &ddc, NULL) != DD_OK) {
 		errstream << "CreateClipper() failed\n";
 		errstream.flush();
 		ShowWindow(SW_HIDE);
@@ -406,8 +406,8 @@ BOOL CIsoView::RecreateSurfaces()
 		isoView.lpdsBackHighRes = nullptr;
 		isoView.lpds->Release();
 		isoView.lpds = NULL;
-		isoView.dd->Release();
-		isoView.dd = NULL;
+		isoView.dd7_inst->Release();
+		isoView.dd7_inst = NULL;
 		exit(-6);
 	}
 
@@ -1035,15 +1035,15 @@ void CIsoView::updateFontScaled()
 	m_fontDefaultHeight = -MulDiv(12, dc->GetDeviceCaps(LOGPIXELSY), 72);
 	m_Font9Height = -MulDiv(9, dc->GetDeviceCaps(LOGPIXELSY), 72);
 
-	if (dd) {
-		m_textDefault.reset(new TextDrawer(dd, m_fontDefaultHeight, RGB(0, 0, 0), RGB(255, 255, 255)));
-		m_text9.reset(new TextDrawer(dd, m_Font9Height, RGB(0, 0, 0), RGB(255, 255, 255)));
-		m_textScaled.reset(new TextDrawer(dd, m_fontDefaultHeight / m_viewScale.y, RGB(0, 0, 0), RGB(255, 255, 255)));
-		m_text9Scaled.reset(new TextDrawer(dd, m_Font9Height / m_viewScale.y, RGB(0, 0, 0), RGB(255, 255, 255)));
-		m_textBlue.reset(new TextDrawer(dd, m_fontDefaultHeight, RGB(0, 0, 255), RGB(255, 255, 255)));
-		m_textBlueScaled.reset(new TextDrawer(dd, m_fontDefaultHeight / m_viewScale.y, RGB(0, 0, 255), RGB(255, 255, 255)));
-		m_textBlue9.reset(new TextDrawer(dd, m_Font9Height, RGB(0, 0, 255), RGB(255, 255, 255)));
-		m_textBlue9Scaled.reset(new TextDrawer(dd, m_Font9Height / m_viewScale.y, RGB(0, 0, 255), RGB(255, 255, 255)));
+	if (dd7_inst) {
+		m_textDefault.reset(new TextDrawer(dd7_inst, m_fontDefaultHeight, RGB(0, 0, 0), RGB(255, 255, 255)));
+		m_text9.reset(new TextDrawer(dd7_inst, m_Font9Height, RGB(0, 0, 0), RGB(255, 255, 255)));
+		m_textScaled.reset(new TextDrawer(dd7_inst, m_fontDefaultHeight / m_viewScale.y, RGB(0, 0, 0), RGB(255, 255, 255)));
+		m_text9Scaled.reset(new TextDrawer(dd7_inst, m_Font9Height / m_viewScale.y, RGB(0, 0, 0), RGB(255, 255, 255)));
+		m_textBlue.reset(new TextDrawer(dd7_inst, m_fontDefaultHeight, RGB(0, 0, 255), RGB(255, 255, 255)));
+		m_textBlueScaled.reset(new TextDrawer(dd7_inst, m_fontDefaultHeight / m_viewScale.y, RGB(0, 0, 255), RGB(255, 255, 255)));
+		m_textBlue9.reset(new TextDrawer(dd7_inst, m_Font9Height, RGB(0, 0, 255), RGB(255, 255, 255)));
+		m_textBlue9Scaled.reset(new TextDrawer(dd7_inst, m_Font9Height / m_viewScale.y, RGB(0, 0, 255), RGB(255, 255, 255)));
 	}
 }
 
@@ -3547,7 +3547,7 @@ void CIsoView::ReInitializeDDraw()
 	dlg.ShowWindow(SW_SHOW);
 	dlg.UpdateWindow();
 
-	auto const hr = dd->RestoreAllSurfaces();
+	auto const hr = dd7_inst->RestoreAllSurfaces();
 	if (FAILED(hr)) {
 		errstream << "could not restore surfaces, got hr: " << hr << std::endl;
 	}
@@ -6276,7 +6276,7 @@ void CIsoView::DrawMap()
 
 	RenderUIOverlay();
 	if (theApp.m_Options.bVSync)
-		dd->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+		dd7_inst->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
 	FlipHighResBuffer();
 	last_succeeded_operation = 10100;
 

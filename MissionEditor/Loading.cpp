@@ -706,7 +706,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 				}
 
 				try {
-					pics[(LPCTSTR)ff.GetFileName()].pic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromFile(ff.GetFilePath())).Detach();
+					pics[(LPCTSTR)ff.GetFileName()].pic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd7_inst, *BitmapFromFile(ff.GetFilePath())).Detach();
 
 					DDSURFACEDESC2 desc;
 					::memset(&desc, 0, sizeof(DDSURFACEDESC2));
@@ -729,7 +729,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 	DDSURFACEDESC2 desc;
 
 	try {
-		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *BitmapFromResource(IDB_SCROLLCURSOR)).Detach();
+		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd7_inst, *BitmapFromResource(IDB_SCROLLCURSOR)).Detach();
 		// This is really dangerous to store a dangling ComPtr
 		auto& scrollCursorSlot = pics["SCROLLCURSOR"];
 		auto pOldPic = std::exchange(scrollCursorSlot.pic, pPic);
@@ -753,7 +753,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 
 	try {
 		auto const pCellTagBmp = BitmapFromResource(IDB_CELLTAG);
-		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *pCellTagBmp).Detach();
+		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd7_inst, *pCellTagBmp).Detach();
 		auto& cellTagSlot = pics["CELLTAG"];
 		auto pOldPic = std::exchange(cellTagSlot.pic, pPic);
 		if (pOldPic) {
@@ -780,7 +780,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 
 	try {
 		auto const pFlagBmp = BitmapFromResource(IDB_FLAG);
-		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd, *pFlagBmp).Detach();
+		auto pPic = BitmapToSurface(((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd7_inst, *pFlagBmp).Detach();
 		auto& flagSlot = pics["FLAG"];
 		auto pOldPic = std::exchange(flagSlot.pic, pPic);
 		if (pOldPic) {
@@ -812,7 +812,7 @@ void CLoading::InitPics(CProgressCtrl* prog)
 
 	LPDIRECTDRAWSURFACE7 srf = NULL;
 	//auto ddptr = 
-	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd->CreateSurface(&ddsd, &srf, 0);
+	((CFinalSunDlg*)theApp.m_pMainWnd)->m_view.m_isoview->dd7_inst->CreateSurface(&ddsd, &srf, 0);
 
 	auto& htileSlot = pics["HTILE"];
 	auto const pOldHtSurf = reinterpret_cast<LPDIRECTDRAWSURFACE7>(std::exchange(htileSlot.pic, srf));
@@ -3779,13 +3779,13 @@ void CLoading::FreeAll()
 			dlg->m_view.m_isoview->lpdsTemp->Release();
 			dlg->m_view.m_isoview->lpdsTemp = NULL;
 		}
-		if (dlg->m_view.m_isoview->dd != NULL) {
-			dlg->m_view.m_isoview->dd->Release();
-			dlg->m_view.m_isoview->dd = NULL;
+		if (dlg->m_view.m_isoview->dd7_inst != NULL) {
+			dlg->m_view.m_isoview->dd7_inst->Release();
+			dlg->m_view.m_isoview->dd7_inst = NULL;
 		}
-		if (dlg->m_view.m_isoview->dd_1 != NULL) {
-			dlg->m_view.m_isoview->dd_1->Release();
-			dlg->m_view.m_isoview->dd_1 = NULL;
+		if (dlg->m_view.m_isoview->dd_inst != NULL) {
+			dlg->m_view.m_isoview->dd_inst->Release();
+			dlg->m_view.m_isoview->dd_inst = NULL;
 		}
 	} catch (...) {
 		errstream << "Exception while freeing DirectDraw" << endl;

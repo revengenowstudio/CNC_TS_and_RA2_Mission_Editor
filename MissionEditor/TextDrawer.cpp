@@ -72,8 +72,8 @@ TextDrawer::TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF
 	ASSERT(SUCCEEDED(hret));
 
 	if (SUCCEEDED(hret)) {
-		//FSunPackLib::ColorConverter c(desc.ddpfPixelFormat);
-		std::int32_t backcolor = 0;// c.GetColor(bkcol);
+		FSunPackLib::ColorConverter c(desc.ddpfPixelFormat);
+		std::int32_t backcolor = c.GetColor(bkcol);
 		auto bytes_per_pixel = (desc.ddpfPixelFormat.dwRGBBitCount + 7) / 8;
 		BYTE* const pImage = static_cast<BYTE*>(desc.lpSurface);
 		for (int e = 0; e < desc.dwHeight; ++e) {

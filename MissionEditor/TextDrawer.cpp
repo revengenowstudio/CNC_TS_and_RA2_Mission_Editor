@@ -68,12 +68,13 @@ TextDrawer::TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF
 	hret = pSurface->GetSurfaceDesc(&desc);
 	ASSERT(SUCCEEDED(hret));
 
+	FSunPackLib::ColorConverter c(desc.ddpfPixelFormat);
+	std::int32_t backcolor = c.GetColor(bkcol);
+
 	hret = pSurface->Lock(NULL, &desc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT | DDLOCK_NOSYSLOCK, NULL);
 	ASSERT(SUCCEEDED(hret));
 
 	if (SUCCEEDED(hret)) {
-		//FSunPackLib::ColorConverter c(desc.ddpfPixelFormat);
-		std::int32_t backcolor = 0;// c.GetColor(bkcol);
 		auto bytes_per_pixel = (desc.ddpfPixelFormat.dwRGBBitCount + 7) / 8;
 		BYTE* const pImage = static_cast<BYTE*>(desc.lpSurface);
 		for (int e = 0; e < desc.dwHeight; ++e) {
@@ -107,7 +108,7 @@ TextDrawer::TextDrawer(IDirectDraw7* pDirectDraw, int fontSizeInPoints, COLORREF
 	}
 
 	// set transparency key to top left
-	hret = FSunPackLib::SetColorKey(pSurface, CLR_INVALID);
+	hret = FSunPackLib::SetColorKey(pSurface, backcolor);
 	ASSERT(SUCCEEDED(hret));
 
 	// Everything fine, pass ownership of surface to m_fontSurface

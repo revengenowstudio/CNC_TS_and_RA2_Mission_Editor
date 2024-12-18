@@ -1393,17 +1393,19 @@ int GetNodeAt(CString& owner, CString& buildingTypeID, int x, int y)
 
 std::unique_ptr<CBitmap> BitmapFromResource(int resource_id)
 {
-	std::unique_ptr<CBitmap> bm(new CBitmap);
-	if (!bm->LoadBitmap(resource_id))
+	auto bm = std::make_unique< CBitmap>();
+	if (!bm->LoadBitmap(resource_id)) {
 		throw BitmapNotFound();
+	}
 	return bm;
 }
 
 std::unique_ptr<CBitmap> BitmapFromFile(const CString& filepath)
 {
-	std::unique_ptr<CBitmap> bm(new CBitmap);
-	if (!bm->LoadBitmap(filepath))
+	auto bm = std::make_unique<CBitmap>();
+	if (!bm->LoadBitmap(filepath)) {
 		throw BitmapNotFound();
+	}
 	return bm;
 }
 

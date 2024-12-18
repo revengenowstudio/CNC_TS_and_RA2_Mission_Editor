@@ -3728,8 +3728,8 @@ void CLoading::FreeAll()
 		try {
 #ifdef NOSURFACES_OBJECTS			
 			if (i->second.bType == PICDATA_TYPE_BMP) {
-				if (i->second.pic != NULL) {
-					((LPDIRECTDRAWSURFACE7)i->second.pic)->Release();
+				if (auto pPic = std::exchange(i->second.pic, nullptr)) {
+					((LPDIRECTDRAWSURFACE7)pPic)->Release();
 				}
 			} else {
 				if (auto pPic = std::exchange(i->second.pic, nullptr)) {

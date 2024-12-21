@@ -179,8 +179,6 @@ CMapData::CMapData()
 	m_noAutoObjectUpdate = FALSE;
 	m_money = 0;
 	m_cursnapshot = -1;
-	fielddata = NULL;
-	fielddata_size = 0;
 	m_IsoSize = 0;
 	isInitialized = FALSE;
 	tiledata = NULL;
@@ -210,9 +208,6 @@ CMapData::~CMapData()
 	tiledata = NULL;
 	if (m_mfd != NULL) delete[] m_mfd;
 	m_mfd = NULL;
-	if (fielddata != NULL) delete[] fielddata;
-	fielddata = NULL;
-	fielddata_size = 0;
 
 	int i;
 
@@ -539,9 +534,7 @@ void CMapData::LoadMap(const std::string& file)
 	errstream << "LoadMap() frees memory\n";
 	errstream.flush();
 
-	if (fielddata != NULL) {
-		delete[] fielddata;
-	}
+	fielddata.clear();
 
 	for (auto i = 0; i < dwSnapShotCount; i++) {
 		delete[] m_snapshots[i].bHeight;
@@ -554,12 +547,10 @@ void CMapData::LoadMap(const std::string& file)
 		delete[] m_snapshots[i].overlaydata;
 		// m_snapshots[i].mapfile.Clear();
 	}
-	if (m_snapshots != NULL) delete[] m_snapshots;
+	if (m_snapshots != NULL) {
+		delete[] m_snapshots;
+	}
 
-
-
-	fielddata = NULL;
-	fielddata_size = 0;
 	m_snapshots = NULL;
 	dwSnapShotCount = 0;
 	m_cursnapshot = -1;
@@ -879,8 +870,7 @@ void CMapData::LoadMap(const std::string& file)
 	errstream << "LoadMap() allocates fielddata\n";
 	errstream.flush();
 
-	fielddata = new(FIELDDATA[(GetIsoSize() + 1) * (GetIsoSize() + 1)]);
-	fielddata_size = (GetIsoSize() + 1) * (GetIsoSize() + 1);
+	fielddata.resize((GetIsoSize() + 1)* (GetIsoSize() + 1));
 
 	errstream << "LoadMap() unpacks data\n";
 	errstream.flush();
@@ -1369,7 +1359,9 @@ void CMapData::SetOverlayAt(DWORD dwPos, BYTE bValue)
 
 BYTE CMapData::GetOverlayAt(DWORD dwPos)
 {
-	if (dwPos > fielddata_size) return 0;
+	if (dwPos > fielddata.size()) {
+		return 0;
+	}
 	return fielddata[dwPos].overlay;
 }
 
@@ -1489,9 +1481,11 @@ void CMapData::UpdateInfantry(BOOL bSave)
 			int spp = sp - 1;
 			if (spp < 0) spp = 0;
 
-			if (spp < SUBPOS_COUNT)
-				if (pos < fielddata_size)
+			if (spp < SUBPOS_COUNT) {
+				if (pos < fielddata.size()) {
 					fielddata[pos].infantry[spp] = iv.size() - 1;
+				}
+			}
 
 			Mini_UpdatePos(x, y, IsMultiplayer());
 
@@ -1554,7 +1548,7 @@ void CMapData::UpdateAircraft(BOOL bSave)
 		int x = atoi(GetParam(sec.Nth(i).second, 4));
 		int y = atoi(GetParam(sec.Nth(i).second, 3));
 		int pos = x + y * GetIsoSize();
-		if (pos < fielddata_size) {
+		if (pos < fielddata.size()) {
 			fielddata[pos].aircraft = i;
 		}
 		Mini_UpdatePos(x, y, IsMultiplayer());
@@ -1602,7 +1596,7 @@ void CMapData::UpdateStructures(BOOL bSave)
 		for (d = 0; d < buildinginfo[bid].h; d++) {
 			for (e = 0; e < buildinginfo[bid].w; e++) {
 				int pos = (x + d) + (y + e) * GetIsoSize();
-				if (pos < fielddata_size) {
+				if (pos < fielddata.size()) {
 					fielddata[pos].structure = i;
 					fielddata[pos].structuretype = bid;
 				}
@@ -1709,7 +1703,7 @@ void CMapData::UpdateUnits(BOOL bSave)
 			int x = atoi(GetParam(sec.Nth(i).second, 4));
 			int y = atoi(GetParam(sec.Nth(i).second, 3));
 			int pos = x + y * GetIsoSize();
-			if (pos < fielddata_size) {
+			if (pos < fielddata.size()) {
 				fielddata[pos].unit = i;
 			}
 			Mini_UpdatePos(x, y, IsMultiplayer());
@@ -1736,7 +1730,7 @@ void CMapData::UpdateWaypoints(BOOL bSave)
 		PosToXY(coord, &x, &y);
 
 		int pos = x + y * GetIsoSize();
-		if (pos < 0 || pos >= fielddata_size) {
+		if (pos < 0 || pos >= fielddata.size()) {
 			continue;
 		}
 		fielddata[pos].waypoint = atoi(id);
@@ -1833,7 +1827,7 @@ void CMapData::UpdateCelltags(BOOL bSave)
 		PosToXY(sec.Nth(i).first, &x, &y);
 
 		int pos = x + y * GetIsoSize();
-		if (pos < fielddata_size) {
+		if (pos < fielddata.size()) {
 			fielddata[pos].celltag = i;
 		}
 	}
@@ -1876,7 +1870,7 @@ void CMapData::DeleteInfantry(DWORD dwIndex)
 		pos--;
 	}
 
-	if (x + y * m_IsoSize < fielddata_size) {
+	if (x + y * m_IsoSize < fielddata.size()) {
 		fielddata[x + y * m_IsoSize].infantry[pos] = -1;
 	}
 
@@ -2024,7 +2018,7 @@ void CMapData::DeleteTerrain(DWORD dwIndex)
 	m_terrain[dwIndex].deleted = 1;
 
 	int pos = x + y * GetIsoSize();
-	if (x + y * m_IsoSize < fielddata_size) {
+	if (x + y * m_IsoSize < fielddata.size()) {
 		fielddata[pos].terrain = -1;
 		fielddata[pos].terraintype = -1;
 	}
@@ -2162,7 +2156,7 @@ BOOL CMapData::AddNode(NODE* lpNode, WORD dwPos)
 
 BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPos)
 {
-	if (dwPos >= fielddata_size) {
+	if (dwPos >= fielddata.size()) {
 		return FALSE;
 	}
 
@@ -2741,7 +2735,7 @@ BOOL CMapData::AddTerrain(LPCTSTR lpType, DWORD dwPos, int suggestedIndex)
 	if (suggestedIndex >= 0 && suggestedIndex < m_terrain.size()) {
 		if (m_terrain[suggestedIndex].deleted) {
 			m_terrain[suggestedIndex] = td;
-			if (dwPos < fielddata_size) {
+			if (dwPos < fielddata.size()) {
 				fielddata[dwPos].terrain = suggestedIndex;
 				fielddata[dwPos].terraintype = terrainid[lpType];
 			}
@@ -2756,7 +2750,7 @@ BOOL CMapData::AddTerrain(LPCTSTR lpType, DWORD dwPos, int suggestedIndex)
 			if (m_terrain[i].deleted) // yep, found one, replace it
 			{
 				m_terrain[i] = td;
-				if (dwPos < fielddata_size) {
+				if (dwPos < fielddata.size()) {
 					fielddata[dwPos].terrain = i;
 					fielddata[dwPos].terraintype = terrainid[lpType];
 				}
@@ -2768,7 +2762,7 @@ BOOL CMapData::AddTerrain(LPCTSTR lpType, DWORD dwPos, int suggestedIndex)
 	if (!bFound) {
 		m_terrain.push_back(td);
 		int pos = x + y * GetIsoSize();
-		if (pos < fielddata_size) {
+		if (pos < fielddata.size()) {
 			fielddata[pos].terrain = m_terrain.size() - 1;
 			fielddata[pos].terraintype = terrainid[lpType];
 		}
@@ -3245,7 +3239,7 @@ void CMapData::UpdateMapFieldData(BOOL bSave)
 		int dwX, dwY;
 		for (dwX = 0; dwX <= m_IsoSize; dwX++) {
 			for (dwY = 0; dwY <= m_IsoSize; dwY++) {
-				/*for(i=0;i<fielddata_size;i++)
+				/*for(i=0;i<fielddata.size();i++)
 				{*/
 				//int dwX=i%m_IsoSize;
 				//int dwY=i/m_IsoSize;
@@ -3736,9 +3730,7 @@ MAPFIELDDATA* CMapData::GetMappackPointer(DWORD dwPos)
 
 void CMapData::CreateMap(DWORD dwWidth, DWORD dwHeight, LPCTSTR lpTerrainType, DWORD dwGroundHeight)
 {
-	if (fielddata != NULL) {
-		delete[] fielddata;
-	}
+	fielddata.clear();
 	int i;
 	for (i = 0; i < dwSnapShotCount; i++) {
 		delete[] m_snapshots[i].bHeight;
@@ -3755,11 +3747,6 @@ void CMapData::CreateMap(DWORD dwWidth, DWORD dwHeight, LPCTSTR lpTerrainType, D
 		delete[] m_snapshots;
 	}
 
-
-
-
-	fielddata = NULL;
-	fielddata_size = 0;
 	m_snapshots = NULL;
 	dwSnapShotCount = 0;
 	m_cursnapshot = -1;
@@ -4088,12 +4075,11 @@ void CMapData::CreateMap(DWORD dwWidth, DWORD dwHeight, LPCTSTR lpTerrainType, D
 	ClearOverlayData();
 
 	isInitialized = TRUE;
-	if (fielddata != NULL) delete[] fielddata;
+	fielddata.clear();
 
 	errstream << "CreateMap() allocates memory\n";
 	errstream.flush();
-	fielddata = new(FIELDDATA[(GetIsoSize() + 1) * (GetIsoSize() + 1)]); // +1 because of some unpacking problems
-	fielddata_size = (GetIsoSize() + 1) * (GetIsoSize() + 1);
+	fielddata.resize((GetIsoSize() + 1)* (GetIsoSize() + 1)); // +1 because of some unpacking problems
 	dwIsoMapSize = 0;
 
 	errstream << "CreateMap() frees m_mfd\n";
@@ -4112,7 +4098,7 @@ void CMapData::CreateMap(DWORD dwWidth, DWORD dwHeight, LPCTSTR lpTerrainType, D
 	errstream.flush();
 
 
-	for (i = 0; i < fielddata_size; i++) {
+	for (i = 0; i < fielddata.size(); i++) {
 		fielddata[i].bHeight = dwGroundHeight;
 	}
 
@@ -4467,7 +4453,7 @@ or if loading maps made with modified tilesets
 BOOL CMapData::CheckMapPackData()
 {
 	int i;
-	for (i = 0; i < fielddata_size; i++) {
+	for (i = 0; i < fielddata.size(); i++) {
 		int gr = fielddata[i].wGround;
 		if (gr != 0xFFFF && gr >= (*tiledata_count))
 			return FALSE;
@@ -4702,7 +4688,7 @@ void CMapData::Redo()
 
 	/*
 	int i;
-	for(i=0;i<fielddata_size;i++)
+	for(i=0;i<fielddata.size();i++)
 	{
 		fielddata[i].bHeight=m_snapshots[m_cursnapshot+1].bHeight[i];
 		fielddata[i].bMapData=m_snapshots[m_cursnapshot+1].bMapData[i];
@@ -4758,7 +4744,7 @@ void CMapData::SmoothAllAt(DWORD dwPos)
 		return;
 	}
 
-	if (dwPos > fielddata_size) {
+	if (dwPos > fielddata.size()) {
 		return;
 	}
 
@@ -4959,7 +4945,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 				for (i = 0; i < 3; i++) {
 					for (e = 0; e < 3; e++) {
 						int pos = dwPos + (i - 1) + (e - 1) * m_IsoSize;
-						if (pos < 0 || pos >= fielddata_size) {
+						if (pos < 0 || pos >= fielddata.size()) {
 							ts[i][e] = 0;
 						} else {
 							FIELDDATA m2 = *GetFielddataAt(pos);
@@ -5969,7 +5955,7 @@ int CMapData::CalcMoneyOnMap()
 {
 	int i;
 	int money = 0;
-	for (i = 0; i < fielddata_size; i++) {
+	for (i = 0; i < fielddata.size(); i++) {
 		FIELDDATA& fd = fielddata[i];
 
 		BYTE& ovrl = fd.overlay;
@@ -6163,11 +6149,11 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	for (i = 0; i < ct_count; i++) DeleteCelltag(0);
 
 
-	FIELDDATA* old_fd = fielddata;
+	auto const old_fd = std::exchange(fielddata, {});
 	int ow = GetWidth();
 	int oh = GetHeight();
 	int os = GetIsoSize();
-	int old_fds = fielddata_size;
+	auto const old_fds = fielddata.size();
 
 	int left = iLeft;
 	int top = iTop;
@@ -6186,11 +6172,10 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		delete[] m_snapshots[i].overlaydata;
 		// m_snapshots[i].mapfile.Clear();
 	}
-	if (m_snapshots != NULL) delete[] m_snapshots;
+	if (m_snapshots != NULL) {
+		delete[] m_snapshots;
+	}
 
-
-	fielddata = NULL;
-	fielddata_size = 0;
 	m_snapshots = NULL;
 	dwSnapShotCount = 0;
 	m_cursnapshot = -1;
@@ -6225,8 +6210,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 	errstream << "ResizeMap() allocates memory\n";
 	errstream.flush();
-	fielddata = new(FIELDDATA[(GetIsoSize() + 1) * (GetIsoSize() + 1)]); // +1 because of some unpacking problems
-	fielddata_size = (GetIsoSize() + 1) * (GetIsoSize() + 1);
+	fielddata.resize((GetIsoSize() + 1)* (GetIsoSize() + 1)); // +1 because of some unpacking problems
 	dwIsoMapSize = 0; // our iso mappack is empty now, as we didn´t load from a file
 
 	errstream << "ResizeMap() frees m_mfd\n";
@@ -6271,7 +6255,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 			if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
 
 			FIELDDATA& fdd = fielddata[x + y * m_IsoSize];
-			FIELDDATA& fdo = old_fd[i + e * os];
+			const FIELDDATA& fdo = old_fd.at(i + e * os);
 
 			fdd.bCliffHack = fdo.bCliffHack;
 			fdd.bHeight = fdo.bHeight;
@@ -6494,8 +6478,6 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	dlg->SetRange(0, m_IsoSize * m_IsoSize);
 	dlg->ShowWindow(SW_SHOW);
 
-	if (old_fd) delete[] old_fd;
-
 	errstream << "Init minimap" << endl;
 	errstream.flush();
 
@@ -6575,7 +6557,7 @@ BOOL CMapData::IsYRMap()
 
 		int yroverlay = g_data.GetInteger("YROverlay", "Begin");
 
-		for (i = 0; i < fielddata_size; i++) {
+		for (i = 0; i < fielddata.size(); i++) {
 			if (fielddata[i].wGround != 0xFFFF && fielddata[i].wGround >= max) {
 				return TRUE;
 			}
@@ -6707,7 +6689,7 @@ BOOL CMapData::AddSmudge(SMUDGE* lpSmudge)
 		if (m_smudges[i].deleted) // yep, found one, replace it
 		{
 			m_smudges[i] = td;
-			if (pos < fielddata_size) {
+			if (pos < fielddata.size()) {
 				fielddata[pos].smudge = i;
 				fielddata[pos].smudgetype = smudgeid[td.type];
 			}
@@ -6720,7 +6702,7 @@ BOOL CMapData::AddSmudge(SMUDGE* lpSmudge)
 	if (!bFound) {
 		m_smudges.push_back(td);
 
-		if (pos < fielddata_size) {
+		if (pos < fielddata.size()) {
 			fielddata[pos].smudge = m_smudges.size() - 1;
 			fielddata[pos].smudgetype = smudgeid[td.type];
 		}
@@ -6741,7 +6723,7 @@ void CMapData::DeleteSmudge(DWORD dwIndex)
 	m_smudges[dwIndex].deleted = 1;
 
 	int pos = x + y * GetIsoSize();
-	if (x + y * m_IsoSize < fielddata_size) {
+	if (x + y * m_IsoSize < fielddata.size()) {
 		fielddata[pos].smudge = -1;
 		fielddata[pos].smudgetype = -1;
 	}

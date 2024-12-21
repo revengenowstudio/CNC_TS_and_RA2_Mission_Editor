@@ -158,7 +158,9 @@ public:
 
 	void SetFielddataAt(DWORD dwPos, FIELDDATA* lpFd)
 	{
-		if (dwPos >= fielddata_size) return;
+		if (dwPos >= fielddata.size()) {
+			return;
+		}
 
 		RemoveOvrlMoney(fielddata[dwPos].overlay, fielddata[dwPos].overlaydata);
 		fielddata[dwPos] = (*lpFd);
@@ -184,7 +186,7 @@ public:
 	void CreateMap(DWORD dwWidth, DWORD dwHeight, LPCTSTR lpTerrainType, DWORD dwGroundHeight);
 	BOOL SetTileAt(DWORD dwPos, DWORD dwID, DWORD dwTile)
 	{
-		if (dwPos > fielddata_size) {
+		if (dwPos > fielddata.size()) {
 			return FALSE;
 		}
 
@@ -223,7 +225,7 @@ public:
 		int height = (char)bHeight;
 		if (height > MAXHEIGHT) height = MAXHEIGHT; // too high else
 		if (height < 0) height = 0;
-		if (dwPos < fielddata_size) fielddata[dwPos].bHeight = height;
+		if (dwPos < fielddata.size()) fielddata[dwPos].bHeight = height;
 	}
 
 
@@ -355,7 +357,7 @@ public:
 
 	const FIELDDATA* GetFielddataAt(DWORD dwPos) const
 	{
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -365,7 +367,7 @@ public:
 
 	FIELDDATA* GetFielddataAt(DWORD dwPos)
 	{
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -376,7 +378,7 @@ public:
 	const FIELDDATA* GetFielddataAt(const MapCoords& pos) const
 	{
 		auto dwPos = GetMapPos(pos);
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -387,7 +389,7 @@ public:
 	FIELDDATA* GetFielddataAt(const MapCoords& pos)
 	{
 		auto dwPos = GetMapPos(pos);
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -494,8 +496,7 @@ private:
 	CIniFile m_mapfile;
 	RECT m_maprect;
 	RECT m_vismaprect;
-	FIELDDATA* fielddata;
-	int fielddata_size;
+	std::vector<FIELDDATA> fielddata;
 	SNAPSHOTDATA* m_snapshots;
 	DWORD dwSnapShotCount;
 	int m_cursnapshot;

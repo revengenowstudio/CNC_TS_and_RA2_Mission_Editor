@@ -42,7 +42,7 @@ void CMapData::SmoothAt(DWORD dwPos, int iSmoothSet, int iLatSet, int iTargetSet
 	for (i = 0; i < 3; i++) {
 		for (e = 0; e < 3; e++) {
 			int pos = dwPos + (i - 1) + (e - 1) * m_IsoSize;
-			if (pos < 0 || pos >= fielddata_size) {
+			if (pos < 0 || pos >= fielddata.size()) {
 				ts[i][e] = 0;
 			} else {
 				FIELDDATA m2 = *GetFielddataAt(pos);

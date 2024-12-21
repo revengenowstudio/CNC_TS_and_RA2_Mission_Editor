@@ -222,10 +222,10 @@ public:
 
 	void SetHeightAt(DWORD dwPos, BYTE bHeight)
 	{
-		int height = (char)bHeight;
-		if (height > MAXHEIGHT) height = MAXHEIGHT; // too high else
-		if (height < 0) height = 0;
-		if (dwPos < fielddata.size()) fielddata[dwPos].bHeight = height;
+		auto const height = std::max(0, std::min<int>(bHeight, MAXHEIGHT));
+		if (dwPos < fielddata.size()) {
+			fielddata[dwPos].bHeight = height;
+		}
 	}
 
 
@@ -348,7 +348,10 @@ public:
 	}
 	INT GetHeightAt(DWORD dwPos) const
 	{
-		return fielddata[dwPos].bHeight;
+		if (dwPos < fielddata.size()) {
+			return fielddata[dwPos].bHeight;
+		}
+		return 0;
 	}
 	INT GetHeightAt(const MapCoords& coords) const
 	{

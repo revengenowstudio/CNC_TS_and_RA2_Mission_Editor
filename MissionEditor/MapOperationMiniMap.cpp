@@ -164,7 +164,7 @@ void CMapData::Mini_UpdatePos(const int i, const int e, bool isMultiplayer)
 		int i, e;
 		for (i = -1; i < 2; i++) {
 			for (e = -1; e < 2; e++) {
-				if (dwPos + i + e * m_IsoSize < fielddata_size) {
+				if (dwPos + i + e * m_IsoSize < fielddata.size()) {
 					int w = GetWaypointAt(dwPos + i + e * m_IsoSize);
 					if (w >= 0) {
 						GetWaypointData(w, &id, &p);

@@ -2737,21 +2737,21 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 	} else if (AD.mode == ACTIONMODE_LOWERTILE) {
 		Map->TakeSnapshot();
 
-		int n, m;
-		for (m = -m_BrushSize_x / 2; m < m_BrushSize_x / 2 + 1; m++) {
-			for (n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
+		for (int m = -m_BrushSize_x / 2; m < m_BrushSize_x / 2 + 1; m++) {
+			for (int n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
 				auto const pos = x + m + (y + n) * Map->GetIsoSize();
 				Map->SetHeightAt(pos, Map->GetHeightAt(pos) - 1);
 			}
 		}
 
-		if (nFlags & MK_CONTROL)
-			for (m = -m_BrushSize_x / 2 - 1; m < m_BrushSize_x / 2 + 2; m++) {
-				for (n = -m_BrushSize_y / 2 - 1; n < m_BrushSize_y / 2 + 2; n++) {
+		if (nFlags & MK_CONTROL) {
+			for (int m = -m_BrushSize_x / 2 - 1; m < m_BrushSize_x / 2 + 2; m++) {
+				for (int n = -m_BrushSize_y / 2 - 1; n < m_BrushSize_y / 2 + 2; n++) {
 					auto const pos = x + m + (y + n) * Map->GetIsoSize();
 					Map->CreateSlopesAt(pos);
 				}
 			}
+		}
 
 		Map->TakeSnapshot();
 		Map->Undo();

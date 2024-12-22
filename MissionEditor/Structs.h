@@ -45,6 +45,13 @@ enum class MouseActionType : unsigned {
 	AddSmudge = 8,
 };
 
+enum class TechnoType : unsigned {
+	Building,
+	Unit,
+	Infantry,
+	Aircraft,
+};
+
 enum class TheaterChar : char
 {
 	T = 'T',
@@ -435,19 +442,19 @@ struct STDOBJECTDATA
 	CString x; // 5
 };
 
+struct TECHNODATA
+{
+	STDOBJECTDATA basic;
+	CString direction;
+	CString tag;
+};
+
 /*
 STRUCTURE
 
 Data for a structure
 */
-struct STRUCTURE {
-	CString house; // 1
-	CString type; // 2
-	CString strength; // 3
-	CString y; // 4
-	CString x; // 5
-	CString direction; // 6
-	CString tag; // 7
+struct STRUCTURE: TECHNODATA {
 	CString flag1; // 8
 	CString flag2; // 9
 	CString energy; // 10
@@ -481,16 +488,9 @@ struct INFANTRY{};
 
 Data for an infantry unit
 */
-struct INFANTRY {
-	CString house; // 1
-	CString type; // 2
-	CString strength; // 3
-	CString y; // 4
-	CString x; // 5
+struct INFANTRY : TECHNODATA {
 	CString pos; // 6
 	CString action; // 7
-	CString direction; // 8
-	CString tag; // 9
 	CString flag1; // 10
 	CString group; // 11
 	CString flag3; // 12
@@ -499,15 +499,8 @@ struct INFANTRY {
 	unsigned deleted : 1;
 };
 
-struct UNIT {
-	CString house; // 1
-	CString type; // 2
-	CString strength; // 3
-	CString y; // 4
-	CString x; // 5
-	CString direction; // 6
+struct UNIT : TECHNODATA {
 	CString action; // 7
-	CString tag; // 8
 	CString flag1; // 9
 	CString group; // 10
 	CString flag3; // 11
@@ -517,17 +510,8 @@ struct UNIT {
 	unsigned deleted : 1;
 };
 
-
-
-struct AIRCRAFT {
-	CString house; // 1
-	CString type; // 2
-	CString strength; // 3
-	CString y; // 4
-	CString x; // 5
-	CString direction; // 6
+struct AIRCRAFT : TECHNODATA {
 	CString action; // 7
-	CString tag; // 8
 	CString flag1; // 9
 	CString group; // 10
 	CString flag3; // 11

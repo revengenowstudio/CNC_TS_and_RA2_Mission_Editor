@@ -251,10 +251,18 @@ public:
 	BOOL AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");
 	void GetCelltagData(DWORD dwIndex, CString* lpTag, DWORD* lpdwPos) const;
 	BOOL AddCelltag(LPCTSTR lpTag, DWORD dwPos);
+
+	bool ParseBasicTechnoData(const CString& rawText, STDOBJECTDATA& data) const;
+	bool ParseTechnoData(const CString& rawText, const TechnoType type, TECHNODATA& data) const;
 	CString GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const;
 	CString GetUnitData(DWORD dwIndex, UNIT* lpUnit) const;
+	bool ParseInfantryData(const CString& rawText, INFANTRY& infantry) const;
+	bool ParseUnitData(const CString& rawText, UNIT& unit) const;
+	bool ParseAircraftData(const CString& rawText, AIRCRAFT& aircraft) const;
+	bool ParseStructureData(const CString& rawText, STRUCTURE& structure) const;
 	void GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const;
 	void GetStdInfantryData(DWORD dwIndex, STDOBJECTDATA* lpStdInfantry) const;
+
 	INT GetUnitTypeID(LPCTSTR lpType);
 	void InitializeUnitTypes();
 	BOOL AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");

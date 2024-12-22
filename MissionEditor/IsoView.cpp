@@ -2205,7 +2205,9 @@ void CIsoView::HandleProperties(int n, int type)
 {
 	CIniFile& ini = Map->GetIniFile();
 
-	if (n < 0) return;
+	if (n < 0) {
+		return;
+	}
 	switch (type) {
 		case 0:
 		{
@@ -2222,18 +2224,20 @@ void CIsoView::HandleProperties(int n, int type)
 
 			CInfantrie dlg(this);
 			char tmp[255];
-			dlg.Init((LPCTSTR)data.house, (LPCTSTR)data.strength, (LPCTSTR)data.action,
-				(LPCTSTR)data.direction, (LPCTSTR)data.tag, (LPCTSTR)data.flag1,
-				(LPCTSTR)data.group, (LPCTSTR)data.flag3, (LPCTSTR)data.flag4, (LPCTSTR)data.flag5);
+			dlg.Init(data.basic.house, data.basic.strength, data.action,
+				data.direction, data.tag, data.flag1,
+				data.group, data.flag3, data.flag4, data.flag5);
 
 			int res = dlg.DoModal();
-			if (res == IDCANCEL) return;
+			if (res == IDCANCEL) {
+				return;
+			}
 
 			data.action = dlg.m_action;
-			data.strength = dlg.m_strength;
+			data.basic.strength = dlg.m_strength;
 			data.tag = dlg.m_tag;
 			data.direction = dlg.m_direction;
-			data.house = dlg.m_house;
+			data.basic.house = dlg.m_house;
 			data.flag1 = dlg.m_flag1;
 			data.group = dlg.m_group;
 			data.flag3 = dlg.m_flag3;
@@ -2257,19 +2261,21 @@ void CIsoView::HandleProperties(int n, int type)
 
 			CBuilding dlg(this);
 			char tmp[255];
-			dlg.Init((LPCTSTR)data.house, (LPCTSTR)data.strength, (LPCTSTR)data.direction, (LPCTSTR)data.tag,
-				(LPCTSTR)data.flag1, (LPCTSTR)data.flag2, (LPCTSTR)data.energy,
-				(LPCTSTR)data.upgradecount, (LPCTSTR)data.spotlight, (LPCTSTR)data.upgrade1, (LPCTSTR)data.upgrade2,
-				(LPCTSTR)data.upgrade3, (LPCTSTR)data.flag3, (LPCTSTR)data.flag4);
-			dlg.m_type = data.type;
+			dlg.Init(data.basic.house, data.basic.strength, data.direction, data.tag,
+				data.flag1, data.flag2, data.energy,
+				data.upgradecount, data.spotlight, data.upgrade1, data.upgrade2,
+				data.upgrade3, data.flag3, data.flag4);
+			dlg.m_type = data.basic.type;
 
 			int res = dlg.DoModal();
-			if (res == IDCANCEL) return;
+			if (res == IDCANCEL) {
+				return;
+			}
 
-			data.strength = dlg.m_strength;
+			data.basic.strength = dlg.m_strength;
 			data.tag = dlg.m_tag;
 			data.direction = dlg.m_direction;
-			data.house = dlg.m_house;
+			data.basic.house = dlg.m_house;
 			data.spotlight = dlg.m_spotlight;
 			data.flag1 = dlg.m_flag1;
 			data.flag2 = dlg.m_flag2;
@@ -2300,17 +2306,17 @@ void CIsoView::HandleProperties(int n, int type)
 
 			CAircraft dlg(this);
 			char tmp[255];
-			dlg.Init(data.house, data.strength, data.direction, data.action,
+			dlg.Init(data.basic.house, data.basic.strength, data.direction, data.action,
 				data.tag, data.flag1, data.group, data.flag3, data.flag4);
 
 			int res = dlg.DoModal();
 			if (res == IDCANCEL) return;
 
 			data.action = dlg.m_action;
-			data.strength = dlg.m_strength;
+			data.basic.strength = dlg.m_strength;
 			data.tag = dlg.m_tag;
 			data.direction = dlg.m_direction;
-			data.house = dlg.m_house;
+			data.basic.house = dlg.m_house;
 			data.flag1 = dlg.m_flag1;
 			data.group = dlg.m_group;
 			data.flag3 = dlg.m_flag3;
@@ -2333,17 +2339,19 @@ void CIsoView::HandleProperties(int n, int type)
 
 			CUnit dlg(this);
 			char tmp[255];
-			dlg.Init(data.house, data.strength, data.direction, data.action,
+			dlg.Init(data.basic.house, data.basic.strength, data.direction, data.action,
 				data.tag, data.flag1, data.group, data.flag3, data.flag4, data.flag5, data.flag6);
 
 			int res = dlg.DoModal();
-			if (res == IDCANCEL) return;
+			if (res == IDCANCEL) {
+				return;
+			}
 
 			data.action = dlg.m_action;
-			data.strength = dlg.m_strength;
+			data.basic.strength = dlg.m_strength;
 			data.tag = dlg.m_tag;
 			data.direction = dlg.m_direction;
-			data.house = dlg.m_house;
+			data.basic.house = dlg.m_house;
 			data.flag1 = dlg.m_flag1;
 			data.group = dlg.m_group;
 			data.flag3 = dlg.m_flag3;
@@ -2994,8 +3002,8 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 			{
 				INFANTRY infantry;
 				Map->GetInfantryData(m_id, &infantry);
-				infantry.x = strX;
-				infantry.y = strY;
+				infantry.basic.x = strX;
+				infantry.basic.y = strY;
 				infantry.pos = "-1";
 
 				if ((nFlags != MK_SHIFT)) {
@@ -3010,8 +3018,8 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 			{
 				STRUCTURE structure;
 				Map->GetStructureData(m_id, &structure);
-				structure.x = strX;
-				structure.y = strY;
+				structure.basic.x = strX;
+				structure.basic.y = strY;
 
 				if ((nFlags != MK_SHIFT)) {
 					Map->DeleteStructure(m_id);
@@ -3025,8 +3033,8 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 			{
 				AIRCRAFT aircraft;
 				Map->GetAircraftData(m_id, &aircraft);
-				aircraft.x = strX;
-				aircraft.y = strY;
+				aircraft.basic.x = strX;
+				aircraft.basic.y = strY;
 
 
 				if ((nFlags != MK_SHIFT)) {
@@ -3041,8 +3049,8 @@ void CIsoView::OnLButtonUp(UINT nFlags, CPoint point)
 			{
 				UNIT unit;
 				Map->GetUnitData(m_id, &unit);
-				unit.x = strX;
-				unit.y = strY;
+				unit.basic.x = strX;
+				unit.basic.y = strY;
 
 				if (!(nFlags == MK_SHIFT)) {
 					Map->DeleteUnit(m_id);
@@ -4919,7 +4927,7 @@ DWORD CIsoView::PlaceCurrentObjectAt(int x, int y)
 				STRUCTURE structure;
 				auto const id = Map->GetStructureData(t, &structure);
 				Map->DeleteStructure(t);
-				structure.house = AD.data_s;
+				structure.basic.house = AD.data_s;
 				Map->AddStructure(&structure, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
@@ -4928,7 +4936,7 @@ DWORD CIsoView::PlaceCurrentObjectAt(int x, int y)
 				UNIT unit;
 				auto const id = Map->GetUnitData(t, &unit);
 				Map->DeleteUnit(t);
-				unit.house = AD.data_s;
+				unit.basic.house = AD.data_s;
 				Map->AddUnit(&unit, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
@@ -4937,7 +4945,7 @@ DWORD CIsoView::PlaceCurrentObjectAt(int x, int y)
 				AIRCRAFT aircraft;
 				auto const id = Map->GetAircraftData(t, &aircraft);
 				Map->DeleteAircraft(t);
-				aircraft.house = AD.data_s;
+				aircraft.basic.house = AD.data_s;
 				Map->AddAircraft(&aircraft, nullptr, nullptr, 0, std::move(id));
 				bchanged = TRUE;
 			}
@@ -4948,7 +4956,7 @@ DWORD CIsoView::PlaceCurrentObjectAt(int x, int y)
 					INFANTRY infantry;
 					Map->GetInfantryData(t, &infantry);
 					Map->DeleteInfantry(t);
-					infantry.house = AD.data_s;
+					infantry.basic.house = AD.data_s;
 					Map->AddInfantry(&infantry, t);
 					bchanged = TRUE;
 				}
@@ -5898,10 +5906,10 @@ void CIsoView::DrawMap()
 				UNIT obj;
 				Map->GetUnitData(m.unit, &obj);
 
-				COLORREF c = GetColor(obj.house);
+				COLORREF c = GetColor(obj.basic.house);
 
 				auto const facing = atoi(obj.direction) / 32;
-				auto const imageId = theApp.m_loading->GetArtID(obj.type);
+				auto const imageId = theApp.m_loading->GetArtID(obj.basic.type);
 				CString lpPicFile = GetUnitPictureFilename(imageId, facing);
 
 #ifndef NOSURFACES
@@ -5913,9 +5921,9 @@ void CIsoView::DrawMap()
 				}
 
 				if (p.pic == NULL || lpPicFile.GetLength() == 0) {
-					if (!missingimages[obj.type]) {
+					if (!missingimages[obj.basic.type]) {
 						SetError("Loading graphics");
-						theApp.m_loading->LoadUnitGraphic(obj.type);
+						theApp.m_loading->LoadUnitGraphic(obj.basic.type);
 						lpPicFile = GetUnitPictureFilename(imageId, facing);
 						if (!lpPicFile.IsEmpty()) {
 							p = pics[lpPicFile];
@@ -5928,7 +5936,7 @@ void CIsoView::DrawMap()
 						// TextOut(drawx+f_x/4,drawy+f_y/4, obj.type,c);
 						m_texts_to_render.push_back({ obj.type, drawCoords.x + f_x / 4, drawCoords.y + f_y / 4, m_color_converter->GetColor(c) });
 #endif
-						missingimages[obj.type] = TRUE;
+						missingimages[obj.basic.type] = TRUE;
 					}
 				}
 
@@ -5951,10 +5959,10 @@ void CIsoView::DrawMap()
 				AIRCRAFT obj;
 				Map->GetAircraftData(m.aircraft, &obj);
 
-				COLORREF c = GetColor(obj.house);
+				COLORREF c = GetColor(obj.basic.house);
 
 				auto const facing = atoi(obj.direction) / 32;
-				CString lpPicFile = GetUnitPictureFilename(theApp.m_loading->GetArtID(obj.type), facing);
+				CString lpPicFile = GetUnitPictureFilename(theApp.m_loading->GetArtID(obj.basic.type), facing);
 
 #ifndef NOSURFACES
 				DrawCell(drawCoords.x, drawCoords.y, 1, 1, c);
@@ -5965,10 +5973,10 @@ void CIsoView::DrawMap()
 				}
 
 				if (p.pic == NULL) {
-					if (!missingimages[obj.type]) {
+					if (!missingimages[obj.basic.type]) {
 						SetError("Loading graphics");
-						theApp.m_loading->LoadUnitGraphic(obj.type);
-						lpPicFile = GetUnitPictureFilename(theApp.m_loading->GetArtID(obj.type), facing);
+						theApp.m_loading->LoadUnitGraphic(obj.basic.type);
+						lpPicFile = GetUnitPictureFilename(theApp.m_loading->GetArtID(obj.basic.type), facing);
 						if (!lpPicFile.IsEmpty()) {
 							p = pics[lpPicFile];
 						}
@@ -5980,7 +5988,7 @@ void CIsoView::DrawMap()
 						//TextOut(drawx+f_x/4,drawy+f_y/4, obj.type,c);
 						m_texts_to_render.push_back({ obj.type, drawCoords.x + f_x / 4, drawCoords.y + f_y / 4, m_color_converter->GetColor(c) });
 #endif
-						missingimages[obj.type] = TRUE;
+						missingimages[obj.basic.type] = TRUE;
 					}
 				}
 
@@ -6012,11 +6020,11 @@ void CIsoView::DrawMap()
 					//errstream.flush();
 
 
-					COLORREF c = GetColor(obj.house);
+					COLORREF c = GetColor(obj.basic.house);
 
 					int dir = (7 - atoi(obj.direction) / 32) % 8;
 
-					auto const imageId = theApp.m_loading->GetArtID(obj.type);
+					auto const imageId = theApp.m_loading->GetArtID(obj.basic.type);
 					CString lpPicFile = GetUnitPictureFilename(imageId, dir);
 #ifndef NOSURFACES
 					DrawCell(drawCoords.x, drawCoords.y, 1, 1, c);
@@ -6038,9 +6046,9 @@ void CIsoView::DrawMap()
 					}
 
 					if (p.pic == NULL) {
-						if (!missingimages[obj.type]) {
+						if (!missingimages[obj.basic.type]) {
 							SetError("Loading graphics");
-							theApp.m_loading->LoadUnitGraphic(obj.type);
+							theApp.m_loading->LoadUnitGraphic(obj.basic.type);
 							lpPicFile = GetUnitPictureFilename(imageId, dir);
 							if (!lpPicFile.IsEmpty()) {
 								p = pics[lpPicFile];
@@ -6053,7 +6061,7 @@ void CIsoView::DrawMap()
 							// TextOut(drawx+f_x/4,drawy+f_y/4, obj.type,c);
 							m_texts_to_render.push_back({ obj.type, drawCoordsInf.x + f_x / 4, drawCoordsInf.y + f_y / 4, RGB(0,0,0) });
 #endif
-							missingimages[obj.type] = TRUE;
+							missingimages[obj.basic.type] = TRUE;
 						}
 					}
 

@@ -1468,21 +1468,9 @@ void CMapData::UpdateInfantry(BOOL bSave)
 			int pos = x + y * GetIsoSize();
 
 			INFANTRY id;
+			ParseInfantryData(data, id);
+
 			id.deleted = 0;
-			id.house = GetParam(data, 0);
-			id.type = GetParam(data, 1);
-			id.strength = GetParam(data, 2);
-			id.y = GetParam(data, 3);
-			id.x = GetParam(data, 4);
-			id.pos = GetParam(data, 5);
-			id.action = GetParam(data, 6);
-			id.direction = GetParam(data, 7);
-			id.tag = GetParam(data, 8);
-			id.flag1 = GetParam(data, 9);
-			id.group = GetParam(data, 10);
-			id.flag3 = GetParam(data, 11);
-			id.flag4 = GetParam(data, 12);
-			id.flag5 = GetParam(data, 13);
 
 			iv.push_back(id);
 
@@ -1520,13 +1508,12 @@ void CMapData::UpdateInfantry(BOOL bSave)
 
 	int count = 0;
 	for (i = 0; i < iv.size(); i++) {
-		INFANTRY& id = iv[i];
-		if (!id.deleted) {
-			INFANTRY& infantry = id;
+		const INFANTRY& infantry = iv[i];
+		if (!infantry.deleted) {
 
 			CString value;
-			value = infantry.house + "," + infantry.type + "," + infantry.strength + "," + infantry.y +
-				"," + infantry.x + "," + infantry.pos + "," + infantry.action + "," + infantry.direction + "," +
+			value = infantry.basic.house + "," + infantry.basic.type + "," + infantry.basic.strength + "," + infantry.basic.y +
+				"," + infantry.basic.x + "," + infantry.pos + "," + infantry.action + "," + infantry.direction + "," +
 				infantry.tag + "," + infantry.flag1 + "," + infantry.group + "," + infantry.flag3 + "," +
 				infantry.flag4 + "," + infantry.flag5;
 
@@ -1868,8 +1855,8 @@ void CMapData::DeleteInfantry(DWORD dwIndex)
 
 	m_infantry[dwIndex].deleted = 1;
 
-	int x = atoi(m_infantry[dwIndex].x);
-	int y = atoi(m_infantry[dwIndex].y);
+	int x = atoi(m_infantry[dwIndex].basic.x);
+	int y = atoi(m_infantry[dwIndex].basic.y);
 	int pos = atoi(m_infantry[dwIndex].pos);
 
 	if (pos > 0) {
@@ -2087,23 +2074,9 @@ CString CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
 
 	auto const& [id, data] = section.Nth(dwIndex);
 
-	lpStructure->house = GetParam(data, 0);
-	lpStructure->type = GetParam(data, 1);
-	lpStructure->strength = GetParam(data, 2);
-	lpStructure->y = GetParam(data, 3);
-	lpStructure->x = GetParam(data, 4);
-	lpStructure->direction = GetParam(data, 5);
-	lpStructure->tag = GetParam(data, 6);
-	lpStructure->flag1 = GetParam(data, 7);
-	lpStructure->flag2 = GetParam(data, 8);
-	lpStructure->energy = GetParam(data, 9);
-	lpStructure->upgradecount = GetParam(data, 10);
-	lpStructure->spotlight = GetParam(data, 11);
-	lpStructure->upgrade1 = GetParam(data, 12);
-	lpStructure->upgrade2 = GetParam(data, 13);
-	lpStructure->upgrade3 = GetParam(data, 14);
-	lpStructure->flag3 = GetParam(data, 15);
-	lpStructure->flag4 = GetParam(data, 16);
+	if (!ParseStructureData(data, *lpStructure)) {
+		return {};
+	}
 
 	return id;
 }
@@ -2169,7 +2142,7 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpT
 	INFANTRY infantry;
 	if (lpInfantry != NULL) {
 		infantry = *lpInfantry;
-		dwPos = atoi(infantry.x) + atoi(infantry.y) * Map->GetIsoSize();
+		dwPos = atoi(infantry.basic.x) + atoi(infantry.basic.y) * Map->GetIsoSize();
 
 		// MW Bugfix: not checking if infantry.pos does already exist caused crashes with user scripts!
 		if (GetInfantryAt(dwPos, atoi(infantry.pos)) >= 0) {
@@ -2190,12 +2163,12 @@ BOOL CMapData::AddInfantry(INFANTRY* lpInfantry, int suggestedIndex, LPCTSTR lpT
 		infantry.flag3 = "0";
 		infantry.flag4 = "1";
 		infantry.flag5 = "0";
-		infantry.strength = "256";
-		infantry.house = lpHouse;
 		infantry.pos = "-1";
-		infantry.type = lpType;
-		infantry.x = cx;
-		infantry.y = cy;
+		infantry.basic.strength = "256";
+		infantry.basic.house = lpHouse;
+		infantry.basic.type = lpType;
+		infantry.basic.x = cx;
+		infantry.basic.y = cy;
 
 
 	}
@@ -2324,6 +2297,11 @@ BOOL CMapData::AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType, LPCTSTR lpHo
 		itoa(dwPos % Map->GetIsoSize(), cx, 10);
 		itoa(dwPos / Map->GetIsoSize(), cy, 10);
 
+		structure.basic.strength = "256";
+		structure.basic.house = lpHouse;
+		structure.basic.type = lpType;
+		structure.basic.x = cx;
+		structure.basic.y = cy;
 		structure.tag = "None";
 		structure.direction = "0";
 		structure.flag1 = "1";
@@ -2336,11 +2314,6 @@ BOOL CMapData::AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType, LPCTSTR lpHo
 		structure.upgrade2 = "None";
 		structure.upgrade3 = "None";
 		structure.upgradecount = "0";
-		structure.strength = "256";
-		structure.house = lpHouse;
-		structure.type = lpType;
-		structure.x = cx;
-		structure.y = cy;
 
 
 	}
@@ -2353,8 +2326,8 @@ BOOL CMapData::AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType, LPCTSTR lpHo
 	}
 
 	CString value;
-	value = structure.house + "," + structure.type + "," + structure.strength + "," + structure.y +
-		"," + structure.x + "," + structure.direction + "," + structure.tag + "," + structure.flag1 + "," +
+	value = structure.basic.house + "," + structure.basic.type + "," + structure.basic.strength + "," + structure.basic.y +
+		"," + structure.basic.x + "," + structure.direction + "," + structure.tag + "," + structure.flag1 + "," +
 		structure.flag2 + "," + structure.energy + "," + structure.upgradecount + "," + structure.spotlight + ","
 		+ structure.upgrade1 + "," + structure.upgrade2 + "," + structure.upgrade3 + "," + structure.flag3 + "," + structure.flag4;
 
@@ -2426,22 +2399,8 @@ INT CMapData::GetUnitTypeID(LPCTSTR lpType)
 
 void CMapData::GetStdInfantryData(DWORD dwIndex, STDOBJECTDATA* lpStdInfantry) const
 {
-	/*CString data=*m_mapfile.sections["Infantry"].GetValue(dwIndex);
-
-	lpStdInfantry->house=GetParam(data, 0);
-	lpStdInfantry->type=GetParam(data, 1);
-	lpStdInfantry->strength=atoi(GetParam(data, 2));
-	lpStdInfantry->y=GetParam(data, 3);
-	lpStdInfantry->x=atoi(GetParam(data, 4));*/
-
-	lpStdInfantry->house = m_infantry[dwIndex].house;
-	lpStdInfantry->type = m_infantry[dwIndex].type;
-	lpStdInfantry->strength = m_infantry[dwIndex].strength;
-	lpStdInfantry->y = m_infantry[dwIndex].y;
-	lpStdInfantry->x = m_infantry[dwIndex].x;
-
+	*lpStdInfantry = m_infantry[dwIndex].basic;
 }
-
 void CMapData::GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const
 {
 	ASSERT(dwIndex < m_infantry.size());
@@ -2475,24 +2434,9 @@ void CMapData::GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const
 	/*if(dwIndex>=m_mapfile.sections["Infantry"].values.size()) return;
 
 	CString data=*m_mapfile.sections["Infantry"].GetValue(dwIndex);
-
-	lpInfantry->house=GetParam(data, 0);
-	lpInfantry->type=GetParam(data, 1);
-	lpInfantry->strength=GetParam(data, 2);
-	lpInfantry->y=GetParam(data, 3);
-	lpInfantry->x=GetParam(data, 4);
-	lpInfantry->pos=GetParam(data, 5);
-	lpInfantry->action=GetParam(data, 6);
-	lpInfantry->direction=GetParam(data, 7);
-	lpInfantry->tag=GetParam(data, 8);
-	lpInfantry->flag1=GetParam(data, 9);
-	lpInfantry->flag2=GetParam(data, 10);
-	lpInfantry->flag3=GetParam(data, 11);
-	lpInfantry->flag4=GetParam(data, 12);
-	lpInfantry->flag5=GetParam(data, 13);*/
+*/
 
 }
-
 CString CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
 {
 	auto const& section = m_mapfile.GetSection("Units");
@@ -2502,24 +2446,12 @@ CString CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
 
 	auto const& [id, data] = section.Nth(dwIndex);
 
-	lpUnit->house = GetParam(data, 0);
-	lpUnit->type = GetParam(data, 1);
-	lpUnit->strength = GetParam(data, 2);
-	lpUnit->y = GetParam(data, 3);
-	lpUnit->x = GetParam(data, 4);
-	lpUnit->direction = GetParam(data, 5);
-	lpUnit->action = GetParam(data, 6);
-	lpUnit->tag = GetParam(data, 7);
-	lpUnit->flag1 = GetParam(data, 8);
-	lpUnit->group = GetParam(data, 9);
-	lpUnit->flag3 = GetParam(data, 10);
-	lpUnit->flag4 = GetParam(data, 11);
-	lpUnit->flag5 = GetParam(data, 12);
-	lpUnit->flag6 = GetParam(data, 13);
+	if (!ParseUnitData(data, *lpUnit)) {
+		return {};
+	}
 
 	return id;
 }
-
 CString CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
 {
 	auto const& section = m_mapfile.GetSection("Aircraft");
@@ -2529,20 +2461,116 @@ CString CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
 
 	auto const& [id, data] = section.Nth(dwIndex);
 
-	lpAircraft->house = GetParam(data, 0);
-	lpAircraft->type = GetParam(data, 1);
-	lpAircraft->strength = GetParam(data, 2);
-	lpAircraft->y = GetParam(data, 3);
-	lpAircraft->x = GetParam(data, 4);
-	lpAircraft->direction = GetParam(data, 5);
-	lpAircraft->action = GetParam(data, 6);
-	lpAircraft->tag = GetParam(data, 7);
-	lpAircraft->flag1 = GetParam(data, 8);
-	lpAircraft->group = GetParam(data, 9);
-	lpAircraft->flag3 = GetParam(data, 10);
-	lpAircraft->flag4 = GetParam(data, 11);
+	if (!ParseAircraftData(data, *lpAircraft)) {
+		return {};
+	}
 
 	return id;
+}
+
+bool CMapData::ParseInfantryData(const CString& rawText, INFANTRY& infantry) const
+{
+	if (!ParseTechnoData(rawText, TechnoType::Infantry, infantry)) {
+		return false;
+	}
+	infantry.pos = GetParam(rawText, 5);
+	infantry.action = GetParam(rawText, 6);
+	infantry.flag1 = GetParam(rawText, 9);
+	infantry.group = GetParam(rawText, 10);
+	infantry.flag3 = GetParam(rawText, 11);
+	infantry.flag4 = GetParam(rawText, 12);
+	infantry.flag5 = GetParam(rawText, 13);
+
+	return true;
+}
+bool CMapData::ParseUnitData(const CString& rawText, UNIT& unit) const
+{
+	if (!ParseTechnoData(rawText, TechnoType::Unit, unit)) {
+		return false;
+	}
+	unit.action = GetParam(rawText, 6);
+	unit.flag1 = GetParam(rawText, 8);
+	unit.group = GetParam(rawText, 9);
+	unit.flag3 = GetParam(rawText, 10);
+	unit.flag4 = GetParam(rawText, 11);
+	unit.flag5 = GetParam(rawText, 12);
+	unit.flag6 = GetParam(rawText, 13);
+
+	return true;
+}
+bool CMapData::ParseAircraftData(const CString& rawText, AIRCRAFT& aircraft) const
+{
+	if (!ParseTechnoData(rawText, TechnoType::Aircraft, aircraft)) {
+		return false;
+	}
+	aircraft.action = GetParam(rawText, 6);
+	aircraft.flag1 = GetParam(rawText, 8);
+	aircraft.group = GetParam(rawText, 9);
+	aircraft.flag3 = GetParam(rawText, 10);
+	aircraft.flag4 = GetParam(rawText, 11);
+
+	return true;
+}
+bool CMapData::ParseStructureData(const CString& rawText, STRUCTURE& structure) const
+{
+	if (!ParseTechnoData(rawText, TechnoType::Building, structure)) {
+		return false;
+	}
+	structure.flag1 = GetParam(rawText, 7);
+	structure.flag2 = GetParam(rawText, 8);
+	structure.energy = GetParam(rawText, 9);
+	structure.upgradecount = GetParam(rawText, 10);
+	structure.spotlight = GetParam(rawText, 11);
+	structure.upgrade1 = GetParam(rawText, 12);
+	structure.upgrade2 = GetParam(rawText, 13);
+	structure.upgrade3 = GetParam(rawText, 14);
+	structure.flag3 = GetParam(rawText, 15);
+	structure.flag4 = GetParam(rawText, 16);
+
+	return true;
+}
+
+bool CMapData::ParseBasicTechnoData(const CString& rawText, STDOBJECTDATA& data) const
+{
+	if (rawText.IsEmpty()) {
+		return false;
+	}
+	data.house = GetParam(rawText, 0);
+	data.type = GetParam(rawText, 1);
+	data.strength = GetParam(rawText, 2);
+	data.y = GetParam(rawText, 3);
+	data.x = GetParam(rawText, 4);
+	return true;
+}
+
+bool CMapData::ParseTechnoData(const CString& rawText, const TechnoType type, TECHNODATA& data) const
+{
+	if (!ParseBasicTechnoData(rawText, data.basic)) {
+		return {};
+	}
+	switch (type)
+	{
+	case TechnoType::Building:
+		data.direction = GetParam(rawText, 5);
+		data.tag = GetParam(rawText, 6);
+		break;
+	case TechnoType::Infantry:
+		data.direction = GetParam(rawText, 7);
+		data.tag = GetParam(rawText, 8);
+		break;
+	case TechnoType::Unit:
+		data.direction = GetParam(rawText, 5);
+		data.tag = GetParam(rawText, 7);
+		break;
+	case TechnoType::Aircraft:
+		data.direction = GetParam(rawText, 5);
+		data.tag = GetParam(rawText, 7);
+		break;
+	default:
+		break;
+	}
+
+	return true;
 }
 
 BOOL CMapData::AddCelltag(LPCTSTR lpTag, DWORD dwPos)
@@ -2596,14 +2624,14 @@ BOOL CMapData::AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType, LPCTSTR lpHouse
 		itoa(dwPos % GetIsoSize(), sx, 10);
 		itoa(dwPos / GetIsoSize(), sy, 10);
 
-		aircraft.type = lpType;
-		aircraft.house = lpHouse;
+		aircraft.basic.type = lpType;
+		aircraft.basic.house = lpHouse;
+		aircraft.basic.strength = "256";
+		aircraft.basic.x = sx;
+		aircraft.basic.y = sy;
 		aircraft.action = "Guard";
 		aircraft.tag = "None";
 		aircraft.direction = "0";
-		aircraft.strength = "256";
-		aircraft.x = sx;
-		aircraft.y = sy;
 		aircraft.flag1 = "0";
 		aircraft.group = "-1";
 		aircraft.flag3 = "1";
@@ -2617,8 +2645,8 @@ BOOL CMapData::AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType, LPCTSTR lpHouse
 	}
 
 	CString value;
-	value = aircraft.house + "," + aircraft.type + "," + aircraft.strength + "," + aircraft.y + "," +
-		aircraft.x + "," + aircraft.direction + "," + aircraft.action + "," + aircraft.tag + ","
+	value = aircraft.basic.house + "," + aircraft.basic.type + "," + aircraft.basic.strength + "," + aircraft.basic.y + "," +
+		aircraft.basic.x + "," + aircraft.direction + "," + aircraft.action + "," + aircraft.tag + ","
 		+ aircraft.flag1 + "," + aircraft.group + "," + aircraft.flag3 + "," + aircraft.flag4;
 
 	m_mapfile.AddSection("Aircraft").InsertOrAssign(id, value);
@@ -2641,14 +2669,14 @@ BOOL CMapData::AddUnit(UNIT* lpUnit, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPo
 		itoa(dwPos % GetIsoSize(), sx, 10);
 		itoa(dwPos / GetIsoSize(), sy, 10);
 
-		unit.type = lpType;
-		unit.house = lpHouse;
+		unit.basic.type = lpType;
+		unit.basic.house = lpHouse;
+		unit.basic.strength = "256";
+		unit.basic.x = sx;
+		unit.basic.y = sy;
 		unit.action = "Guard";
 		unit.tag = "None";
 		unit.direction = "0";
-		unit.strength = "256";
-		unit.x = sx;
-		unit.y = sy;
 		unit.flag1 = "0";
 		unit.group = "-1";
 		unit.flag3 = "0";
@@ -2665,8 +2693,8 @@ BOOL CMapData::AddUnit(UNIT* lpUnit, LPCTSTR lpType, LPCTSTR lpHouse, DWORD dwPo
 	}
 
 	CString value;
-	value = unit.house + "," + unit.type + "," + unit.strength + "," + unit.y + "," +
-		unit.x + "," + unit.direction + "," + unit.action + "," + unit.tag + ","
+	value = unit.basic.house + "," + unit.basic.type + "," + unit.basic.strength + "," + unit.basic.y + "," +
+		unit.basic.x + "," + unit.direction + "," + unit.action + "," + unit.tag + ","
 		+ unit.flag1 + "," + unit.group + "," + unit.flag3 + "," + unit.flag4 + "," + unit.flag5 + "," + unit.flag6;
 
 	m_mapfile.AddSection("Units").InsertOrAssign(id, value);
@@ -6092,52 +6120,50 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	int ct_count = GetCelltagCount();
 	DWORD* ct_pos = new(DWORD[GetCelltagCount()]);
 
-	int i;
-
 	// Now copy the objects into above arrays and delete them from map
-	for (i = 0; i < inf_count; i++) {
+	for (int i = 0; i < inf_count; i++) {
 		INFANTRY obj;
 		GetInfantryData(i, &obj);
 		inf[i] = obj;
 	}
-	for (i = inf_count - 1; i >= 0; i--)
+	for (int i = inf_count - 1; i >= 0; i--)
 		DeleteInfantry(i);
 
-	for (i = 0; i < air_count; i++) {
+	for (int i = 0; i < air_count; i++) {
 		AIRCRAFT obj;
 		GetAircraftData(i, &obj);
 
 		air[i] = obj;
 	}
-	for (i = air_count - 1; i >= 0; i--)
+	for (int i = air_count - 1; i >= 0; i--)
 		DeleteAircraft(i);
 
-	for (i = 0; i < str_count; i++) {
+	for (int i = 0; i < str_count; i++) {
 		STRUCTURE obj;
 		GetStructureData(i, &obj);
 
 		str[i] = obj;
 	}
-	for (i = str_count - 1; i >= 0; i--)
+	for (int i = str_count - 1; i >= 0; i--)
 		DeleteStructure(i);
 
-	for (i = 0; i < unit_count; i++) {
+	for (int i = 0; i < unit_count; i++) {
 		UNIT obj;
 		GetUnitData(i, &obj);
 
 		unit[i] = obj;
 	}
-	for (i = unit_count - 1; i >= 0; i--)
+	for (int i = unit_count - 1; i >= 0; i--)
 		DeleteUnit(i);
 
-	for (i = 0; i < terrain_count; i++) {
+	for (int i = 0; i < terrain_count; i++) {
 		terrain[i] = m_terrain[i];
 	}
-	for (i = 0; i < terrain_count; i++)
+	for (int i = 0; i < terrain_count; i++)
 		DeleteTerrain(i);
 
 
-	for (i = 0; i < wp_count; i++) {
+	for (int i = 0; i < wp_count; i++) {
 		DWORD pos;
 		CString id;
 
@@ -6150,7 +6176,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	// for(i=0;i<wp_count;i++) DeleteWaypoint(0);
 
 
-	for (i = 0; i < ct_count; i++) {
+	for (int i = 0; i < ct_count; i++) {
 		DWORD pos;
 		CString tag;
 
@@ -6160,8 +6186,9 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		ct_pos[i] = pos;
 	}
 
-	for (i = 0; i < ct_count; i++) DeleteCelltag(0);
-
+	for (int i = 0; i < ct_count; i++) {
+		DeleteCelltag(0);
+	}
 
 	FIELDDATA* old_fd = fielddata;
 	int ow = GetWidth();
@@ -6175,7 +6202,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 	// hmm, erase any snapshots... we probably can remove this and do coordinate conversion instead
 	// but for now we just delete them...
-	for (i = 0; i < dwSnapShotCount; i++) {
+	for (int i = 0; i < dwSnapShotCount; i++) {
 		delete[] m_snapshots[i].bHeight;
 		delete[] m_snapshots[i].bMapData;
 		delete[] m_snapshots[i].bSubTile;
@@ -6258,17 +6285,20 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	itoa(y_move, d, 10);
 	itoa(x_move, c, 10);
 	MessageBox(0, c, d,0);*/
-
+	auto const isInMap = [isoSize = m_IsoSize](const int x, const int y) -> bool {
+		return x >= 0 && y >= 0 && x < isoSize && y < isoSize;
+	};
 
 	// copy tiles now
-	int e;
-	for (i = 0; i < os; i++) {
-		for (e = 0; e < os; e++) {
+	for (int i = 0; i < os; i++) {
+		for (int e = 0; e < os; e++) {
 			int x, y;
 			x = i + x_move;
 			y = e + y_move;
 
-			if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+			if (!isInMap(x, y)) {
+				continue;
+			}
 
 			FIELDDATA& fdd = fielddata[x + y * m_IsoSize];
 			FIELDDATA& fdo = old_fd[i + e * os];
@@ -6296,8 +6326,20 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 	//m_noAutoObjectUpdate=TRUE; // deactivate Update*()... faster
 
+	auto updateCoords = [isInMap](STDOBJECTDATA& data, const int x_move, const int y_move) -> bool {
+		const int x = atoi(data.x) + x_move;
+		const int y = atoi(data.y) + y_move;
+
+		if (!isInMap(x, y)) {
+			return false;
+		}
+		data.x.Format("%d", x);
+		data.y.Format("%d", y);
+		return true;
+	};
+
 	int count = inf_count; // this temp variable is *needed* (infinite loop)!!!
-	for (i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		if (inf[i].deleted) {
 			dlg->SetPosition(i + curcount);
 			dlg->UpdateWindow();
@@ -6308,15 +6350,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		INFANTRY obj;
 		obj = inf[i];
 
-		char c[50];
-		obj.x = itoa(atoi(obj.x) + x_move, c, 10);
-		obj.y = itoa(atoi(obj.y) + y_move, c, 10);
-
-		int x = atoi(obj.x);
-		int y = atoi(obj.y);
-
-
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) {
+		if (!updateCoords(obj.basic, x_move, y_move)) {
 			continue;
 		}
 
@@ -6330,21 +6364,15 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	curcount += count;
 
 	count = air_count;
-	for (i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		// if(air[i].deleted) continue;
 
 		AIRCRAFT obj;
 		obj = air[i];
 
-		char c[50];
-		obj.x = itoa(atoi(obj.x) + x_move, c, 10);
-		obj.y = itoa(atoi(obj.y) + y_move, c, 10);
-
-		int x = atoi(obj.x);
-		int y = atoi(obj.y);
-
-
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+		if (!updateCoords(obj.basic, x_move, y_move)) {
+			continue;
+		}
 
 		AddAircraft(&obj);
 
@@ -6357,21 +6385,15 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	curcount += count;
 
 	count = str_count;
-	for (i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		// if(str[i].deleted) continue;
 
 		STRUCTURE obj;
 		obj = str[i];
 
-		char c[50];
-		obj.x = itoa(atoi(obj.x) + x_move, c, 10);
-		obj.y = itoa(atoi(obj.y) + y_move, c, 10);
-
-		int x = atoi(obj.x);
-		int y = atoi(obj.y);
-
-
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+		if (!updateCoords(obj.basic, x_move, y_move)) {
+			continue;
+		}
 
 		AddStructure(&obj);
 
@@ -6384,21 +6406,15 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	curcount += count;
 
 	count = unit_count;
-	for (i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		// if(units[i].deleted) continue;
 
 		UNIT obj;
 		obj = unit[i];
 
-		char c[50];
-		obj.x = itoa(atoi(obj.x) + x_move, c, 10);
-		obj.y = itoa(atoi(obj.y) + y_move, c, 10);
-
-		int x = atoi(obj.x);
-		int y = atoi(obj.y);
-
-
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+		if (!updateCoords(obj.basic, x_move, y_move)) {
+			continue;
+		}
 
 		AddUnit(&obj);
 
@@ -6411,7 +6427,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	curcount += count;
 
 	count = terrain_count;
-	for (i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		if (terrain[i].deleted) {
 			dlg->SetPosition(i + curcount);
 			dlg->UpdateWindow();
@@ -6429,7 +6445,9 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		y = y + y_move;
 
 
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+		if (!isInMap(x, y)) {
+			continue;
+		}
 
 		AddTerrain(obj, x + y * m_IsoSize);
 
@@ -6443,7 +6461,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	curcount += count;
 
 	count = wp_count;
-	for (i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		DWORD pos;
 		CString id;
 
@@ -6453,7 +6471,9 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		int x = pos % os + x_move;
 		int y = pos / os + y_move;
 
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+		if (!isInMap(x, y)) {
+			continue;
+		}
 
 		AddWaypoint(id, x + y * m_IsoSize);
 
@@ -6466,14 +6486,16 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	curcount += count;
 
 
-	for (i = 0; i < ct_count; i++) {
+	for (int i = 0; i < ct_count; i++) {
 		DWORD pos = ct_pos[i];
 		CString tag = ct_tag[i];
 
 		int x = pos % os + x_move;
 		int y = pos / os + y_move;
 
-		if (x < 0 || y < 0 || x >= m_IsoSize || y >= m_IsoSize) continue;
+		if (!isInMap(x, y)) {
+			continue;
+		}
 
 		AddCelltag(tag, x + y * m_IsoSize);
 
@@ -6505,8 +6527,8 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	errstream.flush();
 
 	const bool mp = IsMultiplayer();
-	for (i = 0; i < m_IsoSize; i++) {
-		for (e = 0; e < m_IsoSize; e++) {
+	for (int i = 0; i < m_IsoSize; i++) {
+		for (int e = 0; e < m_IsoSize; e++) {
 			Mini_UpdatePos(i, e, mp);
 
 			count++;
@@ -6530,8 +6552,6 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	if (ct_pos) delete[] ct_pos;
 
 	dlg->DestroyWindow();
-
-
 }
 
 /*
@@ -6594,7 +6614,7 @@ BOOL CMapData::IsYRMap()
 				continue;
 			}
 
-			if (g_data["YRInfantry"].Exists(inf.type)) {
+			if (g_data["YRInfantry"].Exists(inf.basic.type)) {
 				return TRUE;
 			}
 		}
@@ -6608,7 +6628,7 @@ BOOL CMapData::IsYRMap()
 				continue;
 			}
 
-			if (g_data["YRBuildings"].Exists(str.type)) {
+			if (g_data["YRBuildings"].Exists(str.basic.type)) {
 				return TRUE;
 			}
 		}
@@ -6622,7 +6642,7 @@ BOOL CMapData::IsYRMap()
 				continue;
 			}
 
-			if (g_data["YRUnits"].Exists(unit.type)) {
+			if (g_data["YRUnits"].Exists(unit.basic.type)) {
 				return TRUE;
 			}
 		}
@@ -6636,7 +6656,7 @@ BOOL CMapData::IsYRMap()
 				continue;
 			}
 
-			if (g_data["YRAircraft"].Exists(air.type)) {
+			if (g_data["YRAircraft"].Exists(air.basic.type)) {
 				return TRUE;
 			}
 		}
@@ -6906,8 +6926,8 @@ BOOL CMapData::GetInfantryINIData(int index, CString* lpINI)
 
 	INFANTRY& infantry = m_infantry[index];
 	CString value;
-	value = infantry.house + "," + infantry.type + "," + infantry.strength + "," + infantry.y +
-		"," + infantry.x + "," + infantry.pos + "," + infantry.action + "," + infantry.direction + "," +
+	value = infantry.basic.house + "," + infantry.basic.type + "," + infantry.basic.strength + "," + infantry.basic.y +
+		"," + infantry.basic.x + "," + infantry.pos + "," + infantry.action + "," + infantry.direction + "," +
 		infantry.tag + "," + infantry.flag1 + "," + infantry.group + "," + infantry.flag3 + "," +
 		infantry.flag4 + "," + infantry.flag5;
 

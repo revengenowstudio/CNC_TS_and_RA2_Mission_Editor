@@ -33,6 +33,7 @@ jobs:
         path: |
           3rdParty/xcc/vcpkg_downloads
           3rdParty/xcc/vcpkg_installed
+          C:/Users/runneradmin/AppData/Local/vcpkg
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
     - name: Build Main Program (MSVC)
       run: |
@@ -46,8 +47,14 @@ jobs:
         path: |
           3rdParty/xcc/vcpkg_downloads
           3rdParty/xcc/vcpkg_installed
+          C:/Users/runneradmin/AppData/Local/vcpkg
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
     - name: do UT
       run: |
         cd x64\Debug
         ./UnitTest
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: RN-Mission-Editor-pr-${{ github.run_number }}
+        path: dist/FinalAlert2YR

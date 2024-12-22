@@ -48,6 +48,7 @@ jobs:
         path: |
           3rdParty/xcc/vcpkg_downloads
           3rdParty/xcc/vcpkg_installed
+          C:/Users/runneradmin/AppData/Local/vcpkg
         key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
     - name: build-msvc
       run: |

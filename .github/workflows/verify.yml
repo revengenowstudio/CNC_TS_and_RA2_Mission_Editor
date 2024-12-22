@@ -53,3 +53,15 @@ jobs:
       run: |
         cd x64\Debug
         ./UnitTest
+    - name: Pack up
+      shell: pwsh
+      run: |
+        pkgName=RN-Mission-Editor-pr-${{ github.run_number }}.zip
+        echo "PACKAGE_NAME=$pkgName" >> $GITHUB_ENV
+        cd dist/FinalAlert2YR
+        Compress-Archive -Path ./* -DestinationPath ../$pkgName
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PACKAGE_NAME }}
+        path: dist/${{ env.PACKAGE_NAME }}

@@ -454,6 +454,7 @@ public:
 	ProjectedCoords ProjectCoords3d(MapCoords xy) const;
 	ProjectedCoords ProjectCoords3d(MapCoords xy, int z) const;
 	bool isInside(MapCoords xy) const;
+	bool isInside(int x, int y) const;
 
 	__forceinline CPoint GetMiniMapPos(MapCoords mapCoords)
 	{
@@ -658,6 +659,10 @@ public:
 inline bool CMapData::isInside(MapCoords xy) const
 {
 	return xy.x >= 0 && xy.y >= 0 && xy.x < m_IsoSize&& xy.y < m_IsoSize;
+}
+inline bool CMapData::isInside(int x, int y) const
+{
+	return x >= 0 && y >= 0 && x < m_IsoSize&& y < m_IsoSize;
 }
 
 inline MapCoords CMapData::ToMapCoords(ProjectedCoords xy) const

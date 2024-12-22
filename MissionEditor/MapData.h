@@ -239,8 +239,7 @@ public:
 	DWORD GetStructureCount() const;
 	DWORD GetUnitCount() const;
 	DWORD GetInfantryCount() const;
-	void GetStdUnitData(DWORD dwIndex, STDOBJECTDATA* lpStdUnit) const;
-	void GetStdAircraftData(DWORD dwIndex, STDOBJECTDATA* lpStdAircraft) const;
+
 	void GetNthWaypointData(DWORD dwIdx, CString* lpID, DWORD* lpdwPos) const;
 	void GetWaypointData(DWORD dwId, CString* lpID, DWORD* lpdwPos) const;
 	BOOL IsGroundObjectAt(DWORD dwPos) const;
@@ -263,13 +262,15 @@ public:
 	bool ParseStructureData(const CString& rawText, STRUCTURE& structure) const;
 	void GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const;
 	void GetStdInfantryData(DWORD dwIndex, STDOBJECTDATA* lpStdInfantry) const;
+	void GetStdUnitData(DWORD dwIndex, STDOBJECTDATA* lpStdUnit) const;
+	void GetStdAircraftData(DWORD dwIndex, STDOBJECTDATA* lpStdAircraft) const;
+	void GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const;
 
 	INT GetUnitTypeID(LPCTSTR lpType);
 	void InitializeUnitTypes();
 	BOOL AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");
 	BOOL AddInfantry(INFANTRY* lpInfantry, int suggestedIndex = -1, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0);
 	BOOL AddNode(NODE* lpNode, WORD dwPos);
-	void GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const;
 	CString GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
 	BOOL AddWaypoint(CString lpID, DWORD dwPos);
 

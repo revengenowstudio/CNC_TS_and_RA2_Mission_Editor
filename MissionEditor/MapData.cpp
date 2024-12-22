@@ -2076,17 +2076,8 @@ CString CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
 
 void CMapData::GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const
 {
-	auto const& section = m_mapfile.GetSection("Structures");
-	if (dwIndex >= section.Size()) {
-		return;
-	}
-	auto const& data = section.Nth(dwIndex).second;
-
-	lpStdStructure->house = GetParam(data, 0);
-	lpStdStructure->type = GetParam(data, 1);
-	lpStdStructure->strength = GetParam(data, 2);
-	lpStdStructure->y = GetParam(data, 3);
-	lpStdStructure->x = GetParam(data, 4);
+	auto const [_, data] = GetNthDataOfTechno(dwIndex, TechnoType::Building);
+	ParseBasicTechnoData(data, *lpStdStructure);
 }
 
 BOOL CMapData::AddNode(NODE* lpNode, WORD dwPos)
@@ -2855,34 +2846,13 @@ void CMapData::GetWaypointData(DWORD dwId, CString* lpID, DWORD* lpdwPos) const
 
 void CMapData::GetStdAircraftData(DWORD dwIndex, STDOBJECTDATA* lpStdAircraft) const
 {
-	auto const& section = m_mapfile.GetSection("Aircraft");
-	if (dwIndex >= section.Size()) {
-		return;
-	}
-
-	auto const& data = section.Nth(dwIndex).second;
-
-	lpStdAircraft->house = GetParam(data, 0);
-	lpStdAircraft->type = GetParam(data, 1);
-	lpStdAircraft->strength.Format("%d", atoi(GetParam(data, 2)));
-	lpStdAircraft->y = GetParam(data, 3);
-	lpStdAircraft->x.Format("%d", atoi(GetParam(data, 4)));
+	auto const [_, data] = GetNthDataOfTechno(dwIndex, TechnoType::Aircraft);
+	ParseBasicTechnoData(data, *lpStdAircraft);
 }
-
 void CMapData::GetStdUnitData(DWORD dwIndex, STDOBJECTDATA* lpStdUnit) const
 {
-	auto const& section = m_mapfile.GetSection("Units");
-	if (dwIndex >= section.Size()) {
-		return;
-	}
-
-	auto const& data = section.Nth(dwIndex).second;
-
-	lpStdUnit->house = GetParam(data, 0);
-	lpStdUnit->type = GetParam(data, 1);
-	lpStdUnit->strength.Format("%d", atoi(GetParam(data, 2)));
-	lpStdUnit->y = GetParam(data, 3);
-	lpStdUnit->x.Format("%d", atoi(GetParam(data, 4)));
+	auto const [_, data] = GetNthDataOfTechno(dwIndex, TechnoType::Unit);
+	ParseBasicTechnoData(data, *lpStdUnit);
 }
 
 DWORD CMapData::GetInfantryCount() const

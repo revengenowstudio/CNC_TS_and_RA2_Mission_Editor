@@ -4058,10 +4058,13 @@ void CIsoView::UpdateStatusBar(int x, int y)
 	CString statusbar;//=TranslateStringACP("Ready");
 
 	FIELDDATA m = *Map->GetFielddataAt(x + y * Map->GetIsoSize());
-	if (m.wGround == 0xFFFF) m.wGround = 0;
+	if (m.wGround == 0xFFFF) {
+		m.wGround = 0;
+	}
 
 	if (m.wGround < (*tiledata_count) && m.bSubTile < (*tiledata)[m.wGround].wTileCount) {
-		statusbar = "Terrain type: 0x";
+		statusbar = GetLanguageStringACP("TerrainStatus");
+		statusbar += " 0x";
 		char c[50];
 		itoa((*tiledata)[m.wGround].tiles[m.bSubTile].bTerrainType, c, 16);
 		statusbar += c;
@@ -4094,56 +4097,64 @@ void CIsoView::UpdateStatusBar(int x, int y)
 		statusbar += ov;
 	}
 
-	STDOBJECTDATA sod;
-	sod.type = "";
+	auto type = TechnoType::None;
+	TECHNODATA techno;
 
-	int n = Map->GetStructureAt(x + y * Map->GetIsoSize());
-	int on = -1;
-	if (n >= 0) {
-
-		Map->GetStdStructureData(n, &sod);
+	int objId = -1;
+	if (int n = Map->GetStructureAt(x + y * Map->GetIsoSize()); n >= 0) {
+		type = TechnoType::Building;
 		statusbar = GetLanguageStringACP("StructStatus");
-		on = n;
+		objId = n;
 	}
 
-	n = Map->GetUnitAt(x + y * Map->GetIsoSize());
-	if (n >= 0) {
-
-		Map->GetStdUnitData(n, &sod);
+	if (int n = Map->GetUnitAt(x + y * Map->GetIsoSize()); n >= 0) {
+		type = TechnoType::Unit;
 		statusbar = GetLanguageStringACP("UnitStatus");
-		on = n;
+		objId = n;
 
 	}
 
-	n = Map->GetAirAt(x + y * Map->GetIsoSize());
-	if (n >= 0) {
-
-		Map->GetStdAircraftData(n, &sod);
+	if (int n = Map->GetAirAt(x + y * Map->GetIsoSize()); n >= 0) {
+		type = TechnoType::Aircraft;
 		statusbar = GetLanguageStringACP("AirStatus");
-		on = n;
+		objId = n;
 	}
 
-	n = Map->GetInfantryAt(x + y * Map->GetIsoSize());
-	if (n >= 0) {
-		Map->GetStdInfantryData(n, &sod);
+	if (int n = Map->GetInfantryAt(x + y * Map->GetIsoSize()); n >= 0) {
+		type = TechnoType::Infantry;
+		INFANTRY inf;
+		Map->GetInfantryData(n, &inf);
+		techno = inf;
 		statusbar = GetLanguageStringACP("InfStatus");
-		on = n;
+		objId = n;
 	}
 
-	if (sod.type.GetLength() > 0) {
+	if (objId >= 0 && type != TechnoType::Infantry) {
+		auto const [_, data] = Map->GetNthDataOfTechno(objId, type);
+		Map->ParseTechnoData(data, type, techno);
+	}
+
+	if (techno.basic.type.GetLength() > 0) {
 		char c[50];
-		itoa(on, c, 10);
+		itoa(objId, c, 10);
 		statusbar += "ID ";
 		statusbar += c;
 		statusbar += ", ";
 
-		statusbar += TranslateStringACP(Map->GetUnitName(sod.type));
+		statusbar += TranslateStringACP(Map->GetUnitName(techno.basic.type));
 		statusbar += " (";
 
-		statusbar += TranslateHouse(sod.house, TRUE);
+		statusbar += TranslateHouse(techno.basic.house, TRUE);
 		statusbar += ", ";
-		statusbar += sod.type;
+		statusbar += techno.basic.type;
 		statusbar += ")";
+
+		if (techno.tag != "None" && !techno.tag.IsEmpty()) {
+			statusbar += ", Tag: ";
+			statusbar += techno.tag;
+			statusbar += ' ';
+			statusbar += GetParam(Map->GetIniFile().GetString("Tags", techno.tag), 1);
+		}
 	}
 
 	/*
@@ -4171,9 +4182,7 @@ void CIsoView::UpdateStatusBar(int x, int y)
 	itoa(td.bMapData2[0],c,10);
 	statusbar+=c;*/
 
-
-	n = Map->GetCelltagAt(x + y * Map->GetIsoSize());
-	if (n >= 0) {
+	if (int n = Map->GetCelltagAt(x + y * Map->GetIsoSize()); n >= 0) {
 		CString type;
 		CString name;
 		DWORD pos;
@@ -4195,11 +4204,13 @@ void CIsoView::UpdateStatusBar(int x, int y)
 		statusbar = GetLanguageStringACP("TilePlaceStatus");
 	}
 
-	if (AD.mode == ACTIONMODE_COPY)
+	if (AD.mode == ACTIONMODE_COPY) {
 		statusbar = GetLanguageStringACP("CopyHelp");
+	}
 
-	if (statusbar.GetLength() > 0)
+	if (statusbar.GetLength() > 0) {
 		SetError(statusbar);
+	}
 
 }
 

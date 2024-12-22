@@ -2067,17 +2067,10 @@ BOOL CMapData::AddWaypoint(CString id, DWORD dwPos)
 
 CString CMapData::GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const
 {
-	auto const& section = m_mapfile.GetSection("Structures");
-	if (dwIndex >= section.Size()) {
-		return {};
-	}
-
-	auto const& [id, data] = section.Nth(dwIndex);
-
+	auto const [id, data] = GetNthDataOfTechno(dwIndex, TechnoType::Building);
 	if (!ParseStructureData(data, *lpStructure)) {
 		return {};
 	}
-
 	return id;
 }
 
@@ -2408,63 +2401,22 @@ void CMapData::GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const
 	if (dwIndex >= m_infantry.size()) {
 		return;
 	}
-
-	/*lpInfantry->house=m_infantry.house;
-	lpInfantry->type=m_infantry.;
-	lpInfantry->strength=m_infantry.;
-	lpInfantry->y=m_infantry.;
-	lpInfantry->x=m_infantry.;
-	lpInfantry->pos=m_infantry.;
-	lpInfantry->action=m_infantry.;
-	lpInfantry->direction=m_infantry.;
-	lpInfantry->tag=m_infantry.;
-	lpInfantry->flag1=m_infantry.;
-	lpInfantry->flag2=m_infantry.;
-	lpInfantry->flag3=m_infantry.;
-	lpInfantry->flag4=m_infantry.;
-	lpInfantry->flag5=m_infantry.;*/
 	*lpInfantry = m_infantry[dwIndex];
-
-	//memcpy(lpInfantry, &m_infantry[dwIndex], sizeof(INFANTRY));
-
-	//ASSERT(dwIndex>=0 && dwIndex<m_mapfile.sections["Infantry"].values.size());
-
-
-
-	/*if(dwIndex>=m_mapfile.sections["Infantry"].values.size()) return;
-
-	CString data=*m_mapfile.sections["Infantry"].GetValue(dwIndex);
-*/
-
 }
 CString CMapData::GetUnitData(DWORD dwIndex, UNIT* lpUnit) const
 {
-	auto const& section = m_mapfile.GetSection("Units");
-	if (dwIndex >= section.Size()) {
-		return {};
-	}
-
-	auto const& [id, data] = section.Nth(dwIndex);
-
+	auto const [id, data] = GetNthDataOfTechno(dwIndex, TechnoType::Unit);
 	if (!ParseUnitData(data, *lpUnit)) {
 		return {};
 	}
-
 	return id;
 }
 CString CMapData::GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const
 {
-	auto const& section = m_mapfile.GetSection("Aircraft");
-	if (dwIndex >= section.Size()) {
-		return {};
-	}
-
-	auto const& [id, data] = section.Nth(dwIndex);
-
+	auto const [id, data] = GetNthDataOfTechno(dwIndex, TechnoType::Aircraft);
 	if (!ParseAircraftData(data, *lpAircraft)) {
 		return {};
 	}
-
 	return id;
 }
 
@@ -2530,6 +2482,33 @@ bool CMapData::ParseStructureData(const CString& rawText, STRUCTURE& structure) 
 	return true;
 }
 
+std::pair<CString, CString> CMapData::GetNthDataOfTechno(const size_t index, const TechnoType type) const
+{
+	CString sectionID;
+	switch (type)
+	{
+	case TechnoType::Building:
+		sectionID = "Structures";
+		break;
+	case TechnoType::Unit:
+		sectionID = "Units";
+		break;
+	case TechnoType::Aircraft:
+		sectionID = "Aircraft";
+		break;
+	case TechnoType::Infantry:
+		throw std::runtime_error("infantry raw data does not support retrieving in this way");
+		break;
+	default:
+		break;
+	}
+	auto const& section = m_mapfile.GetSection(sectionID);
+	if (index >= section.Size()) {
+		return {};
+	}
+	return section.Nth(index);
+}
+
 bool CMapData::ParseBasicTechnoData(const CString& rawText, STDOBJECTDATA& data) const
 {
 	if (rawText.IsEmpty()) {
@@ -2546,7 +2525,7 @@ bool CMapData::ParseBasicTechnoData(const CString& rawText, STDOBJECTDATA& data)
 bool CMapData::ParseTechnoData(const CString& rawText, const TechnoType type, TECHNODATA& data) const
 {
 	if (!ParseBasicTechnoData(rawText, data.basic)) {
-		return {};
+		return false;
 	}
 	switch (type)
 	{

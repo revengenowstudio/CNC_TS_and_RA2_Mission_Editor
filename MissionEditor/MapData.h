@@ -252,6 +252,7 @@ public:
 	void GetCelltagData(DWORD dwIndex, CString* lpTag, DWORD* lpdwPos) const;
 	BOOL AddCelltag(LPCTSTR lpTag, DWORD dwPos);
 
+	std::pair<CString, CString> GetNthDataOfTechno(const size_t index, const TechnoType type) const;
 	bool ParseBasicTechnoData(const CString& rawText, STDOBJECTDATA& data) const;
 	bool ParseTechnoData(const CString& rawText, const TechnoType type, TECHNODATA& data) const;
 	CString GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const;

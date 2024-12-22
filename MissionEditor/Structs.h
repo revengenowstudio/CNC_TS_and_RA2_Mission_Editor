@@ -45,11 +45,12 @@ enum class MouseActionType : unsigned {
 	AddSmudge = 8,
 };
 
-enum class TechnoType : unsigned {
+enum class TechnoType : int {
 	Building,
 	Unit,
 	Infantry,
 	Aircraft,
+	None = -1,
 };
 
 enum class TheaterChar : char

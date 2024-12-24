@@ -2137,8 +2137,6 @@ void CIsoView::OnRButtonUp(UINT nFlags, CPoint point)
 
 		if (!ignoreClick) {
 			AD.reset();
-
-			CMyViewFrame& frame = *((CMyViewFrame*)owner);
 		}
 		return;
 	}

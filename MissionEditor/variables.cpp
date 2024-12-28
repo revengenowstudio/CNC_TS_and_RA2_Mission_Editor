@@ -206,6 +206,7 @@ int dirttunnelset;
 int dirttracktunnelset;
 int waterset;
 int shoreset;
+int greenset;
 int ramp2set_start;
 int pave2set_start;
 int rampset_start;

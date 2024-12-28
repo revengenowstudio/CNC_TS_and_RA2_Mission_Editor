@@ -88,6 +88,14 @@ struct MAPFIELDDATA
 };
 #define MAPFIELDDATA_SIZE 11
 
+// contains the extra information needed for one field of the map.
+struct FIELDDATAEXT
+{
+	bool ShoreProcessed;
+	bool ShoreLATNeeded;
+};
+
+
 /*
 struct TILEDATA{};
 
@@ -273,6 +281,10 @@ public:
 	void DeleteWaypoint(DWORD id);
 	void DeleteInfantry(DWORD dwIndex);
 
+	bool IsTileIntact(int x, int y, int startX = -1, int startY = -1, int right = -1, int bottom = -1);
+	std::vector<MapCoords> GetIntactTileCoords(int x, int y, bool oriIntact);
+	char GetLandType(int tileIndex, int TileSubIndex);
+	
 	INT GetCelltagAt(DWORD dwPos) const
 	{
 		return fielddata[dwPos].celltag;
@@ -373,6 +385,11 @@ public:
 		return &fielddata[dwPos];
 	};
 
+	FIELDDATA* GetFielddataAt(int X, int Y)
+	{
+		return GetFielddataAt(GetCoordIndex(X, Y));
+	};
+
 	const FIELDDATA* GetFielddataAt(const MapCoords& pos) const
 	{
 		auto dwPos = GetMapPos(pos);
@@ -448,6 +465,8 @@ public:
 	ProjectedCoords ProjectCoords(MapCoords xy) const;
 	ProjectedCoords ProjectCoords3d(MapCoords xy) const;
 	ProjectedCoords ProjectCoords3d(MapCoords xy, int z) const;
+	bool IsCoordInMap(int X, int Y) const;
+	inline int GetCoordIndex(int X, int Y) const { return X + Y * GetIsoSize(); }
 	bool isInside(MapCoords xy) const;
 
 	__forceinline CPoint GetMiniMapPos(MapCoords mapCoords)
@@ -650,6 +669,16 @@ public:
 	void SetTube(CTube* lpTI);
 	CTube* GetTube(std::uint16_t wID);
 };
+
+inline bool CMapData::IsCoordInMap(int X, int Y) const
+{
+	return
+		X > 0 && Y > 0 &&
+		X + Y > GetWidth() &&
+		X + Y <= GetWidth() + 2 * GetHeight() &&
+		(Y < GetWidth() || X > Y - GetWidth()) &&
+		(X < GetWidth() || X < Y + GetWidth());
+}
 
 inline bool CMapData::isInside(MapCoords xy) const
 {

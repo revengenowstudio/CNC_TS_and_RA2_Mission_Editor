@@ -152,6 +152,8 @@ FIELDDATA::FIELDDATA()
 	bRedrawTerrain = 0;
 	terraintype = -1;
 	bHide = FALSE;
+    bShoreProcessed = false;
+    bShoreLATNeeded = false;
 	//sTube = 0xFFFF;
 	//cTubePart = -1;
 
@@ -4860,8 +4862,9 @@ std::vector<MapCoords> CMapData::GetIntactTileCoords(int x, int y, bool oriIntac
 
 char CMapData::GetLandType(int tileIndex, int TileSubIndex)
 {
-	if (tileIndex == 0xFFFF)
+	if (tileIndex == 0xFFFF) {
 		tileIndex = 0;
+	}
 
 	int tileStart = tilesets_start[shoreset];
 
@@ -4888,43 +4891,51 @@ char CMapData::GetLandType(int tileIndex, int TileSubIndex)
 
 void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemoveUseless)
 {
-	std::map<int, FIELDDATAEXT> CellDataExts;
-
 	int shorePieces = shoreset; 
 	int greenTiles = greenset;
 	int waterSet = waterset;
 	if (shorePieces < 0 || shorePieces > tilesets_start.size()
 		|| greenTiles < 0 || greenTiles > tilesets_start.size()
-		|| waterSet < 0 || waterSet > tilesets_start.size())
+		|| waterSet < 0 || waterSet > tilesets_start.size()) {
 		return;
+	}
 
+	auto constexpr waterGroupCount = 42;
 	int tileStart = tilesets_start[shorePieces];
-	int tileEnd = tilesets_start[shorePieces + 1] - 1;
-	if (tileEnd - tileStart < 41 || tileEnd >= *tiledata_count)
+	int tileLast = tilesets_start[shorePieces + 1] - 1;
+	if (tileLast - tileStart < (waterGroupCount - 1) || tileLast >= *tiledata_count) {
 		return;
+	}
 
 	int waterSetStart = tilesets_start[waterSet];
-	int waterSetEnd = tilesets_start[waterSet + 1] - 1;
+	int waterSetLast = tilesets_start[waterSet + 1] - 1;
 	int greenTile = tilesets_start[greenTiles];
 
 	std::vector<int> SmallWaterTiles;
-	for (int i = 8; i < 13; i++)
+	// 0-5: large water pieces
+	// 6-7: large water debris
+	// 8-12: small water pieces
+	// 13: small water debris
+	auto constexpr largeWaterEnd = 8;
+	auto constexpr smallWaterEnd = 13;
+	for (int i = largeWaterEnd; i < smallWaterEnd; i++) {
 		SmallWaterTiles.push_back(i + tilesets_start[waterSet]);
-
+	}
 	// a trick to avoid affecting other shorelines
 	// ignore the working shore
-	auto tileNameHasShore = [&](int setIdx)
-		{
-			if (setIdx == shorePieces)
-				return false;
-			CString secName;
-			secName.Format("TileSet%04d", setIdx);
-			CString setName = tiles->GetString(secName, "SetName");
-			setName.MakeLower();
-			if (setName.Find("shore") != -1)
-				return true;
+	auto tileNameHasShore = [&](int setIdx) {
+		if (setIdx == shorePieces) {
 			return false;
-		};
+		}
+		CString secName;
+		secName.Format("TileSet%04d", setIdx);
+		CString setName = tiles->GetString(secName, "SetName");
+		setName.MakeLower();
+		if (setName.Find("shore") != -1) {
+			return true;
+		}
+		return false;
+	};
 
 	std::vector<int> tiles_2x3;
 	std::vector<int> tiles_3x2;
@@ -4940,84 +4951,86 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 	int shoreMatch_1x2[1][2] = { 0 };
 	int shoreMatch_2x1[2][1] = { 0 };
 
-	for (int i = tileStart; i <= tileEnd; i++)
-	{
-		auto tile = (*tiledata)[i];
+	for (int i = tileStart; i <= tileLast; i++) {
+		auto const& tile = (*tiledata)[i];
 
-		if (tile.cy == 2 && tile.cx == 3)
+		if (tile.cy == 2 && tile.cx == 3) {
 			tiles_2x3.push_back(i);
-		else if (tile.cy == 3 && tile.cx == 2)
-			tiles_3x2.push_back(i);
-		else if (tile.cy == 2 && tile.cx == 2)
-		{
-			int beachCount = 0;
-			for (int m = 0; m < 2; m++)
-			{
-				for (int n = 0; n < 2; n++)
-				{
-					int subTileidx = n * 2 + m;
-					auto ttype = GetLandType(i, subTileidx);
-					if (ttype == TERRAINTYPE_BEACH)
-						beachCount++;
-				}
-			}
-			if (beachCount == 1 || beachCount == 3)
-			{
-				tiles_2x2Corners.push_back(i);
-			}
-			else
-				tiles_2x2.push_back(i);
+			continue;
 		}
 
-		else if (tile.cy == 1 && tile.cx == 2)
+		if (tile.cy == 3 && tile.cx == 2) {
+			tiles_3x2.push_back(i);
+			continue;
+		}
+
+		if (tile.cy == 2 && tile.cx == 2) {
+			int beachCount = 0;
+			for (int m = 0; m < 2; m++) {
+				for (int n = 0; n < 2; n++) {
+					int subTileidx = n * 2 + m;
+					auto ttype = GetLandType(i, subTileidx);
+					if (ttype == TERRAINTYPE_BEACH) {
+						beachCount++;
+					}
+				}
+			}
+			if (beachCount == 1 || beachCount == 3) {
+				tiles_2x2Corners.push_back(i);
+			} else {
+				tiles_2x2.push_back(i);
+			}
+			continue;
+		}
+
+		if (tile.cy == 1 && tile.cx == 2) {
 			tiles_1x2.push_back(i);
-		else if (tile.cy == 2 && tile.cx == 1)
+			continue;
+		}
+
+		if (tile.cy == 2 && tile.cx == 1) {
 			tiles_2x1.push_back(i);
+			continue;
+		}
 	}
 	
-	for (int x = left - 5; x < right + 5; x++)
-	{
-		for (int y = top - 5; y < bottom + 5; y++)
-		{
-			if (!IsCoordInMap(x, y))
+	for (int x = left - 5; x < right + 5; x++) {
+		for (int y = top - 5; y < bottom + 5; y++) {
+			if (!IsCoordInMap(x, y)) {
 				continue;
+			}
 
 			int pos = GetCoordIndex(x, y);
-			FIELDDATAEXT fde;
-			fde.ShoreProcessed = false;
-			fde.ShoreLATNeeded = false;
-			CellDataExts[pos] = fde;
+			auto cell = GetFielddataAt(x, y);
+			ASSERT(cell != nullptr);
+			cell->bShoreProcessed = false;
+			cell->bShoreLATNeeded = false;
 		}
 	}
 
 	// remove broken beaches
-	for (int x = left; x < right; x++)
-	{
-		for (int y = top; y < bottom; y++)
-		{
-			if (!IsCoordInMap(x, y))
+	for (int x = left; x < right; x++) {
+		for (int y = top; y < bottom; y++) {
+			if (!IsCoordInMap(x, y)) {
 				continue;
+			}
 
 			auto cell = GetFielddataAt(x, y);
 			int tileIndex = cell->wGround;
-			if (tileIndex == 0xFFFF)
+			if (tileIndex == 0xFFFF) {
 				tileIndex = 0;
+			}
 
-			if ((tileIndex >= tileStart && tileIndex <= tileEnd) && !IsTileIntact(x, y))
-			{
+			if ((tileIndex >= tileStart && tileIndex <= tileLast) && !IsTileIntact(x, y)) {
 				auto ttype = GetLandType(tileIndex, cell->bSubTile);
-				if (ttype == TERRAINTYPE_ROUGH)
-				{
+				if (ttype == TERRAINTYPE_ROUGH) {
 					SetTileAt(GetCoordIndex(x, y), greenTile, 0);
-				}
-				else if (ttype == TERRAINTYPE_BEACH)
-				{
+				} else if (ttype == TERRAINTYPE_BEACH) {
 					SetTileAt(GetCoordIndex(x, y), SmallWaterTiles[rand() * (SmallWaterTiles.size() - 1) / RAND_MAX], 0);
 				}
 			}
 		}
 	}
-
 
 	// remove 1x1 land and water
 	// only used in bmp2map, not necessary
@@ -5028,133 +5041,129 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 
 	auto process = [&](int w, int h, std::vector<int>tiles, int* shoreMatch)
 		{
-			for (int x = left; x < right; x++)
-			{
-				for (int y = top; y < bottom; y++)
-				{
-					if (!IsCoordInMap(x, y))
+			for (int x = left; x < right; x++) {
+				for (int y = top; y < bottom; y++) {
+					if (!IsCoordInMap(x, y)) {
 						continue;
+					}
 
-					int pos = GetCoordIndex(x, y);
-					auto cell = GetFielddataAt(pos);
-					auto& cellExt = CellDataExts[pos];
+					const int pos = GetCoordIndex(x, y);
+					auto const cell = GetFielddataAt(pos);
 
-					if (cellExt.ShoreProcessed) continue;
+					if (cell->bShoreProcessed) {
+						continue;
+					}
 
 					std::vector<int> targetBeachTiles;
 
 					bool breakCheck = false;
-					int oriHeight = cell->bHeight;
-					for (int m = 0; m < w; m++)
-					{
-						if (breakCheck) break;
-						for (int n = 0; n < h; n++)
-						{
-							if (breakCheck) break;
-							if (!IsCoordInMap(x + n, y + m))
+					const int oriHeight = cell->bHeight;
+					for (int m = 0; m < w; m++) {
+						if (breakCheck) {
+							break;
+						}
+						for (int n = 0; n < h; n++) {
+							if (breakCheck) {
+								break;
+							}
+							if (!IsCoordInMap(x + n, y + m)) {
 								continue;
+							}
 
-							int pos2 = GetCoordIndex(x + n, y + m);
-							auto cell2 = GetFielddataAt(pos2);
-							auto& cellExt2 = CellDataExts[pos2];
-							int tileIndex = cell2->wGround;
-							if (tileIndex == 0xFFFF)
+							const int whPos = GetCoordIndex(x + n, y + m);
+							auto whCell = GetFielddataAt(whPos);
+							int tileIndex = whCell->wGround;
+							if (tileIndex == 0xFFFF) {
 								tileIndex = 0;
+							}
 
 							// skip intact tiles on the edges
-							if (x + n < left + 1 || y + m < top + 1 || x + n >= right - 1 || y + m >= bottom - 1)
-							{
-								if (IsTileIntact(x + n, y + m) && !IsTileIntact(x + n, y + m, left, top, right, bottom))
-								{
-									for (auto& mc : GetIntactTileCoords(x + n, y + m, true))
-									{
-										int pos3 = GetCoordIndex(mc.x, mc.y);
-										auto& cellExt3 = CellDataExts[pos3];
-										cellExt3.ShoreProcessed = true;
+							if (x + n < left + 1 || y + m < top + 1 || x + n >= right - 1 || y + m >= bottom - 1) {
+								if (IsTileIntact(x + n, y + m) && !IsTileIntact(x + n, y + m, left, top, right, bottom)) {
+									for (auto& mc : GetIntactTileCoords(x + n, y + m, true)) {
+										int edgePos = GetCoordIndex(mc.x, mc.y);
+										GetFielddataAt(edgePos)->bShoreProcessed = true;
 									}
 								}
 							}
 
-							if ((*tiledata)[tileIndex].tiles[cell2->bSubTile].bDirection != 0)
-								cellExt2.ShoreProcessed = true;
+							if ((*tiledata)[tileIndex].tiles[whCell->bSubTile].bDirection != 0) {
+								whCell->bShoreProcessed = true;
+							}
 
-							if (cell2->bHeight != oriHeight)
-								cellExt2.ShoreProcessed = true;
+							if (whCell->bHeight != oriHeight) {
+								whCell->bShoreProcessed = true;
+							}
 
-							if (cellExt2.ShoreProcessed)
+							if (whCell->bShoreProcessed) {
 								breakCheck = true;
+							}
 
-							auto ttype = GetLandType(tileIndex, cell2->bSubTile);
+							auto const ttype = GetLandType(tileIndex, whCell->bSubTile);
 
-							if (ttype == TERRAINTYPE_ROUGH || ttype ==TERRAINTYPE_GROUND)
-							{
-								auto tile = (*tiledata)[tileIndex];
+							if (ttype == TERRAINTYPE_ROUGH || ttype ==TERRAINTYPE_GROUND) {
+								auto const& tile = (*tiledata)[tileIndex];
 								bool skip = false;
 								// check cliffs with beachs
-								for (int m = 0; m < tile.cy; m++)
-								{
-									for (int n = 0; n < tile.cx; n++)
-									{
+								for (int m = 0; m < tile.cy; m++) {
+									for (int n = 0; n < tile.cx; n++) {
 										int subIdx = n * tile.cy + m;
-
 										auto ttype2 = GetLandType(tileIndex, subIdx);
-										if (ttype2 == TERRAINTYPE_IMPASSABLE)
+										if (ttype2 == TERRAINTYPE_IMPASSABLE) {
 											skip = true;
+										}
 									}
 								}
-								if (tileNameHasShore(tile.wTileSet))
+								if (tileNameHasShore(tile.wTileSet)) {
 									skip = true;
-								if (!skip)
-									shoreMatch[m * h + n] = 1;
-								else
-									shoreMatch[m * h + n] = 0;
-							}
-							else if ((tileIndex >= tileStart && tileIndex <= tileEnd && ttype == TERRAINTYPE_BEACH)
-								|| (tileIndex >= waterSetStart && tileIndex <= waterSetEnd && ttype == TERRAINTYPE_WATER))
+								}
+								shoreMatch[m * h + n] = skip ? 0 : 1;
+							} else if ((tileIndex >= tileStart && tileIndex <= tileLast && ttype == TERRAINTYPE_BEACH)
+								|| (tileIndex >= waterSetStart && tileIndex <= waterSetLast && ttype == TERRAINTYPE_WATER)) {
 								shoreMatch[m * h + n] = 2;
-							else
+							} else {
 								shoreMatch[m * h + n] = 0;
+							}
 
 						}
 					}
-					if (breakCheck) continue;
-					for (auto index : tiles)
-					{
+					if (breakCheck) {
+						continue;
+					}
+					for (auto index : tiles) {
 						bool match = true;
-						for (int m = 0; m < w; m++)
-						{
-							for (int n = 0; n < h; n++)
-							{
+						for (int m = 0; m < w; m++) {
+							for (int n = 0; n < h; n++) {
 								int subTileidx = n * w + m;
 								auto ttype = GetLandType(index, subTileidx);
 								int thisType = -1;
-								if (ttype == TERRAINTYPE_ROUGH || ttype ==TERRAINTYPE_GROUND)
+								if (ttype == TERRAINTYPE_ROUGH || ttype == TERRAINTYPE_GROUND) {
 									thisType = 1;
-								if (ttype == TERRAINTYPE_BEACH || ttype == TERRAINTYPE_WATER)
+								}
+								if (ttype == TERRAINTYPE_BEACH || ttype == TERRAINTYPE_WATER) {
 									thisType = 2;
-
-								if (shoreMatch[m * h + n] != thisType)
+								}
+								if (shoreMatch[m * h + n] != thisType) {
 									match = false;
+								}
 							}
 						}
-						if (match)
+						if (match) {
 							targetBeachTiles.push_back(index);
+						}
 					}
-					if (!targetBeachTiles.empty())
-					{
+					if (!targetBeachTiles.empty()) {
 						int targetBeachTile = targetBeachTiles[rand() * (targetBeachTiles.size() - 1) / RAND_MAX];
-						for (int m = 0; m < w; m++)
-						{
-							for (int n = 0; n < h; n++)
-							{
-								if (!IsCoordInMap(x + n, y + m))
+						for (int m = 0; m < w; m++) {
+							for (int n = 0; n < h; n++) {
+								if (!IsCoordInMap(x + n, y + m)) {
 									continue;
+								}
 
-								int pos2 = GetCoordIndex(x + n, y + m);
-								auto& cellExt2 = CellDataExts[pos2];
+								int whPos = GetCoordIndex(x + n, y + m);
+								SetTileAt(whPos, targetBeachTile, n* w + m);								
+								GetFielddataAt(whPos)->bShoreProcessed = true;
 
-								SetTileAt(pos2, targetBeachTile, n* w + m);
-								cellExt2.ShoreProcessed = true;
 							}
 						}
 					}
@@ -5171,92 +5180,85 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 	process(2, 1, tiles_2x1, &shoreMatch_2x1[0][0]);
 
 	// now add green tile around beaches
-	for (int x = left - 1; x < right + 1; x++)
-	{
-		for (int y = top - 1; y < bottom + 1; y++)
-		{
-			if (!IsCoordInMap(x, y))
+	for (int x = left - 1; x < right + 1; x++) {
+		for (int y = top - 1; y < bottom + 1; y++) {
+			if (!IsCoordInMap(x, y)) {
 				continue;
+			}
 
 			int pos = GetCoordIndex(x, y);
 			auto cell = GetFielddataAt(pos);
-			auto& cellExt = CellDataExts[pos];
 			int tileIndex = cell->wGround;
-			if (tileIndex == 0xFFFF)
+			if (tileIndex == 0xFFFF) {
 				tileIndex = 0;
+			}
 
-			if ((*tiledata)[tileIndex].tiles[cell->bSubTile].bDirection != 0)
+			if ((*tiledata)[tileIndex].tiles[cell->bSubTile].bDirection != 0) {
 				continue;
+			}
 
 			auto tile = (*tiledata)[tileIndex];
 			auto ttype = GetLandType(tileIndex, cell->bSubTile);
 
-			if ((tileIndex < tileStart || tileIndex > tileEnd)
-				&& (ttype ==TERRAINTYPE_GROUND || ttype == TERRAINTYPE_ROUGH))
-			{
+			if ((tileIndex < tileStart || tileIndex > tileLast)
+				&& (ttype == TERRAINTYPE_GROUND || ttype == TERRAINTYPE_ROUGH)) {
 				bool skip = false;
 				// check cliffs with beachs
-				for (int m = 0; m < tile.cy; m++)
-				{
-					for (int n = 0; n < tile.cx; n++)
-					{
-						int subIdx = n * tile.cy + m;
-
-						auto ttype2 = GetLandType(tileIndex, subIdx);
-						if (ttype2 == TERRAINTYPE_IMPASSABLE)
+				for (int m = 0; m < tile.cy; m++) {
+					for (int n = 0; n < tile.cx; n++) {
+						const int subIdx = n * tile.cy + m;
+						auto const surroundingTType = GetLandType(tileIndex, subIdx);
+						if (surroundingTType == TERRAINTYPE_IMPASSABLE) {
 							skip = true;
-					}
-				}
-				if (tileNameHasShore(tile.wTileSet))
-					skip = true;
-
-				if (!skip)
-				{
-					const int loop[4][2] = { {0, -1},{0, 1},{1, 0},{-1, 0} };
-					for (auto pair : loop)
-					{
-						int newX = pair[0] + x;
-						int newY = pair[1] + y;
-
-						if (!IsCoordInMap(newX, newY))
-							continue;
-
-						int pos2 = GetCoordIndex(newX, newY);
-						auto cell2 = GetFielddataAt(pos2);
-						auto& cellExt2 = CellDataExts[pos2];
-						int tileIndex2 = cell2->wGround;
-						if (tileIndex2 == 0xFFFF)
-							tileIndex2 = 0;
-						auto ttype2 = GetLandType(tileIndex2, cell2->bSubTile);
-						if (tileIndex2 >= tileStart && tileIndex2 <= tileEnd
-							&& ttype2 == TERRAINTYPE_ROUGH
-							&& cellExt2.ShoreProcessed)
-						{
-							SetTileAt(pos, greenTile, 0);
-							cellExt.ShoreLATNeeded = true;
-							break;
 						}
 					}
 				}
+				if (tileNameHasShore(tile.wTileSet)) {
+					skip = true;
+				}
+				if (skip) {
+					continue;
+				}
+
+				const int loop[4][2] = { {0, -1},{0, 1},{1, 0},{-1, 0} };
+				for (auto const [offsetX, offsetY] : loop) {
+					const int newX = offsetX + x;
+					const int newY = offsetY + y;
+
+					if (!IsCoordInMap(newX, newY)) {
+						continue;
+					}
+					int newPos = GetCoordIndex(newX, newY);
+					auto newCell = GetFielddataAt(newPos);
+					int newTileIndex = newCell->wGround;
+					if (newTileIndex == 0xFFFF) {
+						newTileIndex = 0;
+					}
+					auto ttype2 = GetLandType(newTileIndex, newCell->bSubTile);
+					if (newTileIndex >= tileStart && newTileIndex <= tileLast
+						&& ttype2 == TERRAINTYPE_ROUGH
+						&& newCell->bShoreProcessed) {
+						SetTileAt(pos, greenTile, 0);
+						cell->bShoreLATNeeded = true;
+						break;
+					}
+				} //
 			}
 		}
 	}
 	// LAT
-	for (int x = left - 1; x < right + 1; x++)
-	{
-		for (int y = top - 1; y < bottom + 1; y++)
-		{
-			if (!IsCoordInMap(x, y))
+	for (int x = left - 1; x < right + 1; x++) {
+		for (int y = top - 1; y < bottom + 1; y++) {
+			if (!IsCoordInMap(x, y)) {
 				continue;
-
+			}
 			int pos = GetCoordIndex(x, y);
-			auto& cellExt = CellDataExts[pos];
-			if (cellExt.ShoreLATNeeded)
+			auto const cell = GetFielddataAt(pos);
+			if (cell->bShoreLATNeeded) {
 				SmoothAllAt(pos);
+			}
 		}
 	}
-
-
 }
 
 BOOL CMapData::IsMultiplayer()

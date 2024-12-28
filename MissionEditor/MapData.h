@@ -88,14 +88,6 @@ struct MAPFIELDDATA
 };
 #define MAPFIELDDATA_SIZE 11
 
-// contains the extra information needed for one field of the map.
-struct FIELDDATAEXT
-{
-	bool ShoreProcessed;
-	bool ShoreLATNeeded;
-};
-
-
 /*
 struct TILEDATA{};
 
@@ -134,6 +126,8 @@ struct FIELDDATA
 	unsigned bRedrawTerrain : 1; // force redraw
 	unsigned bCliffHack : 1;
 	unsigned bRNDImage : 4; // for using a,b,c of tmp tiles
+	bool bShoreProcessed;
+	bool bShoreLATNeeded;
 };
 
 struct SNAPSHOTDATA

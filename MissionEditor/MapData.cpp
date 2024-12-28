@@ -4790,37 +4790,43 @@ void CMapData::SmoothAllAt(DWORD dwPos)
 
 bool CMapData::IsTileIntact(int x, int y, int startX, int startY, int right, int bottom)
 {
-	if (!IsCoordInMap(x, y))
+	if (!IsCoordInMap(x, y)) {
 		return false;
-	int pos = GetCoordIndex(x, y);
-	auto cell = GetFielddataAt(pos);
+	}
+	const int pos = GetCoordIndex(x, y);
+	auto const cell = GetFielddataAt(pos);
 	int tileIndex = cell->wGround;
-	if (tileIndex == 0xFFFF)
+	if (tileIndex == 0xFFFF) {
 		tileIndex = 0;
+	}
 
-	int oriX = x - cell->bSubTile / (*tiledata)[tileIndex].cy;
-	int oriY = y - cell->bSubTile % (*tiledata)[tileIndex].cy;
+	const int oriX = x - cell->bSubTile / (*tiledata)[tileIndex].cy;
+	const int oriY = y - cell->bSubTile % (*tiledata)[tileIndex].cy;
 
 	int subIdx = 0;
-	for (int m = 0; m < (*tiledata)[tileIndex].cx; m++)
-	{
-		for (int n = 0; n < (*tiledata)[tileIndex].cy; n++)
-		{
-			if (!IsCoordInMap(m + oriX, n + oriY))
+	for (int m = 0; m < (*tiledata)[tileIndex].cx; m++) {
+		for (int n = 0; n < (*tiledata)[tileIndex].cy; n++) {
+			if (!IsCoordInMap(m + oriX, n + oriY)) {
 				return false;
-			if (startX >= 0)
-				if (m + oriX < startX || n + oriY < startY || m + oriX >= right || n + oriY >= bottom)
+			}
+			if (startX >= 0) {
+				if (m + oriX < startX || n + oriY < startY || m + oriX >= right || n + oriY >= bottom) {
 					return false;
+				}
+			}
 
 			auto cell2 = GetFielddataAt(m + oriX, n + oriY);
 			int tileIndex2 = cell2->wGround;
-			if (tileIndex2 == 0xFFFF)
+			if (tileIndex2 == 0xFFFF) {
 				tileIndex2 = 0;
+			}
 
-			if (tileIndex != tileIndex2)
+			if (tileIndex != tileIndex2) {
 				return false;
-			if (cell2->bSubTile != subIdx)
+			}
+			if (cell2->bSubTile != subIdx) {
 				return false;
+			}
 
 			subIdx++;
 		}
@@ -4833,21 +4839,19 @@ bool CMapData::IsTileIntact(int x, int y, int startX, int startY, int right, int
 std::vector<MapCoords> CMapData::GetIntactTileCoords(int x, int y, bool oriIntact)
 {
 	std::vector<MapCoords> ret;
-	if (!oriIntact || IsTileIntact(x, y))
-	{
-		int pos = GetCoordIndex(x, y);
-		auto cell = GetFielddataAt(pos);
+	if (!oriIntact || IsTileIntact(x, y)) {
+		const int pos = GetCoordIndex(x, y);
+		auto const cell = GetFielddataAt(pos);
 		int tileIndex = cell->wGround;
-		if (tileIndex == 0xFFFF)
+		if (tileIndex == 0xFFFF) {
 			tileIndex = 0;
+		}
 
-		int oriX = x - cell->bSubTile / (*tiledata)[tileIndex].cy;
-		int oriY = y - cell->bSubTile % (*tiledata)[tileIndex].cy;
+		const int oriX = x - cell->bSubTile / (*tiledata)[tileIndex].cy;
+		const int oriY = y - cell->bSubTile % (*tiledata)[tileIndex].cy;
 
-		for (int m = 0; m < (*tiledata)[tileIndex].cx; m++)
-		{
-			for (int n = 0; n < (*tiledata)[tileIndex].cy; n++)
-			{
+		for (int m = 0; m < (*tiledata)[tileIndex].cx; m++) {
+			for (int n = 0; n < (*tiledata)[tileIndex].cy; n++) {
 				MapCoords mc;
 				mc.x = m + oriX;
 				mc.y = n + oriY;

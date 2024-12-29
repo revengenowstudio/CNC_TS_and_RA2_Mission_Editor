@@ -4870,27 +4870,7 @@ char CMapData::GetLandType(int tileIndex, int TileSubIndex)
 		tileIndex = 0;
 	}
 
-	int tileStart = tilesets_start[shoreset];
-
-	// ww made a mistake in urban shore
-	if (tileIndex == tileStart + 12)
-	{
-		switch (TileSubIndex)
-		{
-		case 0:
-		case 1:
-		case 3:
-			return TERRAINTYPE_ROUGH;
-		case 2:
-		case 4:
-		case 5:
-			return TERRAINTYPE_BEACH;
-		default:
-			break;
-		}
-	}
-
-	return (*tiledata)[tileIndex].tiles[TileSubIndex].bTerrainType;
+	return (*tiledata)[tileIndex].tiles[TileSubIndex].bHackedTerrainType;
 }
 
 void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemoveUseless)
@@ -4974,7 +4954,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 				for (int n = 0; n < 2; n++) {
 					int subTileidx = n * 2 + m;
 					auto ttype = GetLandType(i, subTileidx);
-					if (ttype == TERRAINTYPE_BEACH) {
+					if (ttype == TERRAINTYPE_WATER) {
 						beachCount++;
 					}
 				}
@@ -5027,9 +5007,9 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 
 			if ((tileIndex >= tileStart && tileIndex <= tileLast) && !IsTileIntact(x, y)) {
 				auto ttype = GetLandType(tileIndex, cell->bSubTile);
-				if (ttype == TERRAINTYPE_ROUGH) {
+				if (ttype == TERRAINTYPE_GROUND) {
 					SetTileAt(GetCoordIndex(x, y), greenTile, 0);
-				} else if (ttype == TERRAINTYPE_BEACH) {
+				} else if (ttype == TERRAINTYPE_WATER) {
 					SetTileAt(GetCoordIndex(x, y), SmallWaterTiles[rand() * (SmallWaterTiles.size() - 1) / RAND_MAX], 0);
 				}
 			}
@@ -5105,7 +5085,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 
 							auto const ttype = GetLandType(tileIndex, whCell->bSubTile);
 
-							if (ttype == TERRAINTYPE_ROUGH || ttype ==TERRAINTYPE_GROUND) {
+							if (ttype == TERRAINTYPE_GROUND) {
 								auto const& tile = (*tiledata)[tileIndex];
 								bool skip = false;
 								// check cliffs with beachs
@@ -5122,7 +5102,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 									skip = true;
 								}
 								shoreMatch[m * h + n] = skip ? 0 : 1;
-							} else if ((tileIndex >= tileStart && tileIndex <= tileLast && ttype == TERRAINTYPE_BEACH)
+							} else if ((tileIndex >= tileStart && tileIndex <= tileLast && ttype == TERRAINTYPE_WATER)
 								|| (tileIndex >= waterSetStart && tileIndex <= waterSetLast && ttype == TERRAINTYPE_WATER)) {
 								shoreMatch[m * h + n] = 2;
 							} else {
@@ -5141,10 +5121,10 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 								int subTileidx = n * w + m;
 								auto ttype = GetLandType(index, subTileidx);
 								int thisType = -1;
-								if (ttype == TERRAINTYPE_ROUGH || ttype == TERRAINTYPE_GROUND) {
+								if (ttype == TERRAINTYPE_GROUND) {
 									thisType = 1;
 								}
-								if (ttype == TERRAINTYPE_BEACH || ttype == TERRAINTYPE_WATER) {
+								if (ttype == TERRAINTYPE_WATER) {
 									thisType = 2;
 								}
 								if (shoreMatch[m * h + n] != thisType) {
@@ -5205,7 +5185,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 			auto ttype = GetLandType(tileIndex, cell->bSubTile);
 
 			if ((tileIndex < tileStart || tileIndex > tileLast)
-				&& (ttype == TERRAINTYPE_GROUND || ttype == TERRAINTYPE_ROUGH)) {
+				&& (ttype == TERRAINTYPE_GROUND)) {
 				bool skip = false;
 				// check cliffs with beachs
 				for (int m = 0; m < tile.cy; m++) {
@@ -5240,13 +5220,13 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 					}
 					auto ttype2 = GetLandType(newTileIndex, newCell->bSubTile);
 					if (newTileIndex >= tileStart && newTileIndex <= tileLast
-						&& ttype2 == TERRAINTYPE_ROUGH
+						&& ttype2 == TERRAINTYPE_GROUND
 						&& newCell->bShoreProcessed) {
 						SetTileAt(pos, greenTile, 0);
 						cell->bShoreLATNeeded = true;
 						break;
 					}
-				} //
+				}
 			}
 		}
 	}

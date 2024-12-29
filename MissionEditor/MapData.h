@@ -277,7 +277,7 @@ public:
 
 	bool IsTileIntact(int x, int y, int startX = -1, int startY = -1, int right = -1, int bottom = -1);
 	std::vector<MapCoords> GetIntactTileCoords(int x, int y, bool oriIntact);
-	char GetLandType(int tileIndex, int TileSubIndex);
+	char GetHackedTerrainType(int tileIndex, int TileSubIndex);
 	
 	INT GetCelltagAt(DWORD dwPos) const
 	{

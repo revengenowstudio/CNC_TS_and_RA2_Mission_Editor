@@ -4864,7 +4864,7 @@ std::vector<MapCoords> CMapData::GetIntactTileCoords(int x, int y, bool oriIntac
 	return ret;
 }
 
-char CMapData::GetLandType(int tileIndex, int TileSubIndex)
+char CMapData::GetHackedTerrainType(int tileIndex, int TileSubIndex)
 {
 	if (tileIndex == 0xFFFF) {
 		tileIndex = 0;
@@ -4953,7 +4953,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 			for (int m = 0; m < 2; m++) {
 				for (int n = 0; n < 2; n++) {
 					int subTileidx = n * 2 + m;
-					auto ttype = GetLandType(i, subTileidx);
+					auto ttype = GetHackedTerrainType(i, subTileidx);
 					if (ttype == TERRAINTYPE_WATER) {
 						beachCount++;
 					}
@@ -5006,7 +5006,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 			}
 
 			if ((tileIndex >= tileStart && tileIndex <= tileLast) && !IsTileIntact(x, y)) {
-				auto ttype = GetLandType(tileIndex, cell->bSubTile);
+				auto ttype = GetHackedTerrainType(tileIndex, cell->bSubTile);
 				if (ttype == TERRAINTYPE_GROUND) {
 					SetTileAt(GetCoordIndex(x, y), greenTile, 0);
 				} else if (ttype == TERRAINTYPE_WATER) {
@@ -5083,7 +5083,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 								breakCheck = true;
 							}
 
-							auto const ttype = GetLandType(tileIndex, whCell->bSubTile);
+							auto const ttype = GetHackedTerrainType(tileIndex, whCell->bSubTile);
 
 							if (ttype == TERRAINTYPE_GROUND) {
 								auto const& tile = (*tiledata)[tileIndex];
@@ -5092,7 +5092,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 								for (int m = 0; m < tile.cy; m++) {
 									for (int n = 0; n < tile.cx; n++) {
 										int subIdx = n * tile.cy + m;
-										auto ttype2 = GetLandType(tileIndex, subIdx);
+										auto ttype2 = GetHackedTerrainType(tileIndex, subIdx);
 										if (ttype2 == TERRAINTYPE_IMPASSABLE) {
 											skip = true;
 										}
@@ -5119,7 +5119,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 						for (int m = 0; m < w; m++) {
 							for (int n = 0; n < h; n++) {
 								int subTileidx = n * w + m;
-								auto ttype = GetLandType(index, subTileidx);
+								auto ttype = GetHackedTerrainType(index, subTileidx);
 								int thisType = -1;
 								if (ttype == TERRAINTYPE_GROUND) {
 									thisType = 1;
@@ -5182,7 +5182,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 			}
 
 			auto tile = (*tiledata)[tileIndex];
-			auto ttype = GetLandType(tileIndex, cell->bSubTile);
+			auto ttype = GetHackedTerrainType(tileIndex, cell->bSubTile);
 
 			if ((tileIndex < tileStart || tileIndex > tileLast)
 				&& (ttype == TERRAINTYPE_GROUND)) {
@@ -5191,7 +5191,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 				for (int m = 0; m < tile.cy; m++) {
 					for (int n = 0; n < tile.cx; n++) {
 						const int subIdx = n * tile.cy + m;
-						auto const surroundingTType = GetLandType(tileIndex, subIdx);
+						auto const surroundingTType = GetHackedTerrainType(tileIndex, subIdx);
 						if (surroundingTType == TERRAINTYPE_IMPASSABLE) {
 							skip = true;
 						}
@@ -5218,7 +5218,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 					if (newTileIndex == 0xFFFF) {
 						newTileIndex = 0;
 					}
-					auto ttype2 = GetLandType(newTileIndex, newCell->bSubTile);
+					auto ttype2 = GetHackedTerrainType(newTileIndex, newCell->bSubTile);
 					if (newTileIndex >= tileStart && newTileIndex <= tileLast
 						&& ttype2 == TERRAINTYPE_GROUND
 						&& newCell->bShoreProcessed) {

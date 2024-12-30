@@ -4864,6 +4864,9 @@ std::vector<MapCoords> CMapData::GetIntactTileCoords(int x, int y, bool oriIntac
 	return ret;
 }
 
+// Return SUBTILE->bHackedTerrainType
+// Beach -> Water, Rough->Ground, WaterSet -> Water
+// And FA2 makes a special hack in [ShoreTerrainRA2]
 char CMapData::GetHackedTerrainType(int tileIndex, int TileSubIndex)
 {
 	if (tileIndex == 0xFFFF) {

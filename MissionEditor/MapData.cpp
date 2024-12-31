@@ -152,6 +152,8 @@ FIELDDATA::FIELDDATA()
 	bRedrawTerrain = 0;
 	terraintype = -1;
 	bHide = FALSE;
+    bShoreProcessed = false;
+    bShoreLATNeeded = false;
 	//sTube = 0xFFFF;
 	//cTubePart = -1;
 
@@ -463,6 +465,7 @@ void CMapData::UpdateIniFile(DWORD dwFlags)
 		cliffset_start = GetTileID(cliffset, 0);
 		waterset = tiles->GetInteger("General", "WaterSet");
 		shoreset = tiles->GetInteger("General", "ShorePieces");
+		greenset = tiles->GetInteger("General", "GreenTile");
 		rampset_start = GetTileID(rampset, 0);
 		ramp2set = g_data.GetInteger("NewUrbanInfo", "Ramps2");
 		ramp2set_start = GetTileID(ramp2set, 0);
@@ -4762,878 +4765,464 @@ void CMapData::SmoothAllAt(DWORD dwPos)
 	}
 }
 
-void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemoveUseless)
+bool CMapData::IsTileIntact(int x, int y, int startX, int startY, int right, int bottom)
 {
+	if (!IsCoordInMap(x, y)) {
+		return false;
+	}
+	const int pos = GetCoordIndex(x, y);
+	auto const cell = GetFielddataAt(pos);
+	int tileIndex = cell->wGround;
+	if (tileIndex == 0xFFFF) {
+		tileIndex = 0;
+	}
 
+	const int oriX = x - cell->bSubTile / (*tiledata)[tileIndex].cy;
+	const int oriY = y - cell->bSubTile % (*tiledata)[tileIndex].cy;
 
-	int i;
-	int isosize = Map->GetIsoSize();
-	int mapsize = isosize * isosize;
-	int mapwidth = Map->GetWidth();
-	int mapheight = Map->GetHeight();
-	// int shoreset=atoi((*tiles).sections["General"].values["ShorePieces"]);
+	int subIdx = 0;
+	for (int m = 0; m < (*tiledata)[tileIndex].cx; m++) {
+		for (int n = 0; n < (*tiledata)[tileIndex].cy; n++) {
+			if (!IsCoordInMap(m + oriX, n + oriY)) {
+				return false;
+			}
+			if (startX >= 0) {
+				if (m + oriX < startX || n + oriY < startY || m + oriX >= right || n + oriY >= bottom) {
+					return false;
+				}
+			}
 
-	short* tsets = new(short[mapsize]);
-	BYTE* terrain = new(BYTE[mapsize]);
-	int* tile = new(int[mapsize]);
-	BOOL* hasChanged = new(BOOL[isosize * isosize]);
-	BOOL* noChange = new(BOOL[isosize * isosize]);
-	//BOOL* replaced=new(BOOL[isosize*isosize]); // replaced by water<->ground
+			auto cell2 = GetFielddataAt(m + oriX, n + oriY);
+			int tileIndex2 = cell2->wGround;
+			if (tileIndex2 == 0xFFFF) {
+				tileIndex2 = 0;
+			}
 
-	memset(hasChanged, 0, sizeof(BOOL) * isosize * isosize);
-	memset(noChange, 0, sizeof(BOOL) * isosize * isosize);
-	//memset(replaced, 0, sizeof(BOOL)*isosize*isosize);
+			if (tileIndex != tileIndex2) {
+				return false;
+			}
+			if (cell2->bSubTile != subIdx) {
+				return false;
+			}
 
-	int watercliffset = tiles->GetInteger("General", "WaterCliffs");
-	int xx, yy;
-
-	for (i = 0; i < *tiledata_count; i++) {
-		if ((*tiledata)[i].wTileSet == waterset && (*tiledata)[i].cx == 1 && (*tiledata)[i].cy == 1) {
-			break;
+			subIdx++;
 		}
 	}
 
-	int smallwater = i;
+	return true;
 
+}
 
+std::vector<MapCoords> CMapData::GetIntactTileCoords(int x, int y, bool oriIntact)
+{
+	std::vector<MapCoords> ret;
+	if (!oriIntact || IsTileIntact(x, y)) {
+		const int pos = GetCoordIndex(x, y);
+		auto const cell = GetFielddataAt(pos);
+		int tileIndex = cell->wGround;
+		if (tileIndex == 0xFFFF) {
+			tileIndex = 0;
+		}
 
+		const int oriX = x - cell->bSubTile / (*tiledata)[tileIndex].cy;
+		const int oriY = y - cell->bSubTile % (*tiledata)[tileIndex].cy;
 
-	last_succeeded_operation = 7002;
+		for (int m = 0; m < (*tiledata)[tileIndex].cx; m++) {
+			for (int n = 0; n < (*tiledata)[tileIndex].cy; n++) {
+				MapCoords mc;
+				mc.x = m + oriX;
+				mc.y = n + oriY;
+				ret.push_back(mc);
+			}
+		}
 
+		return ret;
+	}
+	return ret;
+}
 
-	map<int, int> softsets;
-	CString sec = "SoftTileSets";
+// Return SUBTILE->bHackedTerrainType
+// Beach -> Water, Rough->Ground, WaterSet -> Water
+// And FA2 makes a special hack in [ShoreTerrainRA2]
+char CMapData::GetHackedTerrainType(int tileIndex, int TileSubIndex)
+{
+	if (tileIndex == 0xFFFF) {
+		tileIndex = 0;
+	}
 
-	for (auto const& [key, val] : g_data[sec]) {
-		CString tset = key;
-		TruncSpace(tset);
-		auto const& generalSec = tiles->GetSection("General");
-		int idx = generalSec.FindIndex(tset);
-		if (idx < 0) {
+	return (*tiledata)[tileIndex].tiles[TileSubIndex].bHackedTerrainType;
+}
+
+void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemoveUseless)
+{
+	int shorePieces = shoreset; 
+	int greenTiles = greenset;
+	int waterSet = waterset;
+	if (shorePieces < 0 || shorePieces > tilesets_start.size()
+		|| greenTiles < 0 || greenTiles > tilesets_start.size()
+		|| waterSet < 0 || waterSet > tilesets_start.size()) {
+		return;
+	}
+
+	auto constexpr waterGroupCount = 42;
+	int tileStart = tilesets_start[shorePieces];
+	int tileLast = tilesets_start[shorePieces + 1] - 1;
+	if (tileLast - tileStart < (waterGroupCount - 1) || tileLast >= *tiledata_count) {
+		return;
+	}
+
+	int waterSetStart = tilesets_start[waterSet];
+	int waterSetLast = tilesets_start[waterSet + 1] - 1;
+	int greenTile = tilesets_start[greenTiles];
+
+	std::vector<int> SmallWaterTiles;
+	// 0-5: large water pieces
+	// 6-7: large water debris
+	// 8-12: small water pieces
+	// 13: small water debris
+	auto constexpr largeWaterEnd = 8;
+	auto constexpr smallWaterEnd = 13;
+	for (int i = largeWaterEnd; i < smallWaterEnd; i++) {
+		SmallWaterTiles.push_back(i + tilesets_start[waterSet]);
+	}
+	// a trick to avoid affecting other shorelines
+	// ignore the working shore
+	auto tileNameHasShore = [&](int setIdx) {
+		if (setIdx == shorePieces) {
+			return false;
+		}
+		CString secName;
+		secName.Format("TileSet%04d", setIdx);
+		CString setName = tiles->GetString(secName, "SetName");
+		setName.MakeLower();
+		if (setName.Find("shore") != -1) {
+			return true;
+		}
+		return false;
+	};
+
+	std::vector<int> tiles_2x3;
+	std::vector<int> tiles_3x2;
+	std::vector<int> tiles_2x2;
+	std::vector<int> tiles_2x2Corners;
+	std::vector<int> tiles_1x2;
+	std::vector<int> tiles_2x1;
+
+	// 1 means rough (or land), 2 means beach (or water)
+	int shoreMatch_2x3[2][3] = { 0 };
+	int shoreMatch_3x2[3][2] = { 0 };
+	int shoreMatch_2x2[2][2] = { 0 };
+	int shoreMatch_1x2[1][2] = { 0 };
+	int shoreMatch_2x1[2][1] = { 0 };
+
+	for (int i = tileStart; i <= tileLast; i++) {
+		auto const& tile = (*tiledata)[i];
+
+		if (tile.cy == 2 && tile.cx == 3) {
+			tiles_2x3.push_back(i);
 			continue;
 		}
 
-		int set = atoi(generalSec.Nth(idx).second);
-		if (atoi(val)) {
-			softsets[set] = 1;
+		if (tile.cy == 3 && tile.cx == 2) {
+			tiles_3x2.push_back(i);
+			continue;
 		}
+
+		if (tile.cy == 2 && tile.cx == 2) {
+			int beachCount = 0;
+			for (int m = 0; m < 2; m++) {
+				for (int n = 0; n < 2; n++) {
+					int subTileidx = n * 2 + m;
+					auto ttype = GetHackedTerrainType(i, subTileidx);
+					if (ttype == TERRAINTYPE_WATER) {
+						beachCount++;
+					}
+				}
+			}
+			if (beachCount == 1 || beachCount == 3) {
+				tiles_2x2Corners.push_back(i);
+			} else {
+				tiles_2x2.push_back(i);
+			}
+			continue;
+		}
+
+		if (tile.cy == 1 && tile.cx == 2) {
+			tiles_1x2.push_back(i);
+			continue;
+		}
+
+		if (tile.cy == 2 && tile.cx == 1) {
+			tiles_2x1.push_back(i);
+			continue;
+		}
+	}
+	
+	for (int x = left - 5; x < right + 5; x++) {
+		for (int y = top - 5; y < bottom + 5; y++) {
+			if (!IsCoordInMap(x, y)) {
+				continue;
+			}
+
+			int pos = GetCoordIndex(x, y);
+			auto cell = GetFielddataAt(x, y);
+			ASSERT(cell != nullptr);
+			cell->bShoreProcessed = false;
+			cell->bShoreLATNeeded = false;
+		}
+	}
+
+	// remove broken beaches
+	for (int x = left; x < right; x++) {
+		for (int y = top; y < bottom; y++) {
+			if (!IsCoordInMap(x, y)) {
+				continue;
+			}
+
+			auto cell = GetFielddataAt(x, y);
+			int tileIndex = cell->wGround;
+			if (tileIndex == 0xFFFF) {
+				tileIndex = 0;
+			}
+
+			if ((tileIndex >= tileStart && tileIndex <= tileLast) && !IsTileIntact(x, y)) {
+				auto ttype = GetHackedTerrainType(tileIndex, cell->bSubTile);
+				if (ttype == TERRAINTYPE_GROUND) {
+					SetTileAt(GetCoordIndex(x, y), greenTile, 0);
+				} else if (ttype == TERRAINTYPE_WATER) {
+					SetTileAt(GetCoordIndex(x, y), SmallWaterTiles[rand() * (SmallWaterTiles.size() - 1) / RAND_MAX], 0);
+				}
+			}
+		}
+	}
+
+	// remove 1x1 land and water
+	// only used in bmp2map, not necessary
+	if (bRemoveUseless)
+	{
 
 	}
 
-	last_succeeded_operation = 7001;
+	auto process = [&](int w, int h, std::vector<int>tiles, int* shoreMatch)
+		{
+			for (int x = left; x < right; x++) {
+				for (int y = top; y < bottom; y++) {
+					if (!IsCoordInMap(x, y)) {
+						continue;
+					}
 
-	// remove partial shore pieces (wrong ones)
-	for (xx = left - 2; xx < right + 2; xx++) {
-		for (yy = top - 2; yy < bottom + 2; yy++) {
+					const int pos = GetCoordIndex(x, y);
+					auto const cell = GetFielddataAt(pos);
 
-			if (xx < 1 || yy < 1 || xx + yy<mapwidth + 1 || xx + yy>mapwidth + mapheight * 2 || (yy + 1 > mapwidth && xx - 1 < yy - mapwidth) || (xx + 1 > mapwidth && yy + mapwidth - 1 < xx)) continue;
+					if (cell->bShoreProcessed) {
+						continue;
+					}
 
-			int pos = xx + yy * isosize;
-			if (noChange[pos]) continue;
+					std::vector<int> targetBeachTiles;
 
-			FIELDDATA* fd = Map->GetFielddataAt(pos);
-			int ground = fd->wGround;
-			if (ground == 0xFFFF) ground = 0;
-			TILEDATA& td = (*tiledata)[ground];
-			if (td.wTileSet != shoreset) continue;
-
-			// we have a shore piece here. check if it is set correct
-			BOOL bCorrect = TRUE;
-
-			int of = fd->bSubTile;
-
-			int ox = of / td.cy;
-			int oy = of % td.cy;
-
-
-			int xxx, yyy;
-			int p = 0;
-			for (xxx = xx - ox; xxx < xx + td.cx - ox; xxx++) {
-				for (yyy = yy - oy; yyy < yy + td.cy - oy; yyy++) {
-					int pos = xxx + yyy * isosize;
-					if (td.tiles[p].pic != NULL) {
-						FIELDDATA* curf = Map->GetFielddataAt(pos);
-						int curg = curf->wGround;
-						if (curg == 0xFFFF) curg = 0;
-
-						if (curg != ground || curf->bSubTile != p) {
-							bCorrect = FALSE;
+					bool breakCheck = false;
+					const int oriHeight = cell->bHeight;
+					for (int m = 0; m < w; m++) {
+						if (breakCheck) {
 							break;
 						}
-					}
-					p++;
-				}
-				if (!bCorrect) break;
-			}
+						for (int n = 0; n < h; n++) {
+							if (breakCheck) {
+								break;
+							}
+							if (!IsCoordInMap(x + n, y + m)) {
+								continue;
+							}
 
-			if (!bCorrect) {
-				int iWaterFound = 0;
-				/*for(xxx=xx-1;xxx<=xx+1;xxx++)
-				{
-					for(yyy=yy-1;yyy<=yy+1;yyy++)
-					{
-						if(xxx==xx && yyy==yy) continue;
+							const int whPos = GetCoordIndex(x + n, y + m);
+							auto whCell = GetFielddataAt(whPos);
+							int tileIndex = whCell->wGround;
+							if (tileIndex == 0xFFFF) {
+								tileIndex = 0;
+							}
 
-						int pos=xxx+yyy*isosize;
-						FIELDDATA* curf=Map->GetFielddataAt(pos);
-						int curg=curf->wGround;
-						if(curg==0xFFFF) curg=0;
+							// skip intact tiles on the edges
+							if (x + n < left + 1 || y + m < top + 1 || x + n >= right - 1 || y + m >= bottom - 1) {
+								if (IsTileIntact(x + n, y + m) && !IsTileIntact(x + n, y + m, left, top, right, bottom)) {
+									for (auto& mc : GetIntactTileCoords(x + n, y + m, true)) {
+										int edgePos = GetCoordIndex(mc.x, mc.y);
+										GetFielddataAt(edgePos)->bShoreProcessed = true;
+									}
+								}
+							}
 
-						if((*tiledata)[curg].tiles[curf->bSubTile].bHackedTerrainType==TERRAINTYPE_WATER)
-							iWaterFound++;
+							if ((*tiledata)[tileIndex].tiles[whCell->bSubTile].bDirection != 0) {
+								whCell->bShoreProcessed = true;
+							}
 
-					}
-				}*/
+							if (whCell->bHeight != oriHeight) {
+								whCell->bShoreProcessed = true;
+							}
 
-				int pos = xx + yy * isosize;
-				FIELDDATA* curf = Map->GetFielddataAt(pos);
-				int curg = curf->wGround;
-				if (curg == 0xFFFF) curg = 0;
+							if (whCell->bShoreProcessed) {
+								breakCheck = true;
+							}
 
-				if ((*tiledata)[curg].tiles[curf->bSubTile].bHackedTerrainType == TERRAINTYPE_WATER) iWaterFound = 8;
+							auto const ttype = GetHackedTerrainType(tileIndex, whCell->bSubTile);
 
-				if (iWaterFound > 7) {
-					for (i = 0; i < *tiledata_count; i++) {
-						if ((*tiledata)[i].wTileSet == waterset && (*tiledata)[i].cx == 1 && (*tiledata)[i].cy == 1) break;
-					}
-					SetTileAt(xx + yy * isosize, i, 0);
-					noChange[xx + yy * isosize] = FALSE;
-					//replaced[xx+yy*isosize]=TRUE;
-				} else {
-					SetTileAt(xx + yy * isosize, 0, 0);
-					noChange[xx + yy * isosize] = FALSE;
-					//replaced[xx+yy*isosize]=TRUE;
+							if (ttype == TERRAINTYPE_GROUND) {
+								auto const& tile = (*tiledata)[tileIndex];
+								bool skip = false;
+								// check cliffs with beachs
+								for (int m = 0; m < tile.cy; m++) {
+									for (int n = 0; n < tile.cx; n++) {
+										int subIdx = n * tile.cy + m;
+										auto ttype2 = GetHackedTerrainType(tileIndex, subIdx);
+										if (ttype2 == TERRAINTYPE_IMPASSABLE) {
+											skip = true;
+										}
+									}
+								}
+								if (tileNameHasShore(tile.wTileSet)) {
+									skip = true;
+								}
+								shoreMatch[m * h + n] = skip ? 0 : 1;
+							} else if ((tileIndex >= tileStart && tileIndex <= tileLast && ttype == TERRAINTYPE_WATER)
+								|| (tileIndex >= waterSetStart && tileIndex <= waterSetLast && ttype == TERRAINTYPE_WATER)) {
+								shoreMatch[m * h + n] = 2;
+							} else {
+								shoreMatch[m * h + n] = 0;
+							}
 
-				}
-			}
-
-		}
-	}
-
-
-	// remove too small water and ground pieces (NEW)
-	if (bRemoveUseless) {
-		for (xx = left; xx < right; xx++) {
-			for (yy = top; yy < bottom; yy++) {
-
-				if (xx < 1 || yy < 1 || xx + yy<mapwidth + 1 || xx + yy>mapwidth + mapheight * 2 || (yy + 1 > mapwidth && xx - 1 < yy - mapwidth) || (xx + 1 > mapwidth && yy + mapwidth - 1 < xx)) continue;
-
-				int dwPos = xx + yy * isosize;
-
-				//if(noChange[dwPos]) continue;
-
-				FIELDDATA* fd = Map->GetFielddataAt(dwPos);
-				int ground = fd->wGround;
-				if (ground == 0xFFFF) ground = 0;
-				TILEDATA& td = (*tiledata)[ground];
-
-				if (softsets.find(td.wTileSet) == softsets.end()) continue;
-
-				if (td.tiles[fd->bSubTile].bHackedTerrainType != TERRAINTYPE_WATER && td.tiles[fd->bSubTile].bHackedTerrainType != TERRAINTYPE_GROUND) continue;
-
-				int ts[3][3];  // terrain info
-				int i, e;
-				for (i = 0; i < 3; i++) {
-					for (e = 0; e < 3; e++) {
-						int pos = dwPos + (i - 1) + (e - 1) * m_IsoSize;
-						if (pos < 0 || pos >= fielddata_size) {
-							ts[i][e] = 0;
-						} else {
-							FIELDDATA m2 = *GetFielddataAt(pos);
-							if (m2.wGround == 0xFFFF) m2.wGround = 0;
-
-							ts[i][e] = (*tiledata)[m2.wGround].tiles[m2.bSubTile].bHackedTerrainType;
 						}
 					}
-				}
-
-
-				if ((ts[1][0] != ts[1][1] && ts[1][2] != ts[1][1]) ||
-					(ts[0][1] != ts[1][1] && ts[2][1] != ts[1][1])) {
-					if (ts[1][1] == TERRAINTYPE_WATER) {
-						SetTileAt(dwPos, 0, 0);
-						//replaced[dwPos]=TRUE;
-					} else if (ts[1][1] == TERRAINTYPE_GROUND) {
-						if ((ts[1][0] == TERRAINTYPE_WATER && ts[1][2] == TERRAINTYPE_WATER) || (ts[0][1] == TERRAINTYPE_WATER && ts[2][1] == TERRAINTYPE_WATER)) {
-							SetTileAt(dwPos, smallwater, 0);
-							//replaced[dwPos]=TRUE;
+					if (breakCheck) {
+						continue;
+					}
+					for (auto index : tiles) {
+						bool match = true;
+						for (int m = 0; m < w; m++) {
+							for (int n = 0; n < h; n++) {
+								int subTileidx = n * w + m;
+								auto ttype = GetHackedTerrainType(index, subTileidx);
+								int thisType = -1;
+								if (ttype == TERRAINTYPE_GROUND) {
+									thisType = 1;
+								}
+								if (ttype == TERRAINTYPE_WATER) {
+									thisType = 2;
+								}
+								if (shoreMatch[m * h + n] != thisType) {
+									match = false;
+								}
+							}
+						}
+						if (match) {
+							targetBeachTiles.push_back(index);
 						}
 					}
-				}
+					if (!targetBeachTiles.empty()) {
+						int targetBeachTile = targetBeachTiles[rand() * (targetBeachTiles.size() - 1) / RAND_MAX];
+						for (int m = 0; m < w; m++) {
+							for (int n = 0; n < h; n++) {
+								if (!IsCoordInMap(x + n, y + m)) {
+									continue;
+								}
 
-			}
-		}
-	}
+								int whPos = GetCoordIndex(x + n, y + m);
+								SetTileAt(whPos, targetBeachTile, n* w + m);								
+								GetFielddataAt(whPos)->bShoreProcessed = true;
 
-
-	last_succeeded_operation = 7003;
-
-	// retrieve non-changeable fields
-	for (xx = left; xx < right; xx++) {
-		for (yy = top; yy < bottom; yy++) {
-			if (xx < 1 || yy < 1 || xx + yy<mapwidth + 1 || xx + yy>mapwidth + mapheight * 2 || (yy + 1 > mapwidth && xx - 1 < yy - mapwidth) || (xx + 1 > mapwidth && yy + mapwidth - 1 < xx)) continue;
-
-			int pos = xx + yy * isosize;
-			FIELDDATA* fd = GetFielddataAt(pos);
-			int ground = fd->wGround;
-			if (ground == 0xFFFF) ground = 0;
-
-			tsets[pos] = (*tiledata)[ground].wTileSet;
-			terrain[pos] = (*tiledata)[ground].tiles[fd->bSubTile].bHackedTerrainType;
-			tile[pos] = ground;
-
-			if (xx >= left && xx < right && yy >= top && yy < bottom) {
-
-				if (softsets.find((*tiledata)[ground].wTileSet) == softsets.end()/*(*tiledata)[ground].wTileSet==cliffset || (*tiledata)[ground].wTileSet==watercliffset*/) {
-					noChange[pos] = TRUE; continue;
-				}
-
-
-
-				TILEDATA& td = (*tiledata)[ground];
-
-				if (td.wTileSet == shoreset) {
-					int of = fd->bSubTile;
-
-					int ox = of / td.cy;
-					int oy = of % td.cy;
-
-					if (xx - ox < left || yy - oy < top || xx - ox + td.cx >= right || yy - oy + td.cy >= bottom) {
-						/*if(!replaced[pos])*/ noChange[pos] = TRUE;
+							}
+						}
 					}
+
 				}
 			}
-		}
-	}
+		};
 
+	process(2, 3, tiles_2x3, &shoreMatch_2x3[0][0]);
+	process(3, 2, tiles_3x2, &shoreMatch_3x2[0][0]);
+	process(2, 2, tiles_2x2Corners, &shoreMatch_2x2[0][0]);
+	process(2, 2, tiles_2x2, &shoreMatch_2x2[0][0]);
+	process(1, 2, tiles_1x2, &shoreMatch_1x2[0][0]);
+	process(2, 1, tiles_2x1, &shoreMatch_2x1[0][0]);
 
-
-
-	/*CProgressCtrl pc;
-	RECT r,rw;
-	GetWindowRect(&r);
-	rw.left=r.left+(r.right-r.left)/2-80;
-	rw.top=r.top+(r.bottom-r.top)/2-15;
-	rw.right=rw.left+160;
-	rw.bottom=rw.top+30;
-	pc.Create(WS_POPUPWINDOW | PBS_SMOOTH, rw, m_view.m_isoview, 0);*/
-
-	int tStart, tEnd;
-	tStart = -1;
-	tEnd = 0;
-	for (i = 0; i < *tiledata_count; i++) {
-		if ((*tiledata)[i].wTileSet == shoreset) {
-			if (tStart < 0) tStart = i;
-			if (i > tEnd) tEnd = i;
-		}
-	}
-
-	/*pc.SetRange(0, (tEnd-tStart)*2);
-		pc.ShowWindow(SW_SHOW);
-		pc.RedrawWindow();*/
-
-
-	last_succeeded_operation = 7004;
-
-	for (i = tStart; i <= tEnd; i++) {
-		/*pc.SetPos(i-tStart);
-		pc.UpdateWindow();*/
-		TILEDATA& td = (*tiledata)[i];
-
-		if (td.wTileSet == shoreset) {
-			int pos = i - tStart;
-			if (pos != 4 && pos != 5 && pos != 12 && pos != 13 && pos != 20 && pos != 21 && pos != 28 && pos != 29
-				&& pos != 6 && pos != 7 && pos != 14 && pos != 15 && pos != 22 && pos != 23 && pos != 30 && pos != 31 && (pos < 32 || pos>39))
+	// now add green tile around beaches
+	for (int x = left - 1; x < right + 1; x++) {
+		for (int y = top - 1; y < bottom + 1; y++) {
+			if (!IsCoordInMap(x, y)) {
 				continue;
-
-			int x, y;
-			int water_count = 0;
-			int p = 0;
-			for (x = 0; x < td.cx; x++) {
-				for (y = 0; y < td.cy; y++) {
-					if (td.tiles[p].bHackedTerrainType == TERRAINTYPE_WATER)
-						water_count++;
-					p++;
-				}
 			}
 
-			// tsets now has the tileset of every single field in range (x+16, y+16)
-			// terrain has the terrain type of every single field
-			int max_x = td.cx < 16 ? td.cx : 16;
-			int max_y = td.cy < 16 ? td.cy : 16;
+			int pos = GetCoordIndex(x, y);
+			auto cell = GetFielddataAt(pos);
+			int tileIndex = cell->wGround;
+			if (tileIndex == 0xFFFF) {
+				tileIndex = 0;
+			}
 
-			for (x = left; x < right; x++) {
-				for (y = top; y < bottom; y++) {
-					last_succeeded_operation = 7010;
+			if ((*tiledata)[tileIndex].tiles[cell->bSubTile].bDirection != 0) {
+				continue;
+			}
 
-					int xx, yy;
+			auto tile = (*tiledata)[tileIndex];
+			auto ttype = GetHackedTerrainType(tileIndex, cell->bSubTile);
 
-					//if(!replaced[x+y*isosize] && (x<left || y<top || x>=right || y>=bottom)) continue;
-					if (x < 1 || y < 1 || x + y<mapwidth + 1 || x + y>mapwidth + mapheight * 2 || (y + 1 > mapwidth && x - 1 < y - mapwidth) || (x + 1 > mapwidth && y + mapwidth - 1 < x)) continue;
-
-
-					/*BOOL wat_ex=FALSE;
-					for(xx=x;xx<x+max_x;xx++)
-					{
-						for(yy=y;yy<y+max_y;yy++)
-						{
-							FIELDDATA* fd=Map->GetFielddataAt(xx+yy*isosize);
-							int ground=fd->wGround;
-							if(ground==0xFFFF) ground=0;
-							int tile_t=(*tiledata)[ground].tiles[fd->bSubTile].bHackedTerrainType;
-							if(tile_t==TERRAINTYPE_WATER || tile_t==0xa)
-								wat_ex=TRUE;
-							if(wat_ex) break;
+			if ((tileIndex < tileStart || tileIndex > tileLast)
+				&& (ttype == TERRAINTYPE_GROUND)) {
+				bool skip = false;
+				// check cliffs with beachs
+				for (int m = 0; m < tile.cy; m++) {
+					for (int n = 0; n < tile.cx; n++) {
+						const int subIdx = n * tile.cy + m;
+						auto const surroundingTType = GetHackedTerrainType(tileIndex, subIdx);
+						if (surroundingTType == TERRAINTYPE_IMPASSABLE) {
+							skip = true;
 						}
-						if(wat_ex) break;
 					}
-					if(!wat_ex) continue;*/
+				}
+				if (tileNameHasShore(tile.wTileSet)) {
+					skip = true;
+				}
+				if (skip) {
+					continue;
+				}
 
-					BOOL bFits = TRUE;
-					int p = 0;
-					for (xx = x; xx < x + max_x; xx++) {
-						for (yy = y; yy < y + max_y; yy++) {
-							if (xx >= isosize || yy >= isosize) continue;
+				const int loop[4][2] = { {0, -1},{0, 1},{1, 0},{-1, 0} };
+				for (auto const [offsetX, offsetY] : loop) {
+					const int newX = offsetX + x;
+					const int newY = offsetY + y;
 
-
-							int tpos = i - tStart;
-							int xadd = 0, yadd = 0;
-
-							/*
-							if(tpos>=0 && tpos<=7) xadd=1;
-							if(tpos>=6 && tpos<=15) yadd=1;
-							if(tpos>=14 && tpos<=23) xadd=-1;
-							if(tpos>=22 && tpos<=31) yadd=-1;
-							if(tpos>=30 && tpos<=31) xadd=1;
-
-							if(tpos>=32 && tpos<=33)
-							{
-								xadd=1; yadd=1;
-
-							}
-
-							if(tpos>=34 && tpos<=35)
-							{
-								xadd=-1; yadd=1;
-
-							}
-
-							if(tpos>=36 && tpos<=37)
-							{
-								xadd=-1; yadd=-1;
-
-							}
-
-							if(tpos>=38 && tpos<=39)
-							{
-								xadd=1; yadd=-1;
-
-							}*/
-
-							/*if(tpos>=32 && tpos<=33)
-							{
-								xadd=1; yadd=1;
-								if(
-								terrain[xx+1+yy*isosize]==TERRAINTYPE_WATER || terrain[xx+(yy+1)*isosize]==TERRAINTYPE_WATER
-								)
-								{bFits=FALSE; break;}
-							}
-
-							if(tpos>=34 && tpos<=35)
-							{
-								xadd=-1; yadd=1;
-								if(
-								terrain[xx-1+yy*isosize]==TERRAINTYPE_WATER || terrain[xx+(yy+1)*isosize]==TERRAINTYPE_WATER
-								)
-								{bFits=FALSE; break;}
-							}
-
-							if(tpos>=36 && tpos<=37)
-							{
-								xadd=-1; yadd=-1;
-								if(
-								terrain[xx-1+yy*isosize]==TERRAINTYPE_WATER || terrain[xx+(yy-1)*isosize]==TERRAINTYPE_WATER
-								)
-								{bFits=FALSE; break;}
-							}
-
-							if(tpos>=38 && tpos<=39)
-							{
-								xadd=1; yadd=-1;
-								if(
-								terrain[xx+1+yy*isosize]==TERRAINTYPE_WATER || terrain[xx+(yy-1)*isosize]==TERRAINTYPE_WATER
-								)
-								{bFits=FALSE; break;}
-							}*/
-
-							last_succeeded_operation = 7011;
-
-							if (xadd && yadd) {
-								if (tsets[xx + xadd + yy * isosize] == waterset || tsets[xx + (yy + yadd) * isosize] == waterset) {
-									bFits = FALSE;
-									break;
-								}
-							}
-
-
-							int pos_water = xx + xadd + (yy + yadd) * isosize;
-							int pos_data = xx + yy * isosize;
-
-
-
-							BYTE& tile_t = td.tiles[p].bHackedTerrainType;
-
-							if (tsets[pos_data] == shoreset) {
-								if (hasChanged[pos_data]) // only cancel if this routine set the shore
-								{
-									// curves are preferred
-									if ((max_x != 2 || max_y != 2 || water_count != 3)) {
-										if (!((max_x == 3 && max_y == 2) || (max_x == 2 && max_y == 3))) {
-											bFits = FALSE;
-											break;
-										}
-
-									}
-
-								}
-							}
-
-							last_succeeded_operation = 7012;
-
-							// one step curves
-							if (noChange[pos_data]) {
-								bFits = FALSE;
-								break;
-							}
-
-
-							// 2 big shore pieces need special treatment
-							if (tile[pos_data] <= tEnd && tile[pos_data] >= tEnd - 2)
-								bFits = FALSE;
-
-							if (tile_t == TERRAINTYPE_WATER) {
-								if (terrain[pos_water] != TERRAINTYPE_WATER) {
-									bFits = FALSE;
-								}
-							} else {
-								if (terrain[pos_water] != TERRAINTYPE_GROUND)
-									//if(tsets[pos_water]==waterset)
-								{
-									bFits = FALSE;
-								}
-							}
-
-
-							if (!bFits) break;
-							p++;
-						}
-						if (!bFits) break;
+					if (!IsCoordInMap(newX, newY)) {
+						continue;
 					}
-
-					last_succeeded_operation = 7012;
-
-					if (bFits) // ok, place shore (later we need to do random choose of the different tiles here
-					{
-						// find similar shore piece (randomness)
-						int count = 0;
-						int pieces[16];
-						int k;
-						TILEDATA& t_orig = (*tiledata)[i];
-						for (k = 0; k < *tiledata_count; k++) {
-							TILEDATA& t = (*tiledata)[k];
-
-							if (t.bMarbleMadness) continue;
-
-							if (t.cx != t_orig.cx || t.cy != t_orig.cy) continue;
-
-							if (k != 4 && k != 5 && k != 12 && k != 13 && k != 20 && k != 21 && k != 28 && k != 29
-								&& (k < 32 || k>39)) {
-							} else continue;
-
-							int xx, yy;
-							BOOL bSame = TRUE;
-							int p = 0;
-							for (xx = 0; xx < t.cx; xx++) {
-								for (yy = 0; yy < t.cy; yy++) {
-									if (t.tiles[p].bHackedTerrainType != t_orig.tiles[p].bHackedTerrainType)
-										bSame = FALSE;
-									p++;
-									if (!bSame) break;
-								}
-								if (!bSame) break;
-							}
-
-							if (bSame && count < 16) {
-								pieces[count] = k;
-								count++;
-							}
-						}
-
-						last_succeeded_operation = 7013;
-
-						k = ((float)rand() * count) / (float)RAND_MAX;
-						if (k >= count) k = count - 1;
-						k = pieces[k];
-
-						TILEDATA& t = (*tiledata)[k];
-						int p = 0;
-						int xx, yy;
-						int startheight = GetHeightAt(x + y * isosize);
-						for (xx = 0; xx < t.cx; xx++) {
-							for (yy = 0; yy < t.cy; yy++) {
-								if (x + xx >= isosize || y + yy >= isosize) continue;
-
-								int pos = x + xx + (y + yy) * isosize;
-								last_succeeded_operation = 7014;
-
-								if (t.tiles[p].pic != NULL) {
-									SetHeightAt(pos, startheight + t.tiles[p].bZHeight);
-									SetTileAt(pos, k, p);
-									last_succeeded_operation = 7015;
-									tile[pos] = i;
-									tsets[pos] = (*tiledata)[k].wTileSet;
-									terrain[pos] = (*tiledata)[k].tiles[p].bHackedTerrainType;
-									hasChanged[pos] = TRUE;
-									if ((t.cx == 3 && t.cy == 2) || (t.cx == 2 && t.cy == 3)) noChange[pos] = TRUE;
-								}
-								p++;
-							}
-						}
-
-
+					int newPos = GetCoordIndex(newX, newY);
+					auto newCell = GetFielddataAt(newPos);
+					int newTileIndex = newCell->wGround;
+					if (newTileIndex == 0xFFFF) {
+						newTileIndex = 0;
 					}
-
+					auto ttype2 = GetHackedTerrainType(newTileIndex, newCell->bSubTile);
+					if (newTileIndex >= tileStart && newTileIndex <= tileLast
+						&& ttype2 == TERRAINTYPE_GROUND
+						&& newCell->bShoreProcessed) {
+						SetTileAt(pos, greenTile, 0);
+						cell->bShoreLATNeeded = true;
+						break;
+					}
 				}
 			}
 		}
 	}
-
-	last_succeeded_operation = 7005;
-
-
-	for (i = tStart; i <= tEnd; i++) {
-		/*pc.SetPos(i-tStart+(tEnd-tStart));
-		pc.UpdateWindow();*/
-		TILEDATA& td = (*tiledata)[i];
-
-		if ((*tiledata)[i].wTileSet == shoreset) {
-			int pos = i - tStart;
-			if (pos != 4 && pos != 5 && pos != 12 && pos != 13 && pos != 20 && pos != 21 && pos != 28 && pos != 29
-				&& pos != 6 && pos != 7 && pos != 14 && pos != 15 && pos != 22 && pos != 23 && pos != 30 && pos != 31 && (pos < 32 || pos>39))
-
-			{
-			} else continue;
-
-			int x, y;
-			int water_count = 0;
-			int p = 0;
-			for (x = 0; x < td.cx; x++) {
-				for (y = 0; y < td.cy; y++) {
-					if (td.tiles[p].bHackedTerrainType == TERRAINTYPE_WATER)
-						water_count++;
-					p++;
-				}
+	// LAT
+	for (int x = left - 1; x < right + 1; x++) {
+		for (int y = top - 1; y < bottom + 1; y++) {
+			if (!IsCoordInMap(x, y)) {
+				continue;
 			}
-
-
-			// tsets now has the tileset of every single field in range (x+16, y+16)
-			// terrain has the terrain type of every single field
-			int max_x = td.cx < 16 ? td.cx : 16;
-			int max_y = td.cy < 16 ? td.cy : 16;
-
-			for (x = left; x < right; x++) {
-				for (y = top; y < bottom; y++) {
-					int xx, yy;
-
-					//if(!replaced[x+y*isosize] && (x<left || y<top || x>=right || y>=bottom)) continue;
-					if (x < 1 || y < 1 || x + y<mapwidth + 1 || x + y>mapwidth + mapheight * 2 || (y + 1 > mapwidth && x - 1 < y - mapwidth) || (x + 1 > mapwidth && y + mapwidth - 1 < x)) continue;
-
-
-
-
-
-					/*BOOL wat_ex=FALSE;
-					for(xx=x;xx<x+max_x;xx++)
-					{
-						for(yy=y;yy<y+max_y;yy++)
-						{
-							FIELDDATA* fd=Map->GetFielddataAt(xx+yy*isosize);
-							int ground=fd->wGround;
-							if(ground==0xFFFF) ground=0;
-							int tile_t=(*tiledata)[ground].tiles[fd->bSubTile].bHackedTerrainType;
-							if(tile_t==TERRAINTYPE_WATER || tile_t==0xa)
-								wat_ex=TRUE;
-							if(wat_ex) break;
-						}
-						if(wat_ex) break;
-					}
-					if(!wat_ex) continue;*/
-
-
-					BOOL bFits = TRUE;
-					int p = 0;
-					for (xx = x; xx < x + max_x; xx++) {
-						for (yy = y; yy < y + max_y; yy++) {
-							if (xx >= isosize || yy >= isosize) continue;
-
-							int tpos = i - tStart;
-							int xadd = 0, yadd = 0;
-
-							/*if(tpos>=0 && tpos<=7) xadd=1;
-							if(tpos>=6 && tpos<=15) yadd=1;
-							if(tpos>=14 && tpos<=23) xadd=-1;
-							if(tpos>=22 && tpos<=31) yadd=-1;
-							if(tpos>=30 && tpos<=31) xadd=1;
-
-							if(tpos>=32 && tpos<=33)
-							{
-								xadd=1; yadd=1;
-
-							}
-
-							if(tpos>=34 && tpos<=35)
-							{
-								xadd=-1; yadd=1;
-
-							}
-
-							if(tpos>=36 && tpos<=37)
-							{
-								xadd=-1; yadd=-1;
-
-							}
-
-							if(tpos>=38 && tpos<=39)
-							{
-								xadd=1; yadd=-1;
-
-							}
-
-
-							if(xadd && yadd)
-							{
-								if(tsets[xx+xadd+yy*isosize]==waterset || tsets[xx+(yy+yadd)*isosize]==waterset)
-								{
-									bFits=FALSE;
-									break;
-								}
-							}*/
-
-
-
-
-							int pos_water = xx + xadd + (yy + yadd) * isosize;
-							int pos_data = xx + yy * isosize;
-
-							BYTE& tile_t = td.tiles[p].bHackedTerrainType;
-
-							if (tsets[pos_data] == shoreset) {
-								if (hasChanged[pos_data]) // only cancel if this routine set the shore
-								{
-									// curves are preferred
-									if ((max_x != 2 || max_y != 2 || water_count != 3)) {
-										if (!((max_x == 3 && max_y == 2) || (max_x == 2 && max_y == 3))) {
-											bFits = FALSE;
-											break;
-										}
-									}
-
-								}
-							}
-
-							// one step curves
-							if (noChange[pos_data]) {
-								bFits = FALSE;
-								break;
-							}
-
-
-							if (tile[pos_data] <= tEnd && tile[pos_data] >= tEnd - 2)
-								bFits = FALSE;
-
-							if (tile_t == TERRAINTYPE_WATER) {
-								if (terrain[pos_water] != TERRAINTYPE_WATER) {
-									bFits = FALSE;
-								}
-							} else {
-								if (terrain[pos_water] != TERRAINTYPE_GROUND)
-									//if(tsets[pos_water]==waterset)
-								{
-									bFits = FALSE;
-								}
-							}
-
-
-							if (!bFits) break;
-							p++;
-						}
-						if (!bFits) break;
-					}
-
-					last_succeeded_operation = 7031;
-					if (bFits) // ok, place shore 
-					{
-						// find similar shore piece (randomness)
-						int count = 0;
-						int pieces[16];
-						int k;
-						TILEDATA& t_orig = (*tiledata)[i];
-						for (k = 0; k < *tiledata_count; k++) {
-							TILEDATA& t = (*tiledata)[k];
-							if (t.cx != t_orig.cx || t.cy != t_orig.cy) continue;
-
-							if (t.bMarbleMadness) continue;
-
-							if (k != 4 && k != 5 && k != 12 && k != 13 && k != 20 && k != 21 && k != 28 && k != 29
-								&& (k < 32 || k>39)) {
-							} else continue;
-
-							int xx, yy;
-							BOOL bSame = TRUE;
-							int p = 0;
-							for (xx = 0; xx < t.cx; xx++) {
-								for (yy = 0; yy < t.cy; yy++) {
-									if (t.tiles[p].bHackedTerrainType != t_orig.tiles[p].bHackedTerrainType)
-										bSame = FALSE;
-									p++;
-									if (!bSame) break;
-								}
-								if (!bSame) break;
-							}
-
-							if (bSame && count < 16) {
-								pieces[count] = k;
-								count++;
-							}
-						}
-
-						last_succeeded_operation = 7032;
-
-						k = ((float)rand() * count) / (float)RAND_MAX;
-						if (k >= count) k = count - 1;
-						k = pieces[k];
-
-						TILEDATA& t = (*tiledata)[k];
-						int p = 0;
-						int xx, yy;
-						int startheight = GetHeightAt(x + y * isosize);
-						for (xx = 0; xx < t.cx; xx++) {
-							for (yy = 0; yy < t.cy; yy++) {
-								if (x + xx >= isosize || y + yy >= isosize) continue;
-
-								int pos = x + xx + (y + yy) * isosize;
-
-								if (t.tiles[p].pic != NULL) {
-									SetHeightAt(pos, startheight + t.tiles[p].bZHeight);
-									SetTileAt(pos, k, p);
-									tile[pos] = i;
-									tsets[pos] = (*tiledata)[k].wTileSet;
-									terrain[pos] = (*tiledata)[k].tiles[p].bHackedTerrainType;
-									hasChanged[pos] = TRUE;
-									if ((t.cx == 3 && t.cy == 2) || (t.cx == 2 && t.cy == 3)) noChange[pos] = TRUE;
-								}
-								p++;
-							}
-						}
-					}
-
-				}
+			int pos = GetCoordIndex(x, y);
+			auto const cell = GetFielddataAt(pos);
+			if (cell->bShoreLATNeeded) {
+				SmoothAllAt(pos);
 			}
 		}
 	}
-
-	last_succeeded_operation = 7006;
-
-	memset(hasChanged, 0, sizeof(BOOL) * isosize * isosize);
-
-	// now make LAT (RA2 only)
-
-#ifdef RA2_MODE
-	int x, y;
-	for (x = left; x < right; x++) {
-		for (y = top; y < bottom; y++) {
-			int xx, yy;
-			if (x < 1 || y < 1 || x + y<mapwidth + 1 || x + y>mapwidth + mapheight * 2 || (y + 1 > mapwidth && x - 1 < y - mapwidth) || (x + 1 > mapwidth && y + mapwidth - 1 < x)) continue;
-
-			int pos = x + y * isosize;
-
-			if (noChange[pos]) continue;
-			if (terrain[pos] == TERRAINTYPE_GROUND && tsets[pos] != shoreset && tsets[pos] != cliffset && tsets[pos] != watercliffset) {
-				int i, e;
-				BOOL bShoreFound = FALSE;
-				for (i = x - 1; i <= x + 1; i++) {
-					for (e = y - 1; e <= y + 1; e++) {
-						if (tsets[i + e * isosize] == shoreset) bShoreFound = TRUE;
-						if (bShoreFound) break;
-					}
-					if (bShoreFound) break;
-				}
-
-				if (bShoreFound) {
-					int sandtile = tiles->GetInteger("General", "GreenTile");
-					int sandlat = tiles->GetInteger("General", "ClearToGreenLat");
-
-					int i;
-					for (i = 0; i < *tiledata_count; i++)
-						if ((*tiledata)[i].wTileSet == sandtile) break;
-					Map->SetTileAt(pos, i, 0);
-					hasChanged[pos] = TRUE;
-
-				}
-
-			}
-		}
-	}
-
-	for (x = left - 1; x < right + 1; x++) {
-		for (y = top - 1; y < bottom + 1; y++) {
-			int xx, yy;
-			if (x < 1 || y < 1 || x + y<mapwidth + 1 || x + y>mapwidth + mapheight * 2 || (y + 1 > mapwidth && x - 1 < y - mapwidth) || (x + 1 > mapwidth && y + mapwidth - 1 < x)) continue;
-
-			int pos = x + y * isosize;
-			if (noChange[pos]) continue;
-
-			if (terrain[pos] == TERRAINTYPE_GROUND && tsets[pos] != shoreset && tsets[pos] != cliffset && tsets[pos] != watercliffset) {
-				int i, e;
-				BOOL bShoreFound = FALSE;
-				BOOL bSomethingChanged = FALSE;
-				for (i = x - 1; i <= x + 1; i++) {
-					for (e = y - 1; e <= y + 1; e++) {
-						if (tsets[i + e * isosize] == shoreset) bShoreFound = TRUE;
-						if (hasChanged[i + e * isosize]) bSomethingChanged = TRUE;
-						if (bShoreFound && hasChanged[i + e * isosize]) break;
-					}
-					if (bShoreFound && hasChanged[i + e * isosize]) break;
-				}
-
-
-
-				if (bShoreFound && hasChanged) {
-					int sandtile = tiles->GetInteger("General", "GreenTile");
-					int sandlat = tiles->GetInteger("General", "ClearToGreenLat");
-
-
-					SmoothAt(pos, sandtile, sandlat, tiles->GetInteger("General", "ClearTile"));
-				}
-
-			}
-		}
-	}
-#endif
-
-
-
-	//delete[] replaced;
-	delete[] hasChanged;
-	delete[] noChange;
-	delete[] tsets;
-	delete[] terrain;
-	delete[] tile;
-
-	//pc.DestroyWindow();
-
-
-
 }
 
 BOOL CMapData::IsMultiplayer()

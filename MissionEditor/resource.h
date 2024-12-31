@@ -622,6 +622,12 @@
 #define IDC_INI_EDITOR_KEYS             1546
 #define IDC_SAVE_OPT_MP_TXT             1547
 #define IDC_SAVE_OPT_M_PLAYERS          1548
+#define IDC_CMAPSIZE_WIDTH_TXT          1549
+#define IDC_CMAPSIZE_HEIGHT_TXT         1550
+#define IDC_CMAPSIZE_LEFT_TXT           1551
+#define IDC_CMAPSIZE_TOP_TXT            1552
+#define IDC_CMAPSIZE_NOTE_TXT           1553
+#define IDC_CMAPSIZE_WARNING_TXT        1554
 #define ID_FILE_OPENMAP                 40001
 #define ID_FILE_SAVEAS                  40002
 #define ID_FILE_QUIT                    40003
@@ -716,9 +722,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        321
+#define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         40144
-#define _APS_NEXT_CONTROL_VALUE         1549
+#define _APS_NEXT_CONTROL_VALUE         1555
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

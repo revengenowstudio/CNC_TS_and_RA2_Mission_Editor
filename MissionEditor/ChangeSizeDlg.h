@@ -51,10 +51,10 @@ public:
 	//{{AFX_VIRTUAL(CChangeSizeDlg)
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV-Unterstützung
+	virtual BOOL OnInitDialog() override;
 	//}}AFX_VIRTUAL
 
-// Implementierung
-protected:
+	void translateUI();
 
 	// Generierte Nachrichtenzuordnungsfunktionen
 	//{{AFX_MSG(CChangeSizeDlg)

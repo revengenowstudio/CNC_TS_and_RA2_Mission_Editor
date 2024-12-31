@@ -124,7 +124,7 @@ void CMapD::UpdateStrings()
 	GetDlgItem(IDC_LTHEATER)->SetWindowText(GetLanguageStringACP("MapTheater"));
 	GetDlgItem(IDC_MAP_D_WIDTH)->SetWindowText(GetLanguageStringACP("MapWidth"));
 	GetDlgItem(IDC_MAP_D_HEIGHT)->SetWindowText(GetLanguageStringACP("MapHeight"));
-	GetDlgItem(IDC_CHANGELOCAL)->SetWindowText(GetLanguageStringACP("MapChange"));
+	GetDlgItem(IDC_CHANGELOCAL)->SetWindowText(GetLanguageStringACP("MapChangeLocal"));
 	GetDlgItem(IDC_CHANGE)->SetWindowText(GetLanguageStringACP("MapChange"));
 }
 

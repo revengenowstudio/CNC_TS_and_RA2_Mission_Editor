@@ -25,6 +25,7 @@
 #include "finalsun.h"
 #include "ChangeSizeDlg.h"
 #include "variables.h"
+#include "functions.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,6 +62,33 @@ void CChangeSizeDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_WIDTH, m_Width);
 	DDV_MinMaxInt(pDX, m_Width, 0, 400);
 	//}}AFX_DATA_MAP
+}
+
+
+BOOL CChangeSizeDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	translateUI();
+	return TRUE;
+}
+
+void CChangeSizeDlg::translateUI()
+{
+	TranslateWindowCaption(*this, "ChangeMapSizeDlgCaption");
+
+	TranslateDlgItem(*this, IDC_DESC, "ChangeMapSizeDlgDesc");
+
+	TranslateDlgItem(*this, IDC_CMAPSIZE_WIDTH_TXT, "ChangeMapSizeDlgWidth");
+	TranslateDlgItem(*this, IDC_CMAPSIZE_HEIGHT_TXT, "ChangeMapSizeDlgHeight");
+	TranslateDlgItem(*this, IDC_CMAPSIZE_LEFT_TXT, "ChangeMapSizeDlgLeft");
+	TranslateDlgItem(*this, IDC_CMAPSIZE_TOP_TXT, "ChangeMapSizeDlgTop");
+
+	TranslateDlgItem(*this, IDC_CMAPSIZE_NOTE_TXT, "ChangeMapSizeDlgNote");
+	TranslateDlgItem(*this, IDC_CMAPSIZE_WARNING_TXT, "ChangeMapSizeDlgWarning");
+
+	TranslateDlgItem(*this, IDOK, "OK");
+	TranslateDlgItem(*this, IDCANCEL, "Cancel");
 }
 
 

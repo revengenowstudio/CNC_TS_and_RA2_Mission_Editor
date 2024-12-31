@@ -126,6 +126,8 @@ struct FIELDDATA
 	unsigned bRedrawTerrain : 1; // force redraw
 	unsigned bCliffHack : 1;
 	unsigned bRNDImage : 4; // for using a,b,c of tmp tiles
+	bool bShoreProcessed;
+	bool bShoreLATNeeded;
 };
 
 struct SNAPSHOTDATA
@@ -241,8 +243,7 @@ public:
 	DWORD GetStructureCount() const;
 	DWORD GetUnitCount() const;
 	DWORD GetInfantryCount() const;
-	void GetStdUnitData(DWORD dwIndex, STDOBJECTDATA* lpStdUnit) const;
-	void GetStdAircraftData(DWORD dwIndex, STDOBJECTDATA* lpStdAircraft) const;
+
 	void GetNthWaypointData(DWORD dwIdx, CString* lpID, DWORD* lpdwPos) const;
 	void GetWaypointData(DWORD dwId, CString* lpID, DWORD* lpdwPos) const;
 	BOOL IsGroundObjectAt(DWORD dwPos) const;
@@ -253,16 +254,27 @@ public:
 	BOOL AddAircraft(AIRCRAFT* lpAircraft, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");
 	void GetCelltagData(DWORD dwIndex, CString* lpTag, DWORD* lpdwPos) const;
 	BOOL AddCelltag(LPCTSTR lpTag, DWORD dwPos);
+
+	std::pair<CString, CString> GetNthDataOfTechno(const size_t index, const TechnoType type) const;
+	bool ParseBasicTechnoData(const CString& rawText, STDOBJECTDATA& data) const;
+	bool ParseTechnoData(const CString& rawText, const TechnoType type, TECHNODATA& data) const;
 	CString GetAircraftData(DWORD dwIndex, AIRCRAFT* lpAircraft) const;
 	CString GetUnitData(DWORD dwIndex, UNIT* lpUnit) const;
+	bool ParseInfantryData(const CString& rawText, INFANTRY& infantry) const;
+	bool ParseUnitData(const CString& rawText, UNIT& unit) const;
+	bool ParseAircraftData(const CString& rawText, AIRCRAFT& aircraft) const;
+	bool ParseStructureData(const CString& rawText, STRUCTURE& structure) const;
 	void GetInfantryData(DWORD dwIndex, INFANTRY* lpInfantry) const;
 	void GetStdInfantryData(DWORD dwIndex, STDOBJECTDATA* lpStdInfantry) const;
+	void GetStdUnitData(DWORD dwIndex, STDOBJECTDATA* lpStdUnit) const;
+	void GetStdAircraftData(DWORD dwIndex, STDOBJECTDATA* lpStdAircraft) const;
+	void GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const;
+
 	INT GetUnitTypeID(LPCTSTR lpType);
 	void InitializeUnitTypes();
 	BOOL AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");
 	BOOL AddInfantry(INFANTRY* lpInfantry, int suggestedIndex = -1, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0);
 	BOOL AddNode(NODE* lpNode, WORD dwPos);
-	void GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure) const;
 	CString GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
 	BOOL AddWaypoint(CString lpID, DWORD dwPos);
 
@@ -275,6 +287,10 @@ public:
 	void DeleteWaypoint(DWORD id);
 	void DeleteInfantry(DWORD dwIndex);
 
+	bool IsTileIntact(int x, int y, int startX = -1, int startY = -1, int right = -1, int bottom = -1);
+	std::vector<MapCoords> GetIntactTileCoords(int x, int y, bool oriIntact);
+	char GetHackedTerrainType(int tileIndex, int TileSubIndex);
+	
 	INT GetCelltagAt(DWORD dwPos) const
 	{
 		return fielddata[dwPos].celltag;
@@ -378,6 +394,11 @@ public:
 		return &fielddata[dwPos];
 	};
 
+	FIELDDATA* GetFielddataAt(int X, int Y)
+	{
+		return GetFielddataAt(GetCoordIndex(X, Y));
+	};
+
 	const FIELDDATA* GetFielddataAt(const MapCoords& pos) const
 	{
 		auto dwPos = GetMapPos(pos);
@@ -453,6 +474,8 @@ public:
 	ProjectedCoords ProjectCoords(MapCoords xy) const;
 	ProjectedCoords ProjectCoords3d(MapCoords xy) const;
 	ProjectedCoords ProjectCoords3d(MapCoords xy, int z) const;
+	bool IsCoordInMap(int X, int Y) const;
+	inline int GetCoordIndex(int X, int Y) const { return X + Y * GetIsoSize(); }
 	bool isInside(MapCoords xy) const;
 	bool isInside(int x, int y) const;
 
@@ -655,6 +678,16 @@ public:
 	void SetTube(CTube* lpTI);
 	CTube* GetTube(std::uint16_t wID);
 };
+
+inline bool CMapData::IsCoordInMap(int X, int Y) const
+{
+	return
+		X > 0 && Y > 0 &&
+		X + Y > GetWidth() &&
+		X + Y <= GetWidth() + 2 * GetHeight() &&
+		(Y < GetWidth() || X > Y - GetWidth()) &&
+		(X < GetWidth() || X < Y + GetWidth());
+}
 
 inline bool CMapData::isInside(MapCoords xy) const
 {

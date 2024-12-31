@@ -2335,22 +2335,11 @@ void CUserScriptsDlg::OnOK()
 			CString data = params[0];
 
 			INFANTRY id;
+			auto const parsed = Map->ParseInfantryData(data, id);
+			ASSERT(parsed);
+
 			id.deleted = 0;
-			id.house = GetParam(data, 0);
-			id.type = GetParam(data, 1);
-			id.strength = GetParam(data, 2);
-			id.y = GetParam(data, 3);
-			id.x = GetParam(data, 4);
-			//id.pos=GetParam(data, 5);
 			id.pos = "-1"; // ignore pos values!
-			id.action = GetParam(data, 6);
-			id.direction = GetParam(data, 7);
-			id.tag = GetParam(data, 8);
-			id.flag1 = GetParam(data, 9);
-			id.group = GetParam(data, 10);
-			id.flag3 = GetParam(data, 11);
-			id.flag4 = GetParam(data, 12);
-			id.flag5 = GetParam(data, 13);
 
 			if (Map->AddInfantry(&id, lastInfantryDeleted, NULL, NULL, NULL) == FALSE) {
 				report += "AddInfantry failed\r\n";
@@ -2388,22 +2377,10 @@ void CUserScriptsDlg::OnOK()
 			CString data = params[0];
 
 			UNIT unit;
-			unit.house = GetParam(data, 0);
-			unit.type = GetParam(data, 1);
-			unit.strength = GetParam(data, 2);
-			unit.y = GetParam(data, 3);
-			unit.x = GetParam(data, 4);
-			unit.direction = GetParam(data, 5);
-			unit.action = GetParam(data, 6);
-			unit.tag = GetParam(data, 7);
-			unit.flag1 = GetParam(data, 8);
-			unit.group = GetParam(data, 9);
-			unit.flag3 = GetParam(data, 10);
-			unit.flag4 = GetParam(data, 11);
-			unit.flag5 = GetParam(data, 12);
-			unit.flag6 = GetParam(data, 13);
+			auto const parsed = Map->ParseUnitData(data, unit);
+			ASSERT(parsed);
 
-			if (Map->GetUnitAt(atoi(unit.x) + atoi(unit.y) * Map->GetIsoSize()) >= 0) {
+			if (Map->GetUnitAt(atoi(unit.basic.x) + atoi(unit.basic.y) * Map->GetIsoSize()) >= 0) {
 				report += "AddVehicle failed\r\n";
 				goto nextline;
 			}
@@ -2444,20 +2421,10 @@ void CUserScriptsDlg::OnOK()
 			CString data = params[0];
 
 			AIRCRAFT air;
-			air.house = GetParam(data, 0);
-			air.type = GetParam(data, 1);
-			air.strength = GetParam(data, 2);
-			air.y = GetParam(data, 3);
-			air.x = GetParam(data, 4);
-			air.direction = GetParam(data, 5);
-			air.action = GetParam(data, 6);
-			air.tag = GetParam(data, 7);
-			air.flag1 = GetParam(data, 8);
-			air.group = GetParam(data, 9);
-			air.flag3 = GetParam(data, 10);
-			air.flag4 = GetParam(data, 11);
+			auto const parsed = Map->ParseAircraftData(data, air);
+			ASSERT(parsed);
 
-			if (Map->GetAirAt(atoi(air.x) + atoi(air.y) * Map->GetIsoSize()) >= 0) {
+			if (Map->GetAirAt(atoi(air.basic.x) + atoi(air.basic.y) * Map->GetIsoSize()) >= 0) {
 				report += "AddAircraft failed\r\n";
 				goto nextline;
 			}
@@ -2498,25 +2465,10 @@ void CUserScriptsDlg::OnOK()
 			CString data = params[0];
 
 			STRUCTURE structure;
-			structure.house = GetParam(data, 0);
-			structure.type = GetParam(data, 1);
-			structure.strength = GetParam(data, 2);
-			structure.y = GetParam(data, 3);
-			structure.x = GetParam(data, 4);
-			structure.direction = GetParam(data, 5);
-			structure.tag = GetParam(data, 6);
-			structure.flag1 = GetParam(data, 7);
-			structure.flag2 = GetParam(data, 8);
-			structure.energy = GetParam(data, 9);
-			structure.upgradecount = GetParam(data, 10);
-			structure.spotlight = GetParam(data, 11);
-			structure.upgrade1 = GetParam(data, 12);
-			structure.upgrade2 = GetParam(data, 13);
-			structure.upgrade3 = GetParam(data, 14);
-			structure.flag3 = GetParam(data, 15);
-			structure.flag4 = GetParam(data, 16);
+			auto const parsed = Map->ParseStructureData(data, structure);
+			ASSERT(parsed);
 
-			if (Map->GetStructureAt(atoi(structure.x) + atoi(structure.y) * Map->GetIsoSize()) >= 0) {
+			if (Map->GetStructureAt(atoi(structure.basic.x) + atoi(structure.basic.y) * Map->GetIsoSize()) >= 0) {
 				report += "AddStructure failed\r\n";
 				goto nextline;
 			}

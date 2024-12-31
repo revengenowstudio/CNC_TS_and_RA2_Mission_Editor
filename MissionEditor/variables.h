@@ -148,6 +148,7 @@ extern int rampsmoothset;
 extern int slopesetpiecesset;
 extern int waterset;
 extern int shoreset;
+extern int greenset;
 extern int ramp2set;
 extern int pave2set;
 extern int ramp2set_start;

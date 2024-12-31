@@ -2137,10 +2137,12 @@ void CIsoView::OnRButtonUp(UINT nFlags, CPoint point)
 
 		if (!ignoreClick) {
 			AD.reset();
-
-			CMyViewFrame& frame = *((CMyViewFrame*)owner);
-			frame.m_objectview->GetTreeCtrl().Select(NULL, TVGN_CARET);
 		}
+
+		CTreeCtrl& treeCtrl = ((CMyViewFrame*)owner)->m_objectview->GetTreeCtrl();
+		HTREEITEM hParentItem = treeCtrl.GetParentItem(treeCtrl.GetSelectedItem());
+		treeCtrl.Select(hParentItem, TVGN_CARET);
+
 		return;
 	}
 

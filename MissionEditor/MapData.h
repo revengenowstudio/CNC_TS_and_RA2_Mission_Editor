@@ -160,7 +160,9 @@ public:
 
 	void SetFielddataAt(DWORD dwPos, FIELDDATA* lpFd)
 	{
-		if (dwPos >= fielddata_size) return;
+		if (dwPos >= fielddata.size()) {
+			return;
+		}
 
 		RemoveOvrlMoney(fielddata[dwPos].overlay, fielddata[dwPos].overlaydata);
 		fielddata[dwPos] = (*lpFd);
@@ -186,7 +188,7 @@ public:
 	void CreateMap(DWORD dwWidth, DWORD dwHeight, LPCTSTR lpTerrainType, DWORD dwGroundHeight);
 	BOOL SetTileAt(DWORD dwPos, DWORD dwID, DWORD dwTile)
 	{
-		if (dwPos > fielddata_size) {
+		if (dwPos > fielddata.size()) {
 			return FALSE;
 		}
 
@@ -222,10 +224,10 @@ public:
 
 	void SetHeightAt(DWORD dwPos, BYTE bHeight)
 	{
-		int height = (char)bHeight;
-		if (height > MAXHEIGHT) height = MAXHEIGHT; // too high else
-		if (height < 0) height = 0;
-		if (dwPos < fielddata_size) fielddata[dwPos].bHeight = height;
+		auto const height = std::max(0, std::min<int>(bHeight, MAXHEIGHT));
+		if (dwPos < fielddata.size()) {
+			fielddata[dwPos].bHeight = height;
+		}
 	}
 
 
@@ -362,7 +364,10 @@ public:
 	}
 	INT GetHeightAt(DWORD dwPos) const
 	{
-		return fielddata[dwPos].bHeight;
+		if (dwPos < fielddata.size()) {
+			return fielddata[dwPos].bHeight;
+		}
+		return 0;
 	}
 	INT GetHeightAt(const MapCoords& coords) const
 	{
@@ -371,7 +376,7 @@ public:
 
 	const FIELDDATA* GetFielddataAt(DWORD dwPos) const
 	{
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -381,7 +386,7 @@ public:
 
 	FIELDDATA* GetFielddataAt(DWORD dwPos)
 	{
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -397,7 +402,7 @@ public:
 	const FIELDDATA* GetFielddataAt(const MapCoords& pos) const
 	{
 		auto dwPos = GetMapPos(pos);
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -408,7 +413,7 @@ public:
 	FIELDDATA* GetFielddataAt(const MapCoords& pos)
 	{
 		auto dwPos = GetMapPos(pos);
-		if (dwPos >= fielddata_size) {
+		if (dwPos >= fielddata.size()) {
 			outside_f.bReserved = 1;
 			return &outside_f;
 		}
@@ -472,6 +477,7 @@ public:
 	bool IsCoordInMap(int X, int Y) const;
 	inline int GetCoordIndex(int X, int Y) const { return X + Y * GetIsoSize(); }
 	bool isInside(MapCoords xy) const;
+	bool isInside(int x, int y) const;
 
 	__forceinline CPoint GetMiniMapPos(MapCoords mapCoords)
 	{
@@ -517,8 +523,7 @@ private:
 	CIniFile m_mapfile;
 	RECT m_maprect;
 	RECT m_vismaprect;
-	FIELDDATA* fielddata;
-	int fielddata_size;
+	std::vector<FIELDDATA> fielddata;
 	SNAPSHOTDATA* m_snapshots;
 	DWORD dwSnapShotCount;
 	int m_cursnapshot;
@@ -687,6 +692,10 @@ inline bool CMapData::IsCoordInMap(int X, int Y) const
 inline bool CMapData::isInside(MapCoords xy) const
 {
 	return xy.x >= 0 && xy.y >= 0 && xy.x < m_IsoSize&& xy.y < m_IsoSize;
+}
+inline bool CMapData::isInside(int x, int y) const
+{
+	return x >= 0 && y >= 0 && x < m_IsoSize&& y < m_IsoSize;
 }
 
 inline MapCoords CMapData::ToMapCoords(ProjectedCoords xy) const

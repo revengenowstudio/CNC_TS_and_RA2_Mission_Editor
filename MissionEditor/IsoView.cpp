@@ -1654,6 +1654,9 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 
 			for (m = left; m < right; m++) {
 				for (n = top; n < bottom; n++) {
+					if (!Map->isInside(x + m, y + n)) {
+						continue;
+					}
 					int pos = x + m + (y + n) * isosize;
 					int ground = Map->GetFielddataAt(pos)->wGround;
 					if (ground == 0xFFFF) {
@@ -1699,6 +1702,9 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 
 			for (m = left; m < right; m++) {
 				for (n = top; n < bottom; n++) {
+					if (!Map->isInside(x + m, y + n)) {
+						continue;
+					}
 					int ground = Map->GetFielddataAt(x + m + (y + n) * Map->GetIsoSize())->wGround;
 					if (ground == 0xFFFF) {
 						ground = 0;
@@ -1729,6 +1735,9 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 			ASSERT(m_funcRect.top <= m_funcRect.bottom);
 			for (m = m_funcRect.left - 1; m <= m_funcRect.right + 1; m++) {
 				for (n = m_funcRect.top - 1; n <= m_funcRect.bottom + 1; n++) {
+					if (!Map->isInside(m, n)) {
+						continue;
+					}
 					Map->CreateSlopesAt(m + n * isosize);
 				}
 			}
@@ -2568,6 +2577,9 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 				int oheight = Map->GetHeightAt(x + y * Map->GetIsoSize());
 				for (f = -m_BrushSize_x / 2; f < m_BrushSize_x / 2 + 1; f++) {
 					for (n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
+						if (!Map->isInside(x + f, y + n)) {
+							continue;
+						}
 						int pos = x + f + (y + n) * Map->GetIsoSize();
 						int ground = Map->GetFielddataAt(pos)->wGround;
 						if (ground == 0xFFFF) ground = 0;
@@ -2579,6 +2591,9 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				for (f = -m_BrushSize_x / 2; f < m_BrushSize_x / 2 + 1; f++) {
 					for (n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
+						if (!Map->isInside(x + f, y + n)) {
+							continue;
+						}
 						int pos = x + f + (y + n) * Map->GetIsoSize();
 						int ground = Map->GetFielddataAt(pos)->wGround;
 						if (ground == 0xFFFF) ground = 0;
@@ -2608,6 +2623,9 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 			int f, n;
 			for (f = m_funcRect.left - 1; f <= m_funcRect.right + 1; f++) {
 				for (n = m_funcRect.top - 1; n <= m_funcRect.bottom + 1; n++) {
+					if (!Map->isInside(f, n)) {
+						continue;
+					}
 					int pos = f + (n)*Map->GetIsoSize();
 					Map->CreateSlopesAt(pos);
 				}
@@ -2661,6 +2679,9 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 				int oheight = Map->GetHeightAt(x + y * Map->GetIsoSize());
 				for (f = -m_BrushSize_x / 2; f < m_BrushSize_x / 2 + 1; f++) {
 					for (n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
+						if (!Map->isInside(x + f, y + n)) {
+							continue;
+						}
 						int pos = x + f + (y + n) * Map->GetIsoSize();
 						int ground = Map->GetFielddataAt(pos)->wGround;
 						if (ground == 0xFFFF) ground = 0;
@@ -2672,6 +2693,9 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				for (f = -m_BrushSize_x / 2; f < m_BrushSize_x / 2 + 1; f++) {
 					for (n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
+						if (!Map->isInside(x + f, y + n)) {
+							continue;
+						}
 						int pos = x + f + (y + n) * Map->GetIsoSize();
 						int ground = Map->GetFielddataAt(pos)->wGround;
 						if (ground == 0xFFFF) ground = 0;
@@ -2698,6 +2722,9 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 			int f, n;
 			for (f = m_funcRect.left - 1; f <= m_funcRect.right + 1; f++) {
 				for (n = m_funcRect.top - 1; n <= m_funcRect.bottom + 1; n++) {
+					if (!Map->isInside(f, n)) {
+						continue;
+					}
 					int pos = f + (n)*Map->GetIsoSize();
 					Map->CreateSlopesAt(pos);
 				}
@@ -2724,19 +2751,27 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 	} else if (AD.mode == ACTIONMODE_HEIGHTENTILE) {
 		Map->TakeSnapshot();
 
-		int n, m;
-		for (m = -m_BrushSize_x / 2; m < m_BrushSize_x / 2 + 1; m++) {
-			for (n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
-				Map->SetHeightAt(x + m + (y + n) * Map->GetIsoSize(), Map->GetHeightAt(x + m + (y + n) * Map->GetIsoSize()) + 1);
+		for (int m = -m_BrushSize_x / 2; m < m_BrushSize_x / 2 + 1; m++) {
+			for (int n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
+				if (!Map->isInside(x + m, y + n)) {
+					continue;
+				}
+				auto const pos = x + m + (y + n) * Map->GetIsoSize();
+				Map->SetHeightAt(pos, Map->GetHeightAt(pos) + 1);
 			}
 		}
 
-		if (nFlags & MK_CONTROL)
-			for (m = -m_BrushSize_x / 2 - 1; m < m_BrushSize_x / 2 + 2; m++) {
-				for (n = -m_BrushSize_y / 2 - 1; n < m_BrushSize_y / 2 + 2; n++) {
-					Map->CreateSlopesAt(x + m + (y + n) * Map->GetIsoSize());
+		if (nFlags & MK_CONTROL) {
+			for (int m = -m_BrushSize_x / 2 - 1; m < m_BrushSize_x / 2 + 2; m++) {
+				for (int n = -m_BrushSize_y / 2 - 1; n < m_BrushSize_y / 2 + 2; n++) {
+					if (!Map->isInside(x + m, y + n)) {
+						continue;
+					}
+					auto const pos = x + m + (y + n) * Map->GetIsoSize();
+					Map->CreateSlopesAt(pos);
 				}
 			}
+		}
 
 		Map->TakeSnapshot();
 		Map->Undo();
@@ -2745,19 +2780,27 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 	} else if (AD.mode == ACTIONMODE_LOWERTILE) {
 		Map->TakeSnapshot();
 
-		int n, m;
-		for (m = -m_BrushSize_x / 2; m < m_BrushSize_x / 2 + 1; m++) {
-			for (n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
-				Map->SetHeightAt(x + m + (y + n) * Map->GetIsoSize(), Map->GetHeightAt(x + m + (y + n) * Map->GetIsoSize()) - 1);
+		for (int m = -m_BrushSize_x / 2; m < m_BrushSize_x / 2 + 1; m++) {
+			for (int n = -m_BrushSize_y / 2; n < m_BrushSize_y / 2 + 1; n++) {
+				if (!Map->isInside(x + m, y + n)) {
+					continue;
+				}
+				auto const pos = x + m + (y + n) * Map->GetIsoSize();
+				Map->SetHeightAt(pos, Map->GetHeightAt(pos) - 1);
 			}
 		}
 
-		if (nFlags & MK_CONTROL)
-			for (m = -m_BrushSize_x / 2 - 1; m < m_BrushSize_x / 2 + 2; m++) {
-				for (n = -m_BrushSize_y / 2 - 1; n < m_BrushSize_y / 2 + 2; n++) {
-					Map->CreateSlopesAt(x + m + (y + n) * Map->GetIsoSize());
+		if (nFlags & MK_CONTROL) {
+			for (int m = -m_BrushSize_x / 2 - 1; m < m_BrushSize_x / 2 + 2; m++) {
+				for (int n = -m_BrushSize_y / 2 - 1; n < m_BrushSize_y / 2 + 2; n++) {
+					if (!Map->isInside(x + m, y + n)) {
+						continue;
+					}
+					auto const pos = x + m + (y + n) * Map->GetIsoSize();
+					Map->CreateSlopesAt(pos);
 				}
 			}
+		}
 
 		Map->TakeSnapshot();
 		Map->Undo();

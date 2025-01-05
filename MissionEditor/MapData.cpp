@@ -1751,18 +1751,17 @@ void CMapData::UpdateNodes(BOOL bSave)
 			CString nodeName;
 			GetNodeID(nodeName, idx);
 			auto const& nodeVal = sec.GetString(nodeName);
-			CString type, sx, sy;
-			type = GetParam(nodeVal, 0);
-			sy = GetParam(nodeVal, 1);
-			sx = GetParam(nodeVal, 2);
+			const auto type = GetParam(nodeVal, 0);
+			const auto sy = GetParam(nodeVal, 1);
+			const auto sx = GetParam(nodeVal, 2);
 
-			int x = atoi(sx);
-			int y = atoi(sy);
-			int bid = buildingid[type];
+			const int x = atoi(sx);
+			const int y = atoi(sy);
+			const int bid = buildingid.at(type);
 			for (auto d = 0; d < buildinginfo[bid].h; d++) {
 				for (auto f = 0; f < buildinginfo[bid].w; f++) {
 					int pos = x + d + (y + f) * GetIsoSize();
-					fielddata[pos].node.type = buildingid[type];
+					fielddata[pos].node.type = bid;
 					fielddata[pos].node.house = id;
 					fielddata[pos].node.index = idx;
 				}
@@ -6263,7 +6262,9 @@ BOOL CMapData::AddSmudge(SMUDGE* lpSmudge)
 	td = *lpSmudge;
 	int pos = td.x + td.y * GetIsoSize();
 
-	if (smudgeid.find(td.type) == smudgeid.end()) return FALSE;
+	if (smudgeid.find(td.type) == smudgeid.end()) {
+		return FALSE;
+	}
 
 	BOOL bFound = FALSE;
 

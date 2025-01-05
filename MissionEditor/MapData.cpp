@@ -2076,7 +2076,7 @@ void CMapData::GetStdStructureData(DWORD dwIndex, STDOBJECTDATA* lpStdStructure)
 	ParseBasicTechnoData(data, *lpStdStructure);
 }
 
-BOOL CMapData::AddNode(NODE* lpNode, WORD dwPos)
+BOOL CMapData::AddNode(const NODE* lpNode, WORD dwPos, bool reloadAll)
 {
 	NODE node;
 	if (lpNode != NULL) {
@@ -2108,7 +2108,9 @@ BOOL CMapData::AddNode(NODE* lpNode, WORD dwPos)
 
 	m_mapfile.SetString(node.house, p, std::move(nodeRecord));
 
-	UpdateNodes(FALSE);
+	if (reloadAll) {
+		UpdateNodes(FALSE);
+	}
 
 	return TRUE;
 }
@@ -2854,6 +2856,29 @@ void CMapData::GetStdUnitData(DWORD dwIndex, STDOBJECTDATA* lpStdUnit) const
 DWORD CMapData::GetInfantryCount() const
 {
 	return m_infantry.size();//m_mapfile.sections["Infantry"].values.size();
+}
+
+std::vector<NODE> CMapData::CollectAllBaseNodes() const
+{
+	size_t total = 0;
+	for (auto const& [seq, id] : m_mapfile[MAPHOUSES]) {
+		total += m_mapfile.GetInteger(id, "NodeCount");
+	}
+	std::vector<NODE> ret;
+	ret.reserve(total);
+
+	for (auto const& [seq, id] : m_mapfile[MAPHOUSES]) {
+		auto const& sec = m_mapfile.GetSection(id);
+		const int nodeCount = sec.GetInteger("NodeCount");
+		for (auto idx = 0; idx < nodeCount; idx++) {
+			auto const& nodeVal = sec.GetString(GetNodeID(idx));
+			auto const type = GetParam(nodeVal, 0);
+			const CString y = GetParam(nodeVal, 1);
+			const CString x = GetParam(nodeVal, 2);
+			ret.push_back(NODE{ id, type, x, y });
+		}
+	}
+	return ret;
 }
 
 DWORD CMapData::GetUnitCount() const
@@ -5667,6 +5692,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	CString* ct_tag = new(CString[GetCelltagCount()]);
 	int ct_count = GetCelltagCount();
 	DWORD* ct_pos = new(DWORD[GetCelltagCount()]);
+	auto baseNodes = CollectAllBaseNodes();
 
 	// Now copy the objects into above arrays and delete them from map
 	for (int i = 0; i < inf_count; i++) {
@@ -5741,7 +5767,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	auto const old_fd = std::exchange(fielddata, {});
 	int ow = GetWidth();
 	int oh = GetHeight();
-	int os = GetIsoSize();
+	int oldIsoSize = GetIsoSize();
 	auto const old_fds = fielddata.size();
 
 	int left = iLeft;
@@ -5836,18 +5862,17 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	};
 
 	// copy tiles now
-	for (int i = 0; i < os; i++) {
-		for (int e = 0; e < os; e++) {
-			int x, y;
-			x = i + x_move;
-			y = e + y_move;
+	for (int i = 0; i < oldIsoSize; i++) {
+		for (int e = 0; e < oldIsoSize; e++) {
+			const int x = i + x_move;
+			const int y = e + y_move;
 
 			if (!isInMap(x, y)) {
 				continue;
 			}
 
 			FIELDDATA& fdd = fielddata[x + y * m_IsoSize];
-			const FIELDDATA& fdo = old_fd.at(i + e * os);
+			const FIELDDATA& fdo = old_fd.at(i + e * oldIsoSize);
 
 			fdd.bCliffHack = fdo.bCliffHack;
 			fdd.bHeight = fdo.bHeight;
@@ -5860,12 +5885,21 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 			fdd.overlay = fdo.overlay;
 			fdd.overlaydata = fdo.overlaydata;
 			fdd.wGround = fdo.wGround;
+			fdd.node = fdo.node;
 		}
 	}
 
 	// MW 07/22/01: Added Progress dialog - it just was slow, and did not crash...
-	int allcount = GetInfantryCount() + GetAircraftCount() + GetUnitCount() + GetStructureCount() + GetTerrainCount() + GetWaypointCount() + GetCelltagCount();
-	int curcount = 0;
+	const int allcount = GetInfantryCount() 
+		+ GetAircraftCount() 
+		+ GetUnitCount() 
+		+ GetStructureCount()
+		+ GetTerrainCount() 
+		+ GetWaypointCount() 
+		+ GetCelltagCount()
+		+ baseNodes.size()
+		;
+	int progress = 0;
 	CProgressDlg* dlg = new(CProgressDlg)("Updating objects, please wait");
 	dlg->SetRange(0, allcount - 1);
 	dlg->ShowWindow(SW_SHOW);
@@ -5887,7 +5921,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	int count = inf_count; // this temp variable is *needed* (infinite loop)!!!
 	for (int i = 0; i < count; i++) {
 		if (inf[i].deleted) {
-			dlg->SetPosition(i + curcount);
+			dlg->SetPosition(i + progress);
 			dlg->UpdateWindow();
 
 			continue; // MW June 12 01
@@ -5902,12 +5936,12 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 		AddInfantry(&obj);
 
-		dlg->SetPosition(i + curcount);
+		dlg->SetPosition(i + progress);
 		dlg->UpdateWindow();
 
 	}
 
-	curcount += count;
+	progress += count;
 
 	count = air_count;
 	for (int i = 0; i < count; i++) {
@@ -5922,13 +5956,13 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 		AddAircraft(&obj);
 
-		dlg->SetPosition(i + curcount);
+		dlg->SetPosition(i + progress);
 		dlg->UpdateWindow();
 	}
 
 	UpdateAircraft(FALSE);
 
-	curcount += count;
+	progress += count;
 
 	count = str_count;
 	for (int i = 0; i < count; i++) {
@@ -5943,13 +5977,13 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 		AddStructure(&obj);
 
-		dlg->SetPosition(i + curcount);
+		dlg->SetPosition(i + progress);
 		dlg->UpdateWindow();
 	}
 
 	UpdateStructures(FALSE);
 
-	curcount += count;
+	progress += count;
 
 	count = unit_count;
 	for (int i = 0; i < count; i++) {
@@ -5964,18 +5998,18 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 		AddUnit(&obj);
 
-		dlg->SetPosition(i + curcount);
+		dlg->SetPosition(i + progress);
 		dlg->UpdateWindow();
 	}
 
 	UpdateUnits(FALSE);
 
-	curcount += count;
+	progress += count;
 
 	count = terrain_count;
 	for (int i = 0; i < count; i++) {
 		if (terrain[i].deleted) {
-			dlg->SetPosition(i + curcount);
+			dlg->SetPosition(i + progress);
 			dlg->UpdateWindow();
 			continue; // MW June 12 01
 		}
@@ -5997,14 +6031,14 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 		AddTerrain(obj, x + y * m_IsoSize);
 
-		dlg->SetPosition(i + curcount);
+		dlg->SetPosition(i + progress);
 		dlg->UpdateWindow();
 	}
 
 	//UpdateTerrain(TRUE);
 	//UpdateTerrain(FALSE);
 
-	curcount += count;
+	progress += count;
 
 	count = wp_count;
 	for (int i = 0; i < count; i++) {
@@ -6014,8 +6048,8 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		pos = wp_pos[i];
 		id = wp_id[i];
 
-		int x = pos % os + x_move;
-		int y = pos / os + y_move;
+		int x = pos % oldIsoSize + x_move;
+		int y = pos / oldIsoSize + y_move;
 
 		if (!isInMap(x, y)) {
 			continue;
@@ -6023,21 +6057,21 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 		AddWaypoint(id, x + y * m_IsoSize);
 
-		dlg->SetPosition(i + curcount);
+		dlg->SetPosition(i + progress);
 		dlg->UpdateWindow();
 	}
 
 	UpdateWaypoints(FALSE);
 
-	curcount += count;
+	progress += count;
 
 
 	for (int i = 0; i < ct_count; i++) {
 		DWORD pos = ct_pos[i];
 		CString tag = ct_tag[i];
 
-		int x = pos % os + x_move;
-		int y = pos / os + y_move;
+		int x = pos % oldIsoSize + x_move;
+		int y = pos / oldIsoSize + y_move;
 
 		if (!isInMap(x, y)) {
 			continue;
@@ -6045,12 +6079,46 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 		AddCelltag(tag, x + y * m_IsoSize);
 
-		dlg->SetPosition(i + curcount);
+		dlg->SetPosition(i + progress);
 		dlg->UpdateWindow();
 	}
+	progress += ct_count;
 
 	UpdateCelltags(FALSE);
 
+	// base nodes
+	if (!baseNodes.empty()) {
+		int progressCounter = 0;
+		CString lastHouse;
+		for (auto& node : baseNodes) {
+			const int x = atoi(node.x) + x_move;
+			const int y = atoi(node.y) + y_move;
+
+			if (!isInMap(x, y)) {
+				continue;
+			}
+			node.x.Format("%d", x);
+			node.y.Format("%d", y);
+
+			if (node.house != lastHouse) {
+				lastHouse = node.house;
+				// first time handling this house, reset
+				if (auto pNodeSec = m_mapfile.TryGetSection(node.house)) {
+					for (auto idx = m_mapfile.GetInteger(node.house, "NodeCount") - 1; idx >= 0; --idx) {
+						DeleteBuildingNodeFrom(node.house, idx, m_mapfile);
+					}
+				}
+			}
+			AddNode(&node, 0, false);
+
+			dlg->SetPosition(progressCounter++ + progress);
+			dlg->UpdateWindow();
+		}
+		progress += progressCounter;
+
+	}
+
+	// data transfer complete!
 	m_noAutoObjectUpdate = FALSE;
 
 	errstream << "Delete old_fd" << endl;

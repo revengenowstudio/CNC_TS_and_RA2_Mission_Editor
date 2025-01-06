@@ -5766,8 +5766,8 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	}
 
 	auto const old_fd = std::exchange(fielddata, {});
-	const int ow = GetWidth();
-	const int oh = GetHeight();
+	const int oldWidth = GetWidth();
+	const int oldHeight = GetHeight();
 	const int oldIsoSize = GetIsoSize();
 	auto const old_fds = fielddata.size();
 
@@ -5795,26 +5795,26 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	dwSnapShotCount = 0;
 	m_cursnapshot = -1;
 
-
-	char c[50];
 	CString mapsize;
-	itoa(dwNewWidth, c, 10);
-	mapsize = "0,0,";
-	mapsize += c;
-	itoa(dwNewHeight, c, 10);
-	mapsize += ",";
-	mapsize += c;
+	mapsize.Format("0,0,%d,%d", dwNewWidth, dwNewHeight);
 
 	m_mapfile.SetString("Map", "Size", mapsize);
 
 	{
-		auto const oldLocalSize = m_mapfile.GetString("Map", "LocalSize");
-		auto const newLeft = atoi(GetParam(oldLocalSize, 0)) + left;
-		auto const newTop = atoi(GetParam(oldLocalSize, 1)) + top;
-		auto const oldWidthStr = GetParam(oldLocalSize, 2);
-		auto const oldHeightStr = GetParam(oldLocalSize, 3);
+		auto const oldVisualRect = m_mapfile.GetString("Map", "LocalSize");
+		auto const newVisualLeft = std::max(1, atoi(GetParam(oldVisualRect, 0)) + left);
+		auto const newVisualTop = std::max(1, atoi(GetParam(oldVisualRect, 1)) + top);
+		auto newVisualWidth = std::min<int>(dwNewWidth, atoi(GetParam(oldVisualRect, 2)));
+		auto newVisualHeight = std::min<int>(dwNewHeight, atoi(GetParam(oldVisualRect, 3)));
 
-		mapsize.Format("%d,%d,%s,%s", newLeft, newTop, oldWidthStr, oldHeightStr);
+		if (newVisualWidth + newVisualLeft > dwNewWidth) {
+			newVisualWidth = dwNewWidth - newVisualLeft - 1;
+		}
+		if (newVisualHeight + newVisualTop > dwNewHeight) {
+			newVisualHeight = dwNewHeight - newVisualTop - 1;
+		}
+
+		mapsize.Format("%d,%d,%d,%d", newVisualLeft, newVisualTop, newVisualWidth, newVisualHeight);
 
 		m_mapfile.SetString("Map", "LocalSize", mapsize);
 	}
@@ -5841,7 +5841,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	int x_move = 0;
 	int y_move = 0;
 
-	x_move += (dwNewWidth - ow);
+	x_move += (dwNewWidth - oldWidth);
 
 
 	// x_move and y_move now take care of the map sizing. This means,

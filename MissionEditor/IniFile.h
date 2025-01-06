@@ -282,8 +282,6 @@ public:
 		return *this;
 	}
 
-	[[deprecated("instead use GetString")]]
-	CString GetValueByName(const CString& sectionName, const CString& valueName, const CString& defaultValue) const;
 	void Clear();
 	WORD InsertFile(const CString& filename, const char* Section, BOOL bNoSpaces = FALSE);
 	WORD InsertFile(const std::string& filename, const char* Section, BOOL bNoSpaces = FALSE);

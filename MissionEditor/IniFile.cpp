@@ -278,12 +278,3 @@ int64_t CIniFileSection::FindIndex(const CString& key) const noexcept
 	}
 	return -1;
 }
-
-CString CIniFile::GetValueByName(const CString& sectionName, const CString& valueName, const CString& defaultValue) const
-{
-	auto section = TryGetSection(sectionName);
-	if (!section) {
-		return defaultValue;
-	}
-	return section->GetStringOr(valueName, defaultValue);
-}

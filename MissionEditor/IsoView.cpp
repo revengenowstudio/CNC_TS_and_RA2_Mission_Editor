@@ -336,6 +336,13 @@ BOOL CIsoView::RecreateSurfaces()
 
 	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 
+	// make sure the ddsd size is big enough for heightest zoom-out;
+	if (theApp.m_Options.bHighResUI)
+	{
+		ddsd.dwWidth *= theApp.m_Options.viewScaleSteps[0];
+		ddsd.dwHeight *= theApp.m_Options.viewScaleSteps[0];
+	}
+
 	releaseIfExists(isoView.lpdsBack);
 	if (isoView.dd->CreateSurface(&ddsd, &isoView.lpdsBack, NULL) != DD_OK) {
 		errstream << "CreateSurface() failed\n";
@@ -6577,8 +6584,8 @@ void CIsoView::Zoom(CPoint& pt, float f)
 
 	auto oldViewScaleControl = m_viewScaleControl;
 	m_viewScaleControl *= (1.0f - f * theApp.m_Options.viewScaleSpeed);
-	if (m_viewScaleControl > 1.0f)
-		m_viewScaleControl = 1.0f;
+	if (m_viewScaleControl > 2.0f)
+		m_viewScaleControl = 2.0f;
 	if (m_viewScaleControl < 0.1f)
 		m_viewScaleControl = 0.1f;
 

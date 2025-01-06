@@ -5766,14 +5766,13 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	}
 
 	auto const old_fd = std::exchange(fielddata, {});
-	int ow = GetWidth();
-	int oh = GetHeight();
-	int oldIsoSize = GetIsoSize();
+	const int ow = GetWidth();
+	const int oh = GetHeight();
+	const int oldIsoSize = GetIsoSize();
 	auto const old_fds = fielddata.size();
 
-	int left = iLeft;
-	int top = iTop;
-
+	const int left = iLeft;
+	const int top = iTop;
 
 	// hmm, erase any snapshots... we probably can remove this and do coordinate conversion instead
 	// but for now we just delete them...
@@ -5808,15 +5807,17 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 	m_mapfile.SetString("Map", "Size", mapsize);
 
-	itoa(dwNewWidth - 4, c, 10);
-	mapsize = "2,4,";
-	mapsize += c;
-	itoa(dwNewHeight - 6, c, 10);
-	mapsize += ",";
-	mapsize += c;
+	{
+		auto const oldLocalSize = m_mapfile.GetString("Map", "LocalSize");
+		auto const newLeft = atoi(GetParam(oldLocalSize, 0)) + left;
+		auto const newTop = atoi(GetParam(oldLocalSize, 1)) + top;
+		auto const oldWidthStr = GetParam(oldLocalSize, 2);
+		auto const oldHeightStr = GetParam(oldLocalSize, 3);
 
-	m_mapfile.SetString("Map", "LocalSize", mapsize);
+		mapsize.Format("%d,%d,%s,%s", newLeft, newTop, oldWidthStr, oldHeightStr);
 
+		m_mapfile.SetString("Map", "LocalSize", mapsize);
+	}
 
 	CalcMapRect();
 	ClearOverlay();
@@ -5831,9 +5832,10 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 
 	errstream << "ResizeMap() frees m_mfd\n";
 	errstream.flush();
-	if (m_mfd != NULL) delete[] m_mfd;
+	if (m_mfd != NULL) {
+		delete[] m_mfd;
+	}
 	m_mfd = NULL;
-
 
 	// x_move and y_move specify the movement for each field, related to the old position
 	int x_move = 0;

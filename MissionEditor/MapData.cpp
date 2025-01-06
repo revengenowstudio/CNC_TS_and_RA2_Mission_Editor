@@ -5693,6 +5693,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 	int ct_count = GetCelltagCount();
 	DWORD* ct_pos = new(DWORD[GetCelltagCount()]);
 	auto baseNodes = CollectAllBaseNodes();
+	auto const smudgeSize = m_mapfile["Smudge"].Size();
 
 	// Now copy the objects into above arrays and delete them from map
 	for (int i = 0; i < inf_count; i++) {
@@ -5886,6 +5887,8 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 			fdd.overlaydata = fdo.overlaydata;
 			fdd.wGround = fdo.wGround;
 			fdd.node = fdo.node;
+			fdd.smudge = fdo.smudge;
+			fdd.smudgetype = fdo.smudgetype;
 		}
 	}
 
@@ -5898,6 +5901,7 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 		+ GetWaypointCount() 
 		+ GetCelltagCount()
 		+ baseNodes.size()
+		+ smudgeSize
 		;
 	int progress = 0;
 	CProgressDlg* dlg = new(CProgressDlg)("Updating objects, please wait");
@@ -6115,7 +6119,26 @@ void CMapData::ResizeMap(int iLeft, int iTop, DWORD dwNewWidth, DWORD dwNewHeigh
 			dlg->UpdateWindow();
 		}
 		progress += progressCounter;
+	}
 
+	if (!m_smudges.empty()) {
+		int progressCounter = 0;
+		for (auto& smudge : m_smudges) {
+			const int x = smudge.x + x_move;
+			const int y = smudge.y + y_move;
+
+			if (!isInMap(x, y)) {
+				smudge.deleted = true;
+				continue;
+			}
+			smudge.x = x;
+			smudge.y = y;
+
+			dlg->SetPosition(progressCounter++ + progress);
+			dlg->UpdateWindow();
+		}
+		UpdateSmudges(TRUE);
+		progress += progressCounter;
 	}
 
 	// data transfer complete!
@@ -6383,7 +6406,6 @@ void CMapData::DeleteSmudge(DWORD dwIndex)
 
 void CMapData::UpdateSmudges(BOOL bSave, int num)
 {
-	vector<SMUDGE>& smudges = m_smudges;
 
 	if (bSave == FALSE) {
 		auto const& sec = m_mapfile.GetSection("Smudge");
@@ -6392,8 +6414,8 @@ void CMapData::UpdateSmudges(BOOL bSave, int num)
 		}
 
 		if (num < 0) {
-			smudges.clear();
-			smudges.reserve(100);
+			m_smudges.clear();
+			m_smudges.reserve(100);
 
 			for (auto i = 0; i < GetIsoSize() * GetIsoSize(); i++) {
 				fielddata[i].smudge = -1;
@@ -6419,7 +6441,7 @@ void CMapData::UpdateSmudges(BOOL bSave, int num)
 				td.x = x;
 				td.y = y;
 
-				smudges.push_back(td);
+				m_smudges.push_back(td);
 
 				int pos = x + y * GetIsoSize();
 				fielddata[pos].smudge = i;
@@ -6433,15 +6455,15 @@ void CMapData::UpdateSmudges(BOOL bSave, int num)
 	}
 
 
-
+	// SAVE == TRUE
 	//if(num<0)
 	{
 		//if(m_mapfile.sections.find("Smudge")!=m_mapfile.sections.end()) MessageBox(0,"Reupdate!","",0);
 		m_mapfile.DeleteSection("Smudge");
 		int i;
 
-		for (i = 0; i < smudges.size(); i++) {
-			auto const& td = smudges[i];
+		for (i = 0; i < m_smudges.size(); i++) {
+			auto const& td = m_smudges[i];
 			if (!td.deleted) {
 				char numBuffer[50];
 				CString val = td.type;

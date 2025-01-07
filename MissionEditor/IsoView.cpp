@@ -1585,21 +1585,12 @@ void CIsoView::OnMouseMove(UINT nFlags, CPoint point)
 
 
 
-	// display the coordinates	
-	char c[50];
+	// display the coordinates
 	CString cap;
-	itoa(x, c, 10);
-	cap += c;
-	cap += " / ";
-	itoa(y, c, 10);
-	cap += c;
-	cap += " - ";
-	itoa(Map->GetHeightAt(x + y * Map->GetIsoSize()), c, 10);
-	cap += c;
+	cap.Format("XY: %d, %d H: %d", y, x, Map->GetHeightAt(x + y * Map->GetIsoSize()));
 
 	CStatusBarCtrl& stat = ((CMyViewFrame*)owner)->m_statbar.GetStatusBarCtrl();
 	stat.SetText(cap, 1, 0);
-
 
 	// drag
 	if (m_drag && AD.mode == 0) {

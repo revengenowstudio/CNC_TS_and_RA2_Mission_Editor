@@ -2886,40 +2886,47 @@ Note: takes care of the current mapfile settings
 WCHAR unknown[] = L"MISSING";
 WCHAR* CMapData::GetUnitName(LPCTSTR lpID) const
 {
-	WCHAR* res = NULL;
+	auto name = GetUnitDisplayName(lpID);
+	if (name) {
+		return name->wString;
+	}
+	return nullptr;
+}
 
-	auto const& renameStr = g_data.GetString("Rename", lpID);
+const XCString* CMapData::GetUnitDisplayName(const CString& id) const
+{
+	XCString* res = NULL;
+
+	auto const& renameStr = g_data.GetString("Rename", id);
 	if (!renameStr.IsEmpty()) {
-		CCStrings[lpID].SetString(GetLanguageStringACP(renameStr));
-		res = CCStrings[lpID].wString;
-		return res;
+		CCStrings[id].SetString(GetLanguageStringACP(renameStr));
+		return &CCStrings.at(id);
 	}
 
-	if (CCStrings.find(lpID) != CCStrings.end() && CCStrings[lpID].len > 0) {
-		res = CCStrings[lpID].wString;
+	if (CCStrings.find(id) != CCStrings.end() && CCStrings.at(id).len > 0) {
+		res = &CCStrings.at(id);
 	}
 
 	if (!res) {
-		auto const& section = m_mapfile.GetSection(lpID);
+		auto const& section = m_mapfile.GetSection(id);
 		auto const& nameVal = section.GetString("Name");
 		if (!nameVal.IsEmpty()) {
-			CCStrings[lpID].SetString(nameVal);
-
-			res = CCStrings[lpID].wString;
+			CCStrings[id].SetString(nameVal);
+			res = &CCStrings.at(id);
 		}
 	}
 
 	if (!res) {
-		auto const& nameStr = rules.GetString(lpID, "Name");
+		auto const& nameStr = rules.GetString(id, "Name");
 		if (!nameStr.IsEmpty()) {
-			CCStrings[lpID].SetString(nameStr);
-			res = CCStrings[lpID].wString;
+			CCStrings[id].SetString(nameStr);
+			res = &CCStrings.at(id);
 		}
 	}
 
 	if (!res) {
-		CCStrings[lpID].SetString(L"MISSING", 7);
-		res = CCStrings[lpID].wString;
+		CCStrings[id].SetString(L"MISSING", 7);
+		res = &CCStrings.at(id);
 	}
 	return res;
 }

@@ -731,22 +731,32 @@ void TreeViewBuilder::updateBuildingTypes(HTREEITEM parentNode) {
 			continue;
 		}
 
-		WCHAR* addedString = Map->GetUnitName(unitname);
-		if (!addedString) {
+		auto const unitDisplayName = Map->GetUnitDisplayName(unitname);
+		if (!unitDisplayName) {
 			continue;
 		}
 
 		int id = Map->GetBuildingID(unitname);
-		if (id < 0 /*|| (buildinginfo[id].pic[0].bTerrain!=0 && buildinginfo[id].pic[0].bTerrain!=needed_terrain)*/)
+		if (id < 0 /*|| (buildinginfo[id].pic[0].bTerrain!=0 && buildinginfo[id].pic[0].bTerrain!=needed_terrain)*/) {
 			continue;
+		}
 
 		if (theater == THEATER0 && !buildinginfo[id].bTemp) { /*MessageBox("Ignored", unitname,0);*/ continue; }
 		if (theater == THEATER1 && !buildinginfo[id].bSnow) { /*MessageBox("Ignored", unitname,0);*/ continue; }
 		if (theater == THEATER2 && !buildinginfo[id].bUrban) { /*MessageBox("Ignored", unitname,0);*/ continue; }
 
+		
+		CString addedString = unitname;
+		addedString += ' ';
+		addedString += unitDisplayName->cString;
+
+		XCString addedStrW;
+		addedStrW.SetString(addedString.GetString());
 
 		auto const& name = sideHelper.GetSideName(unitname, TreeViewTechnoType::Building);
-		TV_InsertItemW(tree.m_hWnd, addedString, wcslen(addedString), TVI_LAST, structhouses.GetOrAdd(name), baseOffset + i);
+		TV_InsertItemW(tree.m_hWnd, 
+			addedStrW.wString,
+			addedStrW.len, TVI_LAST, structhouses.GetOrAdd(name), baseOffset + i);
 	}
 
 	// okay, now the user-defined types:
@@ -762,14 +772,18 @@ void TreeViewBuilder::updateBuildingTypes(HTREEITEM parentNode) {
 			continue;
 		}
 		CString undefinedName;
+		CString addedString;
 		auto const& name = ini[typeId]["Name"];
-		auto addedString = std::ref(name);
 		if (name.IsEmpty()) {
 			undefinedName = typeId + " UNDEFINED";
 			addedString = undefinedName;
+		} else {
+			addedString += typeId;
+			addedString += ' ';
+			addedString += name;
 		}
 		auto const& sideName = sideHelper.GetSideName(typeId, TreeViewTechnoType::Building);
-		tree.InsertItem(TVIF_PARAM | TVIF_TEXT, addedString.get(), 0, 0, 0, 0, baseOffset + i, structhouses.GetOrAdd(sideName), TVI_LAST);
+		tree.InsertItem(TVIF_PARAM | TVIF_TEXT, addedString, 0, 0, 0, 0, baseOffset + i, structhouses.GetOrAdd(sideName), TVI_LAST);
 	}
 }
 

@@ -238,6 +238,7 @@ public:
 	DWORD GetWaypointCount() const;
 	DWORD GetCelltagCount() const;
 	WCHAR* GetUnitName(LPCTSTR lpID) const;
+	const XCString* GetUnitDisplayName(const CString& id) const;
 	DWORD GetTerrainCount() const;
 	DWORD GetAircraftCount() const;
 	DWORD GetStructureCount() const;

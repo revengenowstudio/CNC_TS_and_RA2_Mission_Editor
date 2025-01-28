@@ -866,7 +866,7 @@ void ListAnimations(CComboBox& cb)
 
 void ListParticles(CComboBox& cb)
 {
-	listSpecifcTypesWithSequence(cb, "Particles");
+	listSpecifcTypesWithSequence(cb, "ParticleSystems");
 }
 
 void ListCrateTypes(CComboBox& cb)

@@ -4995,10 +4995,8 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 				}
 			}
 			// keep special shores
-			else if (std::find(SpecialShores.begin(), SpecialShores.end(), tileIndex) != SpecialShores.end() && IsTileIntact(x, y))
-			{
-				for (auto& mc : GetIntactTileCoords(x, y, true))
-				{
+			else if (std::find(SpecialShores.begin(), SpecialShores.end(), tileIndex) != SpecialShores.end() && IsTileIntact(x, y)) {
+				for (auto& mc : GetIntactTileCoords(x, y, true)) {
 					if (!IsCoordInMap(mc.x, mc.y))
 						continue;
 					int pos = GetCoordIndex(mc.x, mc.y);
@@ -5012,13 +5010,11 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 
 	// remove 1x1 land and water
 	// only used in bmp2map, not necessary
-	if (bRemoveUseless)
-	{
+	if (bRemoveUseless) {
 
 	}
 
-	auto process = [&](int w, int h, std::vector<int>tiles, int* shoreMatch)
-		{
+	auto process = [&](int w, int h, std::vector<int>tiles, int* shoreMatch) {
 			for (int x = left; x < right; x++) {
 				for (int y = top; y < bottom; y++) {
 					if (!IsCoordInMap(x, y)) {

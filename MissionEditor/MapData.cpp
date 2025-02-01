@@ -4791,19 +4791,18 @@ bool CMapData::IsTileIntact(int x, int y, int startX, int startY, int right, int
 				tileIndex2 = 0;
 			}
 
-			if (tileIndex != tileIndex2) {
-				return false;
+			if ((*tiledata)[tileIndex].tiles[subIdx].pic != NULL) {
+				if (tileIndex != tileIndex2) {
+					return false;
+				}
+				if (cell2->bSubTile != subIdx) {
+					return false;
+				}
 			}
-			if (cell2->bSubTile != subIdx) {
-				return false;
-			}
-
 			subIdx++;
 		}
 	}
-
 	return true;
-
 }
 
 std::vector<MapCoords> CMapData::GetIntactTileCoords(int x, int y, bool oriIntact)
@@ -4820,15 +4819,18 @@ std::vector<MapCoords> CMapData::GetIntactTileCoords(int x, int y, bool oriIntac
 		const int oriX = x - cell->bSubTile / (*tiledata)[tileIndex].cy;
 		const int oriY = y - cell->bSubTile % (*tiledata)[tileIndex].cy;
 
+		int subIdx = 0;
 		for (int m = 0; m < (*tiledata)[tileIndex].cx; m++) {
 			for (int n = 0; n < (*tiledata)[tileIndex].cy; n++) {
-				MapCoords mc;
-				mc.x = m + oriX;
-				mc.y = n + oriY;
-				ret.push_back(mc);
+				if ((*tiledata)[tileIndex].tiles[subIdx].pic != NULL) {
+					MapCoords mc;
+					mc.x = m + oriX;
+					mc.y = n + oriY;
+					ret.push_back(mc);
+				}
+				subIdx++;
 			}
 		}
-
 		return ret;
 	}
 	return ret;
@@ -4857,10 +4859,12 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 		return;
 	}
 
-	auto constexpr waterGroupCount = 42;
+	auto constexpr shoreGroupCount = 42;
+	auto constexpr largeShoreStart = 40;
+	auto constexpr largeShoreEnd = 42;
 	int tileStart = tilesets_start[shorePieces];
 	int tileLast = tilesets_start[shorePieces + 1] - 1;
-	if (tileLast - tileStart < (waterGroupCount - 1) || tileLast >= *tiledata_count) {
+	if (tileLast - tileStart < (shoreGroupCount - 1) || tileLast >= *tiledata_count) {
 		return;
 	}
 
@@ -4869,6 +4873,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 	int greenTile = tilesets_start[greenTiles];
 
 	std::vector<int> SmallWaterTiles;
+	std::vector<int> SpecialShores;
 	// 0-5: large water pieces
 	// 6-7: large water debris
 	// 8-12: small water pieces
@@ -4877,6 +4882,9 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 	auto constexpr smallWaterEnd = 13;
 	for (int i = largeWaterEnd; i < smallWaterEnd; i++) {
 		SmallWaterTiles.push_back(i + tilesets_start[waterSet]);
+	}
+	for (int i = largeShoreStart; i < largeShoreEnd; i++) {
+		SpecialShores.push_back(i + tilesets_start[shorePieces]);
 	}
 	// a trick to avoid affecting other shorelines
 	// ignore the working shore
@@ -4965,7 +4973,6 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 		}
 	}
 
-	// remove broken beaches
 	for (int x = left; x < right; x++) {
 		for (int y = top; y < bottom; y++) {
 			if (!IsCoordInMap(x, y)) {
@@ -4978,6 +4985,7 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 				tileIndex = 0;
 			}
 
+			// remove broken beaches
 			if ((tileIndex >= tileStart && tileIndex <= tileLast) && !IsTileIntact(x, y)) {
 				auto ttype = GetHackedTerrainType(tileIndex, cell->bSubTile);
 				if (ttype == TERRAINTYPE_GROUND) {
@@ -4986,18 +4994,28 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 					SetTileAt(GetCoordIndex(x, y), SmallWaterTiles[rand() * (SmallWaterTiles.size() - 1) / RAND_MAX], 0);
 				}
 			}
+			// keep special shores
+			else if (std::find(SpecialShores.begin(), SpecialShores.end(), tileIndex) != SpecialShores.end() && IsTileIntact(x, y)) {
+				for (auto& mc : GetIntactTileCoords(x, y, true)) {
+					if (!IsCoordInMap(mc.x, mc.y)) {
+						continue;
+					}
+					int pos = GetCoordIndex(mc.x, mc.y);
+					auto& cell = fielddata[pos];
+
+					cell.bShoreProcessed = true;
+				}
+			}
 		}
 	}
 
 	// remove 1x1 land and water
 	// only used in bmp2map, not necessary
-	if (bRemoveUseless)
-	{
+	if (bRemoveUseless) {
 
 	}
 
-	auto process = [&](int w, int h, std::vector<int>tiles, int* shoreMatch)
-		{
+	auto process = [&](int w, int h, std::vector<int>tiles, int* shoreMatch) {
 			for (int x = left; x < right; x++) {
 				for (int y = top; y < bottom; y++) {
 					if (!IsCoordInMap(x, y)) {

@@ -4997,8 +4997,9 @@ void CMapData::CreateShore(int left, int top, int right, int bottom, BOOL bRemov
 			// keep special shores
 			else if (std::find(SpecialShores.begin(), SpecialShores.end(), tileIndex) != SpecialShores.end() && IsTileIntact(x, y)) {
 				for (auto& mc : GetIntactTileCoords(x, y, true)) {
-					if (!IsCoordInMap(mc.x, mc.y))
+					if (!IsCoordInMap(mc.x, mc.y)) {
 						continue;
+					}
 					int pos = GetCoordIndex(mc.x, mc.y);
 					auto& cell = fielddata[pos];
 

@@ -244,6 +244,7 @@ public:
 	DWORD GetStructureCount() const;
 	DWORD GetUnitCount() const;
 	DWORD GetInfantryCount() const;
+	std::vector<NODE> CollectAllBaseNodes() const;
 
 	void GetNthWaypointData(DWORD dwIdx, CString* lpID, DWORD* lpdwPos) const;
 	void GetWaypointData(DWORD dwId, CString* lpID, DWORD* lpdwPos) const;
@@ -275,7 +276,7 @@ public:
 	void InitializeUnitTypes();
 	BOOL AddStructure(STRUCTURE* lpStructure, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0, CString suggestedID = "");
 	BOOL AddInfantry(INFANTRY* lpInfantry, int suggestedIndex = -1, LPCTSTR lpType = NULL, LPCTSTR lpHouse = NULL, DWORD dwPos = 0);
-	BOOL AddNode(NODE* lpNode, WORD dwPos);
+	BOOL AddNode(const NODE* lpNode, WORD dwPos, bool reloadAll = true);
 	CString GetStructureData(DWORD dwIndex, STRUCTURE* lpStructure) const;
 	BOOL AddWaypoint(CString lpID, DWORD dwPos);
 

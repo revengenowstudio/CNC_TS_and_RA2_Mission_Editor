@@ -2884,7 +2884,6 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 {
-	Map->TakeSnapshot(TRUE, x - 6, y - 6, x + (*tiledata)[AD.type].cx * m_BrushSize_x + 7, y + (*tiledata)[AD.type].cy * m_BrushSize_y + 7);
 	int i, e, f, n;
 	int p = 0;
 	int width = (*tiledata)[AD.type].cx;
@@ -2894,6 +2893,8 @@ void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 	int ground = Map->GetFielddataAt(x + y * Map->GetIsoSize())->wGround;
 	if (ground == 0xFFFF) ground = 0;
 	startheight -= (*tiledata)[ground].tiles[Map->GetFielddataAt(x + y * Map->GetIsoSize())->bSubTile].bZHeight;
+	TILEDATA td = (*tiledata)[AD.type];
+	Map->TakeSnapshot(TRUE, x - width - 4, y - height - 4, x - width + m_BrushSize_x * width + 7, y - height + m_BrushSize_y * height + 7);
 	for (f = 0; f < m_BrushSize_x; f++) {
 		for (n = 0; n < m_BrushSize_y; n++) {
 			int tile = AD.type;
@@ -2909,7 +2910,8 @@ void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 					if (x - width + 1 + f * width + i >= Map->GetIsoSize() ||
 						y - height + 1 + n * height + e >= Map->GetIsoSize()) {
 
-					} else
+					}
+					else
 						if ((*tiledata)[AD.type].tiles[p].pic != NULL) {
 							Map->SetHeightAt(pos + i + f * width + (e + n * height) * Map->GetIsoSize(), startheight + (*tiledata)[AD.type].tiles[p].bZHeight);
 							Map->SetTileAt(pos + i + f * width + (e + n * height) * Map->GetIsoSize(), tile, p);
@@ -2923,7 +2925,7 @@ void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 	}
 
 	if (!((nMouseFlags & MK_CONTROL) && (nMouseFlags & MK_SHIFT))) {
-		if (!theApp.m_Options.bDisableAutoShore) Map->CreateShore(x - 5, y - 5, x + (*tiledata)[AD.type].cx * m_BrushSize_x + 5, y + (*tiledata)[AD.type].cy * m_BrushSize_y + 5, FALSE);
+		if (!theApp.m_Options.bDisableAutoShore) Map->CreateShore(x - width - 2, y - height - 2, x - width + td.cx * m_BrushSize_x + 5, y - height + td.cy * m_BrushSize_y + 5, FALSE);
 		//Map->CreateShore(0,0,Map->GetIsoSize(), Map->GetIsoSize());
 
 		for (f = 0; f < m_BrushSize_x; f++) {

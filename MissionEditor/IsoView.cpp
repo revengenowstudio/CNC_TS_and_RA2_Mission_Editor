@@ -2886,14 +2886,13 @@ void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 {
 	int i, e, f, n;
 	int p = 0;
-	int width = (*tiledata)[AD.type].cx;
-	int height = (*tiledata)[AD.type].cy;
+	const int width = (*tiledata)[AD.type].cx;
+	const int height = (*tiledata)[AD.type].cy;
 	int pos = x - width + 1 + (y - height + 1) * Map->GetIsoSize();
 	int startheight = Map->GetHeightAt(x + y * Map->GetIsoSize()) + AD.z_data;
 	int ground = Map->GetFielddataAt(x + y * Map->GetIsoSize())->wGround;
 	if (ground == 0xFFFF) ground = 0;
 	startheight -= (*tiledata)[ground].tiles[Map->GetFielddataAt(x + y * Map->GetIsoSize())->bSubTile].bZHeight;
-	TILEDATA td = (*tiledata)[AD.type];
 	Map->TakeSnapshot(TRUE, x - width - 4, y - height - 4, x - width + m_BrushSize_x * width + 7, y - height + m_BrushSize_y * height + 7);
 	for (f = 0; f < m_BrushSize_x; f++) {
 		for (n = 0; n < m_BrushSize_y; n++) {
@@ -2925,7 +2924,7 @@ void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 	}
 
 	if (!((nMouseFlags & MK_CONTROL) && (nMouseFlags & MK_SHIFT))) {
-		if (!theApp.m_Options.bDisableAutoShore) Map->CreateShore(x - width - 2, y - height - 2, x - width + td.cx * m_BrushSize_x + 5, y - height + td.cy * m_BrushSize_y + 5, FALSE);
+		if (!theApp.m_Options.bDisableAutoShore) Map->CreateShore(x - width - 2, y - height - 2, x - width + width * m_BrushSize_x + 5, y - height + height * m_BrushSize_y + 5, FALSE);
 		//Map->CreateShore(0,0,Map->GetIsoSize(), Map->GetIsoSize());
 
 		for (f = 0; f < m_BrushSize_x; f++) {

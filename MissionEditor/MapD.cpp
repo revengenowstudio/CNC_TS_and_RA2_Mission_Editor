@@ -151,7 +151,9 @@ void CMapD::OnChange()
 	*/
 
 	CChangeSizeDlg dlg;
-	if (dlg.DoModal() == IDCANCEL) return;
+	if (dlg.DoModal() == IDCANCEL) {
+		return;
+	}
 
 	if (dlg.m_Width < 16 || dlg.m_Width>400 || dlg.m_Height < 16 || dlg.m_Height>400 || (dlg.m_Width + dlg.m_Height) > 512) {
 		MessageBox("Width and Height must both be between 16 and 400 and both added must be less than 512.", "Error");

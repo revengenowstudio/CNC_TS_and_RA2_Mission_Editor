@@ -2884,18 +2884,20 @@ void CIsoView::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 {
-	int i, e, f, n;
 	int p = 0;
-	const int width = (*tiledata)[AD.type].cx;
-	const int height = (*tiledata)[AD.type].cy;
+	auto const& tileData = (*tiledata)[AD.type];
+	const int width = tileData.cx;
+	const int height = tileData.cy;
 	int pos = x - width + 1 + (y - height + 1) * Map->GetIsoSize();
 	int startheight = Map->GetHeightAt(x + y * Map->GetIsoSize()) + AD.z_data;
 	int ground = Map->GetFielddataAt(x + y * Map->GetIsoSize())->wGround;
-	if (ground == 0xFFFF) ground = 0;
+	if (ground == 0xFFFF) {
+		ground = 0;
+	}
 	startheight -= (*tiledata)[ground].tiles[Map->GetFielddataAt(x + y * Map->GetIsoSize())->bSubTile].bZHeight;
 	Map->TakeSnapshot(TRUE, x - width - 4, y - height - 4, x - width + m_BrushSize_x * width + 7, y - height + m_BrushSize_y * height + 7);
-	for (f = 0; f < m_BrushSize_x; f++) {
-		for (n = 0; n < m_BrushSize_y; n++) {
+	for (auto f = 0; f < m_BrushSize_x; f++) {
+		for (auto n = 0; n < m_BrushSize_y; n++) {
 			int tile = AD.type;
 			if (AD.data == 1) {
 				int n = rand() * 5 / RAND_MAX;
@@ -2903,35 +2905,35 @@ void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 
 			}
 			p = 0;
-			for (i = 0; i < (*tiledata)[AD.type].cx; i++) {
-				for (e = 0; e < (*tiledata)[AD.type].cy; e++) {
-
+			for (auto i = 0; i < width; i++) {
+				for (auto e = 0; e < height; e++) {
 					if (x - width + 1 + f * width + i >= Map->GetIsoSize() ||
 						y - height + 1 + n * height + e >= Map->GetIsoSize()) {
 
-					}
-					else
-						if ((*tiledata)[AD.type].tiles[p].pic != NULL) {
-							Map->SetHeightAt(pos + i + f * width + (e + n * height) * Map->GetIsoSize(), startheight + (*tiledata)[AD.type].tiles[p].bZHeight);
+					} else {
+						if (tileData.tiles[p].pic != NULL) {
+							Map->SetHeightAt(pos + i + f * width + (e + n * height) * Map->GetIsoSize(), startheight + tileData.tiles[p].bZHeight);
 							Map->SetTileAt(pos + i + f * width + (e + n * height) * Map->GetIsoSize(), tile, p);
 
 						}
+					}
 					p++;
 				}
 			}
-
 		}
 	}
 
 	if (!((nMouseFlags & MK_CONTROL) && (nMouseFlags & MK_SHIFT))) {
-		if (!theApp.m_Options.bDisableAutoShore) Map->CreateShore(x - width - 2, y - height - 2, x - width + width * m_BrushSize_x + 5, y - height + height * m_BrushSize_y + 5, FALSE);
+		if (!theApp.m_Options.bDisableAutoShore) {
+			Map->CreateShore(x - width - 2, y - height - 2, x - width + width * m_BrushSize_x + 5, y - height + height * m_BrushSize_y + 5, FALSE);
+		}
 		//Map->CreateShore(0,0,Map->GetIsoSize(), Map->GetIsoSize());
 
-		for (f = 0; f < m_BrushSize_x; f++) {
-			for (n = 0; n < m_BrushSize_y; n++) {
+		for (auto f = 0; f < m_BrushSize_x; f++) {
+			for (auto n = 0; n < m_BrushSize_y; n++) {
 				p = 0;
-				for (i = -1; i < (*tiledata)[AD.type].cx + 1; i++) {
-					for (e = -1; e < (*tiledata)[AD.type].cy + 1; e++) {
+				for (auto i = -1; i < width + 1; i++) {
+					for (auto e = -1; e < height + 1; e++) {
 
 						Map->SmoothAllAt(pos + i + f * width + (e + n * height) * Map->GetIsoSize());
 
@@ -2944,7 +2946,7 @@ void CIsoView::PlaceTile(const int x, const int y, const UINT nMouseFlags)
 	}
 
 	// now make current tiles available for redo
-	Map->TakeSnapshot(TRUE, x - 6, y - 6, x + (*tiledata)[AD.type].cx * m_BrushSize_x + 6, y + (*tiledata)[AD.type].cy * m_BrushSize_y + 6);
+	Map->TakeSnapshot(TRUE, x - 6, y - 6, x + width * m_BrushSize_x + 6, y + height * m_BrushSize_y + 6);
 	Map->Undo();
 }
 
